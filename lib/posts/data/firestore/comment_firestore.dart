@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
 import 'package:neom_commons/core/data/firestore/constants/app_firestore_collection_constants.dart';
 import 'package:neom_commons/core/data/firestore/constants/app_firestore_constants.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
+import 'package:neom_commons/core/domain/model/activity_feed.dart';
 import 'package:neom_commons/core/domain/model/post_comment.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/enums/activity_feed_type.dart';
-import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
-import 'package:neom_commons/core/domain/model/activity_feed.dart';
+
 import '../../domain/repository/comment_repository.dart';
 
 class CommentFirestore implements CommentRepository {

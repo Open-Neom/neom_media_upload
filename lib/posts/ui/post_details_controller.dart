@@ -1,16 +1,17 @@
 import 'package:get/get.dart';
-
 import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
+import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
+import 'package:neom_commons/core/data/implementations/user_controller.dart';
+import 'package:neom_commons/core/domain/model/activity_feed.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/enums/activity_feed_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
-import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
-import 'package:neom_commons/core/domain/model/activity_feed.dart';
+import 'package:neom_timeline/neom_timeline.dart';
+
 import '../data/firestore/comment_firestore.dart';
 import '../domain/use_cases/post_details_service.dart';
 

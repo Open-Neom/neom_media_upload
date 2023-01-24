@@ -709,6 +709,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  neom_timeline:
+    dependency: "direct main"
+    description:
+      path: "../neom_timeline"
+      relative: true
+    source: path
+    version: "0.0.1"
   octo_image:
     dependency: transitive
     description:
@@ -994,6 +1001,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.1"
+  syncfusion_flutter_core:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_core
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "20.4.44"
+  syncfusion_flutter_datepicker:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_datepicker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "20.4.44"
   synchronized:
     dependency: transitive
     description:

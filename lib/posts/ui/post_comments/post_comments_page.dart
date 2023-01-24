@@ -6,7 +6,7 @@ import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_posts/posts/ui/widgets/posts_widgets.dart';
+import '../widgets/posts_widgets.dart';
 import 'post_comments_controller.dart';
 import 'post_comments_widgets.dart';
 
@@ -56,4 +56,3 @@ class PostCommentsPage extends StatelessWidget {
   }
 
 }
-

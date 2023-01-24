@@ -15,6 +15,8 @@ dependencies:
   neom_commons:
     path: ../neom_commons
 
+  neom_timeline:
+    path: ../neom_timeline
 
 dev_dependencies:
   flutter_test:

@@ -8,9 +8,6 @@ import 'package:get/get.dart';
 import 'package:hashtagable/hashtagable.dart';
 import 'package:neom_commons/core/data/implementations/mate_controller.dart';
 import 'package:neom_commons/core/domain/model/menu_three_dots.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:timeago/timeago.dart' as timeago;
-
 import 'package:neom_commons/core/domain/model/post_comment.dart';
 import 'package:neom_commons/core/ui/reports/report_controller.dart';
 import 'package:neom_commons/core/ui/widgets/custom_image.dart';
@@ -24,6 +21,10 @@ import 'package:neom_commons/core/utils/core_utilities.dart';
 import 'package:neom_commons/core/utils/enums/reference_type.dart';
 import 'package:neom_commons/core/utils/enums/report_type.dart';
 import 'package:neom_commons/core/utils/enums/user_role.dart';
+import 'package:neom_timeline/neom_timeline.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
 import 'post_comments_controller.dart';
 
 Widget othersComment(BuildContext context, PostCommentsController _, PostComment comment) {
@@ -409,7 +410,8 @@ Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
         padding: const EdgeInsets.all(5),
         child: Column(
           children: <Widget>[
-            userAvatarSection(context, _.profile.id, _.post,
+            userAvatarSection(
+                context, _.profile.id, _.post,
                 role: _.userController.user!.userRole),
             AppTheme.heightSpace5,
             Visibility(

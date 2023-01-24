@@ -6,6 +6,10 @@ neom_posts
 2.18
 file:///Users/serzen/codebase_flutter/neom_posts/
 file:///Users/serzen/codebase_flutter/neom_posts/lib/
+neom_timeline
+2.18
+file:///Users/serzen/codebase_flutter/neom_timeline/
+file:///Users/serzen/codebase_flutter/neom_timeline/lib/
 _flutterfire_internals
 2.16
 file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/_flutterfire_internals-1.0.12/
@@ -558,6 +562,14 @@ string_scanner
 2.12
 file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1/
 file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1/lib/
+syncfusion_flutter_core
+2.17
+file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_core-20.4.44/
+file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_core-20.4.44/lib/
+syncfusion_flutter_datepicker
+2.17
+file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_datepicker-20.4.44/
+file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_datepicker-20.4.44/lib/
 synchronized
 2.18
 file:///Users/serzen/src/flutter/.pub-cache/hosted/pub.dartlang.org/synchronized-3.0.1/

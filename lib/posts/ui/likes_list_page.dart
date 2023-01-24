@@ -6,7 +6,6 @@ import 'package:neom_commons/core/data/implementations/mate_controller.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/core_utilities.dart';
@@ -35,11 +34,6 @@ class LikesListPage extends StatelessWidget {
             return mate.name.isNotEmpty ? GestureDetector(
               child: ListTile(
                 onTap: () {
-                  try {
-                    Get.delete<MateDetailsController>();
-                  } catch (e) {
-                    AppUtilities.logger.e(e.toString());
-                  }
                   _.getMateDetails(mate);
                 },
                 leading: Hero(

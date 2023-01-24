@@ -2,8 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hashtagable/hashtagable.dart';
-import 'package:video_player/video_player.dart';
-
 import 'package:neom_commons/core/ui/static/splash_page.dart';
 import 'package:neom_commons/core/ui/widgets/custom_image.dart';
 import 'package:neom_commons/core/utils/app_color.dart';
@@ -12,6 +10,8 @@ import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
+import 'package:video_player/video_player.dart';
+
 import 'create-post/post_widgets.dart';
 import 'post_upload_controller.dart';
 

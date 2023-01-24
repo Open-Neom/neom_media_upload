@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:neom_commons/neom_commons.dart';
-import 'package:neom_posts/posts/ui/post_comments/post_comments_controller.dart';
-import 'package:neom_posts/posts/ui/post_comments/post_comments_widgets.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/neom_commons.dart';
+
+import '../post_comments/post_comments_controller.dart';
+import '../post_comments/post_comments_widgets.dart';
 
 Widget buildCommentList(BuildContext context, PostCommentsController _) {
   return ListView.builder(

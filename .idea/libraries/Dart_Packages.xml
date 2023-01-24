@@ -716,6 +716,13 @@
             </list>
           </value>
         </entry>
+        <entry key="neom_timeline">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../neom_timeline/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="octo_image">
           <value>
             <list>
@@ -1003,6 +1010,20 @@
             </list>
           </value>
         </entry>
+        <entry key="syncfusion_flutter_core">
+          <value>
+            <list>
+              <option value="$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_core-20.4.44/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="syncfusion_flutter_datepicker">
+          <value>
+            <list>
+              <option value="$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_datepicker-20.4.44/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="synchronized">
           <value>
             <list>
@@ -1196,6 +1217,7 @@
     </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/../neom_commons/lib" />
+      <root url="file://$PROJECT_DIR$/../neom_timeline/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/_flutterfire_internals-1.0.12/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/animated_text_kit-4.2.2/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/archive-3.3.5/lib" />
@@ -1334,6 +1356,8 @@
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/stream_channel-2.1.0/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/stream_transform-2.1.0/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1/lib" />
+      <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_core-20.4.44/lib" />
+      <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/syncfusion_flutter_datepicker-20.4.44/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/synchronized-3.0.1/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/term_glyph-1.2.1/lib" />
       <root url="file://$USER_HOME$/src/flutter/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.12/lib" />

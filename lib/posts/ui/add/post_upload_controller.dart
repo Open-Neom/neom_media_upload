@@ -8,18 +8,14 @@ import 'package:get/get.dart';
 import 'package:hashtagable/functions.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
-import 'package:video_compress/video_compress.dart';
-import 'package:video_player/video_player.dart';
-
 import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
 import 'package:neom_commons/core/data/implementations/geolocator_controller.dart';
+import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/hashtag.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_constants.dart';
@@ -29,6 +25,11 @@ import 'package:neom_commons/core/utils/constants/app_translation_constants.dart
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
+import 'package:neom_timeline/neom_timeline.dart';
+import 'package:uuid/uuid.dart';
+import 'package:video_compress/video_compress.dart';
+import 'package:video_player/video_player.dart';
+
 import '../../data/firestore/app_upload_firestore.dart';
 import '../../domain/use_cases/post_upload_service.dart';
 

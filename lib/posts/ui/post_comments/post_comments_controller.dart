@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
+// ignore: directives_ordering
+import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
+import 'package:neom_commons/core/data/implementations/user_controller.dart';
+import 'package:neom_commons/core/domain/model/activity_feed.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
 import 'package:neom_commons/core/domain/model/post_comment.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/enums/activity_feed_type.dart';
@@ -19,8 +21,9 @@ import 'package:neom_commons/core/utils/enums/app_media_type.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
-import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
-import 'package:neom_commons/core/domain/model/activity_feed.dart';
+import 'package:neom_timeline/neom_timeline.dart';
+
+import '../../../blog/ui/blog_editor_controller.dart';
 import '../../data/firestore/comment_firestore.dart';
 import '../../domain/use_cases/post_comments_service.dart';
 import '../add/post_upload_controller.dart';
