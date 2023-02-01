@@ -8,7 +8,6 @@ import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/constants/emxi_constants.dart';
 import 'package:neom_commons/core/utils/core_utilities.dart';
 import '../blog_editor_controller.dart';
 
@@ -17,7 +16,7 @@ Widget buildBlogEntryList(Iterable<Post> blogEntries) {
     itemCount: blogEntries.length,
     itemBuilder: (context, index) {
       Post blogEntry = blogEntries.elementAt(index);
-      List<String> blogEntryCaptionSplitted = blogEntry.caption.split(EmxiConstants.titleTextDivider);
+      List<String> blogEntryCaptionSplitted = blogEntry.caption.split(AppConstants.titleTextDivider);
       String title = "";
       String entry = "";
 
@@ -48,7 +47,11 @@ Widget buildBlogEntryList(Iterable<Post> blogEntries) {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: () => {
-              Get.toNamed(AppRouteConstants.blogEntry, arguments: [blogEntry])
+              if(blogEntry.isDraft) {
+                Get.toNamed(AppRouteConstants.blogEditor, arguments: [blogEntry])
+              } else {
+                Get.toNamed(AppRouteConstants.blogEntry, arguments: [blogEntry])
+              }
             },
             icon: const Icon(Icons.arrow_forward_ios_outlined)
         ),

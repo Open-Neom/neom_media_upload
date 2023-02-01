@@ -12,9 +12,9 @@ import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/hashtag.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
+import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'package:neom_commons/core/utils/constants/emxi_constants.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 
@@ -79,7 +79,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       }
 
       if(blogEntry.caption.isNotEmpty) {
-        List<String> blogEntryCaptionSplitted = blogEntry.caption.split(EmxiConstants.titleTextDivider);
+        List<String> blogEntryCaptionSplitted = blogEntry.caption.split(AppConstants.titleTextDivider);
         if(blogEntryCaptionSplitted.isNotEmpty) {
           if(blogEntryCaptionSplitted.length > 1) {
             entryTitleController.text = blogEntryCaptionSplitted[0];
@@ -154,7 +154,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
     try {
 
-      String blogEntryCaption = entryTitleController.text + EmxiConstants.titleTextDivider + entryTextController.text;
+      String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
       blogEntry = Post(
           id: blogEntry.id,
           caption: blogEntryCaption,
@@ -202,7 +202,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
         postHashtags.add(element.substring(1));
       });
 
-      String blogEntryCaption = entryTitleController.text + EmxiConstants.titleTextDivider + entryTextController.text;
+      String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
       blogEntry = Post(
           id: blogEntry.id,
           caption: blogEntryCaption,

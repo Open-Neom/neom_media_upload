@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
 
 import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_assets.dart';
@@ -18,6 +19,8 @@ class PostUploadPage extends StatelessWidget {
       init: PostUploadController(),
       builder: (_) {
          return Scaffold(
+           extendBodyBehindAppBar: true,
+           appBar: AppBarChild(color: Colors.transparent),
            body: Container(
               decoration: AppTheme.appBoxDecoration,
               child: Center(child: Column(

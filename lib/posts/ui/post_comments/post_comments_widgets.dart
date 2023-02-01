@@ -6,21 +6,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:hashtagable/hashtagable.dart';
-import 'package:neom_commons/core/data/implementations/mate_controller.dart';
-import 'package:neom_commons/core/domain/model/menu_three_dots.dart';
-import 'package:neom_commons/core/domain/model/post_comment.dart';
-import 'package:neom_commons/core/ui/reports/report_controller.dart';
-import 'package:neom_commons/core/ui/widgets/custom_image.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/constants/emxi_constants.dart';
-import 'package:neom_commons/core/utils/core_utilities.dart';
-import 'package:neom_commons/core/utils/enums/reference_type.dart';
-import 'package:neom_commons/core/utils/enums/report_type.dart';
-import 'package:neom_commons/core/utils/enums/user_role.dart';
+import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -394,8 +380,8 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
 
 Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
   String caption = _.post.caption;
-  if(caption.contains(EmxiConstants.titleTextDivider)) {
-    caption = caption.split(EmxiConstants.titleTextDivider)[1];
+  if(caption.contains(AppConstants.titleTextDivider)) {
+    caption = caption.split(AppConstants.titleTextDivider)[1];
   }
 
   return Container(

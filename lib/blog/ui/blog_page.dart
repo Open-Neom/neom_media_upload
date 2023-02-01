@@ -91,24 +91,26 @@ class BlogPage extends StatelessWidget {
               : Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-              _.draftEntries.isEmpty ?
-                  SizedBox(
-                    child: DefaultTextStyle(
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                SizedBox(
+                child: DefaultTextStyle(
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  child: AnimatedTextKit(
+                    repeatForever: true,
+                    animatedTexts: [
+                      FlickerAnimatedText(
+                          _.draftEntries.isEmpty
+                              ? "${AppTranslationConstants.writeYourFeelingOrThinking.tr}  "
+                              : ""
                       ),
-                      child: AnimatedTextKit(
-                        repeatForever: true,
-                        animatedTexts: [
-                          FlickerAnimatedText("${AppTranslationConstants.writeYourFeelingOrThinking.tr}  "),
-                        ],
-                        onTap: () => {
-                          _.gotoNewBlogEntry()
-                        },
-                      ),
-                    ),
-
-              ) : Container(),
+                    ],
+                    onTap: () => {
+                      _.gotoNewBlogEntry()
+                    },
+                  ),
+                ),
+              ),
               FloatingActionButton(
                 heroTag: AppPageIdConstants.itemlist,
                 elevation: AppTheme.elevationFAB,
