@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:hashtagable/functions.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
 import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
@@ -24,6 +25,7 @@ import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
+import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'package:uuid/uuid.dart';
@@ -91,9 +93,10 @@ class PostUploadController extends GetxController implements PostUploadService {
     super.onInit();
     logger.d("PostUpload Controller Init");
     profile = userController.profile;
-    String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
-    locationSuggestions.add(profileLocation);
+
     try {
+      String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
+      locationSuggestions.add(profileLocation);
       _position = await GeoLocatorController().getCurrentPosition();
       if(_position != null) {
         String currentPosition = await GeoLocatorController().getAddressSimple(_position!);
@@ -412,7 +415,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         }
       }
 
-      if(_post.id.isNotEmpty){
+      if(_post.id.isNotEmpty) {
         locationController.clear();
         captionController.clear();
         isUploading = false;
@@ -424,7 +427,14 @@ class PostUploadController extends GetxController implements PostUploadService {
 
         await Get.find<TimelineController>().getTimeline();
 
+        FirebaseMessagingCalls.sendGlobalPushNotification(
+          fromProfile: profile,
+          notificationType: PushNotificationType.post,
+          referenceId: _post.id,
+          imgUrl: _post.mediaUrl
+        );
       }
+
     } catch (e) {
       logger.e(e.toString());
     }

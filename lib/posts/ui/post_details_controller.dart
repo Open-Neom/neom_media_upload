@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
 import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
+import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
 import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/domain/model/activity_feed.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
@@ -114,9 +115,17 @@ class PostDetailsController extends GetxController implements PostDetailsService
               : ActivityFeedFirestore().insert(activityFeed);
 
           if(!isLiked) {
-            sendPushNotificationToFcm(
+            FirebaseMessagingCalls.sendPrivatePushNotification(
                 toProfileId: post.ownerId,
                 fromProfile: profile,
+                notificationType: PushNotificationType.like,
+                referenceId: post.id,
+                imgUrl: post.mediaUrl
+            );
+
+            FirebaseMessagingCalls.sendGlobalPushNotification(
+                fromProfile: profile,
+                toProfile: await ProfileFirestore().retrieve(post.ownerId),
                 notificationType: PushNotificationType.like,
                 referenceId: post.id,
                 imgUrl: post.mediaUrl

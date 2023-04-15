@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:hashtagable/functions.dart';
+import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
 import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
@@ -16,6 +17,7 @@ import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
+import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 
 import '../../posts/ui/post_details_controller.dart';
@@ -233,6 +235,13 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       }
 
       await Get.find<TimelineController>().getTimeline();
+
+      FirebaseMessagingCalls.sendGlobalPushNotification(
+        fromProfile: profile,
+        notificationType: PushNotificationType.blog,
+        referenceId: blogEntry.ownerId,
+      );
+
     } catch (e) {
       logger.e(e.toString());
     }

@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
+import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
 import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'package:neom_commons/core/utils/constants/message_translation_constants.dart';
 
 import '../domain/use_cases/blog_entry_service.dart';
 
@@ -52,15 +52,18 @@ class BlogController extends GetxController implements BlogEntryService {
       if(Get.arguments != null) {
         List<dynamic> arguments = Get.arguments;
         if(arguments.isNotEmpty) {
-          mate = Get.arguments[0];
-          blogOwnerId = mate.id;
-          await getBlogEntries();
+          if(Get.arguments[0] is AppProfile) {
+            mate = Get.arguments[0];
+            blogOwnerId = mate.id;
+          } else {
+            blogOwnerId = Get.arguments[0];
+            mate = await ProfileFirestore().retrieve(blogOwnerId);
+          }
         }
       } else {
         blogOwnerId = profile.id;
-        await getBlogEntries();
       }
-
+      await getBlogEntries();
     } catch (e) {
       logger.e(e.toString());
     }
@@ -74,11 +77,6 @@ class BlogController extends GetxController implements BlogEntryService {
 
     } catch (e) {
       logger.e(e.toString());
-      Get.snackbar(
-          MessageTranslationConstants.spotifySynchronization.tr,
-          e.toString(),
-          snackPosition: SnackPosition.bottom,
-      );
     }
 
     isLoading = false;
@@ -130,13 +128,6 @@ class BlogController extends GetxController implements BlogEntryService {
           blogEntry.caption = newBlogEntryTextController.text;
         }
 
-        // if(await ItemlistFirestore().update(profile.id, itemlist)){
-        //   logger.d("Itemlist $itemlistId updated");
-        //   //_blogEntries[itemlist.id] = itemlist;
-        //   clearNewItemlist();
-        // } else {
-        //   logger.i("Something happens trying to update itemlist");
-        // }
       }
     } catch (e) {
       logger.e(e.toString());

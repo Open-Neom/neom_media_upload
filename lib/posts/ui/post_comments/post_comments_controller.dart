@@ -141,12 +141,21 @@ class PostCommentsController extends GetxController implements PostCommentsServi
           timelineController.addCommentToPost(post.id, newComment);
 
           if (profile.id != post.ownerId) {
-            sendPushNotificationToFcm(
+            FirebaseMessagingCalls.sendPrivatePushNotification(
                 toProfileId: post.ownerId,
                 fromProfile: profile,
                 notificationType: PushNotificationType.comment,
                 message: newComment.text,
                 referenceId: post.id,
+                imgUrl: post.mediaUrl
+            );
+
+            FirebaseMessagingCalls.sendGlobalPushNotification(
+                fromProfile: profile,
+                toProfile: await ProfileFirestore().retrieve(post.ownerId),
+                notificationType: PushNotificationType.comment,
+                referenceId: post.id,
+                message: newComment.text,
                 imgUrl: post.mediaUrl
             );
           }
