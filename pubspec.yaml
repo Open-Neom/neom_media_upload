@@ -13,10 +13,12 @@ dependencies:
     sdk: flutter
 
   neom_commons:
-    path: ../neom_commons
+    git:
+      url: https://github.com/Cyberneom/neom_commons.git
 
   neom_timeline:
-    path: ../neom_timeline
+    git:
+      url: https://github.com/Cyberneom/neom_timeline.git
 
 dev_dependencies:
   flutter_test:
