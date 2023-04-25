@@ -58,7 +58,17 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                   children: <Widget>[
                     comment.text.isEmpty ? Container() :
                     Expanded(
-                      child: Text(
+                      child: (comment.text.contains("http") || comment.text.contains("https"))
+                          ? Linkify(
+                        onOpen: (link)  {
+                          CoreUtilities.launchURL(link.url);
+                        },
+                        text: comment.text,
+                        maxLines: 20,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 16),
+                        linkStyle: const TextStyle(fontSize: 16, color: AppColor.dodgetBlue),
+                      ) : Text(
                         comment.text,
                         maxLines: 20,
                         overflow: TextOverflow.ellipsis,
