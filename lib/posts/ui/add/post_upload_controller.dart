@@ -197,8 +197,7 @@ class PostUploadController extends GetxController implements PostUploadService {
     if(lastIndex >= 0) {
       String subPath = imageFile.path.substring(0, (lastIndex));
       String outPath = "${subPath}_out${imageFile.path.substring(lastIndex)}";
-      File? result = await FlutterImageCompress.compressAndGetFile(imageFile.path, outPath);
-      imageFile = XFile(result?.path ?? "");
+      imageFile = await FlutterImageCompress.compressAndGetFile(imageFile.path, outPath) ?? XFile("");
     }
 
   }
