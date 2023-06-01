@@ -113,7 +113,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   @override
-  Future<void> handleImage(AppFileFrom appFileFrom, {isProfilePicture = false}) async {
+  Future<void> handleImage(AppFileFrom appFileFrom, {isProfilePicture = false, double ratioX = 1, double ratioY = 1}) async {
 
     try {
       if(imageFile.path.isNotEmpty) clearImage();
@@ -139,7 +139,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(imageFile.path.isNotEmpty) {
         await compressFileImage();
-        await cropImage();
+        await cropImage(ratioX: ratioY, ratioY: ratioY);
         if(croppedImageFile.path.isEmpty) clearImage();
         postType = PostType.image;
 
@@ -163,7 +163,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   @override
-  Future<void> handleEventImage() async{
+  Future<void> handleEventImage({double ratioX = 1, double ratioY = 1}) async{
     logger.d("Handling Event Image From Gallery");
 
     try {
@@ -180,7 +180,7 @@ class PostUploadController extends GetxController implements PostUploadService {
       }
 
       await compressFileImage();
-      await cropImage();
+      await cropImage(ratioX: ratioX, ratioY: ratioY);
     } catch (e) {
       logger.e(e.toString());
     }
@@ -204,15 +204,15 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   @override
-  Future<void> cropImage() async {
+  Future<void> cropImage({double ratioX = 1, double ratioY = 1}) async {
     logger.d("Initializing Image Cropper");
     try {
 
       CroppedFile? croppedFile = await ImageCropper().cropImage(
         sourcePath: imageFile.path,
-        aspectRatio: const CropAspectRatio(
-            ratioX: 1,
-            ratioY: 1
+        aspectRatio: CropAspectRatio(
+            ratioX: ratioX,
+            ratioY: ratioY
         ),
         uiSettings: [
           AndroidUiSettings(

@@ -8,7 +8,7 @@ abstract class PostUploadService {
   Future<void> handleImage(AppFileFrom appFileFrom);
   Future<void> handleEventImage();
   Future<void> compressFileImage();
-  Future<void> cropImage();
+  Future<void> cropImage({double ratioX = 1, double ratioY = 1});
   Future<String> handleUploadImage(UploadImageType uploadImageType);
   void clearImage();
 
