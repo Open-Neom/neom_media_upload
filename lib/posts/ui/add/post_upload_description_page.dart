@@ -99,7 +99,8 @@ class PostUploadDescriptionPage extends StatelessWidget {
                     hintText: AppTranslationConstants.writeCaption.tr,
                     border: InputBorder.none,
                     ),
-                    maxLines: 2,
+                    minLines: 3,
+                    maxLines: 10,
                     /// Called when detection (word starts with #, or # and @) is being typed
                     onDetectionTyped: (text) {
                       AppUtilities.logger.d(text);

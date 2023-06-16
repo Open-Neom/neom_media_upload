@@ -5,8 +5,8 @@ import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
 
 abstract class PostUploadService {
 
-  Future<void> handleImage(AppFileFrom appFileFrom);
-  Future<void> handleEventImage();
+  Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
+    UploadImageType uploadImageType, double ratioX = 1, double ratioY = 1});
   Future<void> compressFileImage();
   Future<void> cropImage({double ratioX = 1, double ratioY = 1});
   Future<String> handleUploadImage(UploadImageType uploadImageType);

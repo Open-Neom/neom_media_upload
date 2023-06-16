@@ -14,11 +14,9 @@ export 'blog/ui/blog_mate_page.dart';
 export 'blog/ui/blog_page.dart';
 export 'blog/ui/widgets/blog_widgets.dart';
 //POSTS DATA
-export 'posts/data/firestore/app_upload_firestore.dart';
 export 'posts/data/firestore/comment_firestore.dart';
 //POSTS DOMAIN
 export 'posts/domain/repository/comment_repository.dart';
-export 'posts/domain/repository/upload_repository.dart';
 export 'posts/domain/use_cases/post_comments_service.dart';
 export 'posts/domain/use_cases/post_details_service.dart';
 export 'posts/domain/use_cases/post_upload_service.dart';

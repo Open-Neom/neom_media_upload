@@ -6,7 +6,6 @@ import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_assets.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'post_upload_controller.dart';
 
 class PostUploadPage extends StatelessWidget {
@@ -40,7 +39,7 @@ class PostUploadPage extends StatelessWidget {
                       ),  
                     ],
                   ),
-                  onTap: ()=> _.handleImage(AppFileFrom.gallery)
+                  onTap: ()=> _.handleImage()
                     //TODO Once frontal camera is repaired
                     // showDialog(
                     //   context: context,

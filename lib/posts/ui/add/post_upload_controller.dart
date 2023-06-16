@@ -9,6 +9,7 @@ import 'package:hashtagable/functions.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
+import 'package:neom_commons/core/data/firestore/app_upload_firestore.dart';
 import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
@@ -32,7 +33,6 @@ import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../data/firestore/app_upload_firestore.dart';
 import '../../domain/use_cases/post_upload_service.dart';
 
 class PostUploadController extends GetxController implements PostUploadService {
@@ -95,13 +95,16 @@ class PostUploadController extends GetxController implements PostUploadService {
     profile = userController.profile;
 
     try {
-      String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
-      locationSuggestions.add(profileLocation);
-      _position = await GeoLocatorController().getCurrentPosition();
-      if(_position != null) {
-        String currentPosition = await GeoLocatorController().getAddressSimple(_position!);
-        if(!locationSuggestions.contains(currentPosition)) {
-          locationSuggestions.add(currentPosition);
+      if(profile.position != null) {
+        String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
+        locationSuggestions.add(profileLocation);
+        _position = await GeoLocatorController().getCurrentPosition();
+
+        if(_position != null) {
+          String currentPosition = await GeoLocatorController().getAddressSimple(_position!);
+          if(!locationSuggestions.contains(currentPosition)) {
+            locationSuggestions.add(currentPosition);
+          }
         }
       }
     } catch (e) {
@@ -113,7 +116,8 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   @override
-  Future<void> handleImage(AppFileFrom appFileFrom, {isProfilePicture = false, double ratioX = 1, double ratioY = 1}) async {
+  Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
+    UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1, double ratioY = 1}) async {
 
     try {
       if(imageFile.path.isNotEmpty) clearImage();
@@ -139,18 +143,39 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(imageFile.path.isNotEmpty) {
         await compressFileImage();
-        await cropImage(ratioX: ratioY, ratioY: ratioY);
+        await cropImage(ratioX: ratioX, ratioY: ratioY);
         if(croppedImageFile.path.isEmpty) clearImage();
         postType = PostType.image;
 
-
-        //TODO Implement better way to do this
-        if(isProfilePicture) {
-          //Get.back();
-        } else {
-          Get.toNamed(AppRouteConstants.postUploadDescription);
+        switch(uploadImageType) {
+          case UploadImageType.post:
+            Get.toNamed(AppRouteConstants.postUploadDescription);
+            break;
+          case UploadImageType.thumbnail:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.event:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.profile:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.cover:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.comment:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.message:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.itemlist:
+            // TODO: Handle this case.
+            break;
+          case UploadImageType.releaseItem:
+            // TODO: Handle this case.
+            break;
         }
-
       }
     }  catch (e) {
       logger.e(e.toString());
@@ -159,34 +184,6 @@ class PostUploadController extends GetxController implements PostUploadService {
     update([AppPageIdConstants.upload,
       AppPageIdConstants.onBoardingAddImage,
       AppPageIdConstants.createBand]);
-  }
-
-
-  @override
-  Future<void> handleEventImage({double ratioX = 1, double ratioY = 1}) async{
-    logger.d("Handling Event Image From Gallery");
-
-    try {
-      XFile? file = await ImagePicker().pickImage(
-          source: ImageSource.gallery,
-          imageQuality: AppConstants.imageQuality
-      );
-
-      if(file != null) {
-        if(imageFile.path.isNotEmpty) clearImage();
-        imageFile = file;
-        postType = PostType.event;
-        logger.d("");
-      }
-
-      await compressFileImage();
-      await cropImage(ratioX: ratioX, ratioY: ratioY);
-    } catch (e) {
-      logger.e(e.toString());
-    }
-
-    if(croppedImageFile.path.isEmpty) clearImage();
-
   }
 
   @override
