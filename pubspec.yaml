@@ -1,11 +1,11 @@
 name: neom_posts
 description: Post creation and view for Cyberneom.
-version: 1.0.2
+version: 1.0.3
 homepage: https://github.com/emmanuel-montoya/neom_posts
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: ">=3.0.0 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
@@ -28,6 +28,8 @@ dev_dependencies:
 dependency_overrides:
   neom_commons:
     path: ../neom_commons
+  neom_timeline:
+    path: ../neom_timeline
   intl: 0.18.1
 
 # The following section is specific to Flutter packages.

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:hashtagable/hashtagable.dart';
+import 'package:hashtagable_v3/hashtagable.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
