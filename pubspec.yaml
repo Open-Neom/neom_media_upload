@@ -1,7 +1,7 @@
 name: neom_posts
 description: Post creation and view for Cyberneom.
 version: 1.0.3
-homepage: https://github.com/emmanuel-montoya/neom_posts
+homepage: https://github.com/Cyberneom/neom_posts
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
