@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hashtagable_v3/functions.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:neom_commons/core/app_flavour.dart';
 import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
 import 'package:neom_commons/core/data/firestore/app_upload_firestore.dart';
 import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
@@ -18,7 +19,6 @@ import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/hashtag.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
@@ -32,6 +32,7 @@ import 'package:neom_timeline/neom_timeline.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/video_trimmer.dart';
 
 import '../../domain/use_cases/post_upload_service.dart';
 
@@ -39,57 +40,43 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   var logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
-  final _mediaId = const Uuid().v4();
+  AppProfile profile = AppProfile();
+  Post _post = Post();
+  Position? _position;
 
-  final RxBool _isButtonDisabled = false.obs;
-  bool get isButtonDisabled => _isButtonDisabled.value;
-  set isButtonDisabled(bool isButtonDisabled) => _isButtonDisabled.value = isButtonDisabled;
-
-  final RxBool _isLoading = false.obs;
-  bool get isLoading => _isLoading.value;
-  set isLoading(bool isLoading) => _isLoading.value = isLoading;
-
-  final RxBool _isUploading = false.obs;
-  bool get isUploading => _isUploading.value;
-  set isUploading(bool isUploading) => _isUploading.value = isUploading;
+  final RxBool isButtonDisabled = false.obs;
+  final RxBool isLoading = false.obs;
+  final RxBool isUploading = false.obs;
+  final Rx<XFile> mediaFile = XFile("").obs;
+  final Rx<File> croppedImageFile = File("").obs;
+  final Rx<File> trimmedMediaFile = File("").obs;
+  final RxList<String> locationSuggestions = <String>[].obs;
+  final RxString caption = "".obs;
+  final RxBool takePhoto = false.obs;
 
   TextEditingController locationController = TextEditingController();
   TextEditingController captionController = TextEditingController();
+  VideoPlayerController videoPlayerController = VideoPlayerController.networkUrl(Uri());
+  CameraController? cameraController;
+  List<CameraDescription> cameras = [];
 
-  VideoPlayerController videoPlayerController = VideoPlayerController.network("");
-
-  final Rx<XFile> _imageFile = XFile("").obs;
-  XFile get imageFile => _imageFile.value;
-  set imageFile(XFile imageFile) => _imageFile.value = imageFile;
-
-  final Rx<File> _croppedImageFile = File("").obs;
-  File get croppedImageFile => _croppedImageFile.value;
-  set croppedImageFile(File croppedImage) => _croppedImageFile.value = croppedImage;
-
+  final _mediaId = const Uuid().v4();
   File _file = File("");
-  AppProfile profile = AppProfile();
-  Post _post = Post();
-
-  String _mediaUrl = "";
-  String get mediaUrl => _mediaUrl;
-  String thumbnailUrl = "";
-
-  Position? _position;
   File _thumbnailFile = File("");
-  File get thumbnailFile => _thumbnailFile;
-
-  final RxList<String> _locationSuggestions = <String>[].obs;
-  List<String> get locationSuggestions => _locationSuggestions;
-  set locationSuggestions(List<String> locationSuggestions) => _locationSuggestions.value = locationSuggestions;
+  String mediaUrl = "";
+  String _thumbnailUrl = "";
 
   PostType postType = PostType.pending;
 
-  final RxString _caption = "".obs;
-  String get caption => _caption.value;
-  set caption(String caption) => _caption.value = caption;
+  final Rx<Trimmer> trimmer = Trimmer().obs;
+  final RxDouble trimmedStartValue = 0.0.obs;
+  final RxDouble trimmedEndValue = 0.0.obs;
+  final RxBool isPlaying = false.obs;
+
+
 
   @override
-  void onInit() async {
+  Future<void> onInit() async {
     super.onInit();
     logger.d("PostUpload Controller Init");
     profile = userController.profile;
@@ -97,13 +84,13 @@ class PostUploadController extends GetxController implements PostUploadService {
     try {
       if(profile.position != null) {
         String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
-        locationSuggestions.add(profileLocation);
+        locationSuggestions.value.add(profileLocation);
         _position = await GeoLocatorController().getCurrentPosition();
 
         if(_position != null) {
           String currentPosition = await GeoLocatorController().getAddressSimple(_position!);
-          if(!locationSuggestions.contains(currentPosition)) {
-            locationSuggestions.add(currentPosition);
+          if(!locationSuggestions.value.contains(currentPosition)) {
+            locationSuggestions.value.add(currentPosition);
           }
         }
       }
@@ -111,41 +98,75 @@ class PostUploadController extends GetxController implements PostUploadService {
       logger.e(e.toString());
     }
 
-    clearImage();
+    clearMedia();
   }
 
+  @override
+  void onReady() async {
+    super.onReady();
+    try {
+      cameras = await availableCameras();
+      final rearCamera = cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
+      cameraController = CameraController(rearCamera, ResolutionPreset.high);
+      await cameraController?.initialize();
+    } catch (e) {
+      logger.e(e.toString());
+    }
+
+    update([AppPageIdConstants.upload]);
+  }
 
   @override
+  void onClose() {
+    super.onClose();
+    cameraController?.dispose();
+    trimmer.dispose();
+  }
+  
+  @override
   Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
-    UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1, double ratioY = 1}) async {
+    UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1, double ratioY = 1,
+    BuildContext? context}) async {
 
     try {
-      if(imageFile.path.isNotEmpty) clearImage();
-
-      final imagePicker = ImagePicker();
+      if(mediaFile.value.path.isNotEmpty) clearMedia();
 
       switch (appFileFrom) {
-        case AppFileFrom.camera:
-          imageFile = (await imagePicker.pickImage(
-              source: ImageSource.camera,
-              imageQuality: AppConstants.imageQuality)
-          )!;
-          break;
         case AppFileFrom.gallery:
-          imageFile = (await imagePicker.pickImage(
+          mediaFile.value = (await ImagePicker().pickImage(
               source: ImageSource.gallery,
               imageQuality: AppConstants.imageQuality)
           )!;
           break;
+        case AppFileFrom.camera:
+          if(cameraController != null) takePhoto.value = true;
+          if(context != null) Navigator.pop(context);
+
+          ///DEPRECATED
+          // imageFile.value = (await ImagePicker().pickImage(
+          //     source: ImageSource.camera,
+          //     imageQuality: AppConstants.imageQuality,
+          //   )
+          // )!;
+
+          ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
+          // imageFile.value = await cameraController!.takePicture();
+          // bool isFrontal = await isFrontCameraPhoto(File(imageFile.value.path));
+          // if(isFrontal) {
+          //   mirrorFrontCameraPhoto(File(imageFile.value.path));
+          // }
+          break;
       }
 
-      postType = PostType.image;
-
-      if(imageFile.path.isNotEmpty) {
-        await compressFileImage();
-        await cropImage(ratioX: ratioX, ratioY: ratioY);
-        if(croppedImageFile.path.isEmpty) clearImage();
+      if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.image;
+        await compressFileImage();
+        croppedImageFile.value = await AppUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
+        if(croppedImageFile.value.path.isEmpty) {
+          clearMedia();
+          if(context != null) Navigator.pop(context);
+          return;
+        }
 
         switch(uploadImageType) {
           case UploadImageType.post:
@@ -189,69 +210,15 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   Future<void> compressFileImage() async {
 
-    final lastIndex = imageFile.path.lastIndexOf(RegExp(r'.jp'));
+    final lastIndex = mediaFile.value.path.lastIndexOf(RegExp(r'.jp'));
 
     if(lastIndex >= 0) {
-      String subPath = imageFile.path.substring(0, (lastIndex));
-      String outPath = "${subPath}_out${imageFile.path.substring(lastIndex)}";
-      imageFile = await FlutterImageCompress.compressAndGetFile(imageFile.path, outPath) ?? XFile("");
+      String subPath = mediaFile.value.path.substring(0, (lastIndex));
+      String outPath = "${subPath}_out${mediaFile.value.path.substring(lastIndex)}";
+      mediaFile.value = await FlutterImageCompress.compressAndGetFile(mediaFile.value.path, outPath) ?? XFile("");
     }
 
   }
-
-
-  @override
-  Future<void> cropImage({double ratioX = 1, double ratioY = 1}) async {
-    logger.d("Initializing Image Cropper");
-    try {
-
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: imageFile.path,
-        aspectRatio: CropAspectRatio(
-            ratioX: ratioX,
-            ratioY: ratioY
-        ),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: AppTranslationConstants.adjustImage.tr,
-            backgroundColor: Colors.black38,
-            toolbarColor: AppColor.getMain(),
-            toolbarWidgetColor: AppColor.white,
-            statusBarColor: AppColor.getMain(),
-            dimmedLayerColor: AppColor.main50,
-            activeControlsWidgetColor: AppColor.getMain(),
-            initAspectRatio: CropAspectRatioPreset.square
-          ),
-          IOSUiSettings(
-            title: AppTranslationConstants.adjustImage.tr,
-            cancelButtonTitle: AppTranslationConstants.cancel.tr,
-            doneButtonTitle: AppTranslationConstants.done.tr,
-            minimumAspectRatio: 1.0,
-            showCancelConfirmationDialog: true,
-            aspectRatioLockEnabled: true,
-          )
-        ],
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-      );
-
-      croppedImageFile  = File(croppedFile?.path ?? "");
-
-
-    } catch (e) {
-      logger.e(e.toString());
-    }
-    logger.d("Cropped Image in file ${croppedImageFile.path}");
-
-  }
-
-
-
 
   @override
   Future<String> handleUploadImage(UploadImageType uploadImageType) async {
@@ -261,9 +228,9 @@ class PostUploadController extends GetxController implements PostUploadService {
     try {
       imageUrl = await AppUploadFirestore()
           .uploadImage(_mediaId,
-          croppedImageFile.path.isNotEmpty ? croppedImageFile : File(imageFile.path),
+          croppedImageFile.value.path.isNotEmpty ? croppedImageFile.value : File(mediaFile.value.path),
           uploadImageType);
-      logger.d("File uploaded to $_mediaUrl");
+      logger.d("File uploaded to $mediaUrl");
     } catch (e) {
       logger.e(e.toString());
     }
@@ -271,91 +238,179 @@ class PostUploadController extends GetxController implements PostUploadService {
     return imageUrl;
   }
 
-
   @override
-  void clearImage(){
-    imageFile =  XFile("");
-    croppedImageFile = File("");
-    postType = PostType.pending;
-    if(videoPlayerController.value.isInitialized) disposeVideoPlayer();
-    update([AppPageIdConstants.upload, AppPageIdConstants.postComments,
-      AppPageIdConstants.timeline, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.event]);
-  }
-
-
-  @override
-  Future<void> handleVideo(AppFileFrom appFileFrom) async {
-    XFile file;
+  Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery, BuildContext? context}) async {
 
     try {
+
+      if(mediaFile.value.path.isNotEmpty) clearMedia();
+
       switch (appFileFrom) {
-        case AppFileFrom.camera:
-          file = (await ImagePicker().pickVideo(source: ImageSource.camera))!;
-          break;
         case AppFileFrom.gallery:
-          file = (await ImagePicker().pickVideo(source: ImageSource.gallery))!;
+          mediaFile.value = (await ImagePicker().pickVideo(source: ImageSource.gallery))!;
           break;
+        case AppFileFrom.camera:
+          // file = (await ImagePicker().pickVideo(source: ImageSource.camera))!;
+          // break;
       }
 
-      Get.back();
-
-      if(imageFile.path.isNotEmpty) clearImage();
-
-      imageFile = file;
-      postType = PostType.video;
-
-      File videoFile = File(imageFile.path);
-      videoPlayerController = VideoPlayerController.file(videoFile);
-      videoPlayerController.initialize();
-      videoPlayerController.setLooping(true);
-
-      _thumbnailFile = await VideoCompress.getFileThumbnail(
-          imageFile.path,
+      if(mediaFile.value.path.isNotEmpty) {
+        postType = PostType.video;
+        _thumbnailFile = await VideoCompress.getFileThumbnail(
+          mediaFile.value.path,
           quality: AppConstants.videoQuality,
-          position: -1 // default(-1)
-      );
+        );
+        await initializeVideoTrimmer();
+
+        ///DEPRECATED
+        // videoPlayerController = VideoPlayerController.file(videoFile);
+        // videoPlayerController = trimmer.videoPlayerController!;
+        // await videoPlayerController.initialize();
+        //
+        // if (videoPlayerController.value.duration.inSeconds > AppConstants.maxVideoDurationInSeconds) {
+        //   trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
+        //   // return;
+        // }
+        //
+        // videoPlayerController.setLooping(true);
+
+        Get.toNamed(AppRouteConstants.postUploadDescription);
+      }
+
     } catch (e) {
       logger.e(e.toString());
     }
 
-    if(imageFile.path.isNotEmpty) Get.toNamed(AppRouteConstants.postUploadDescription);
     update([AppPageIdConstants.upload]);
+  }
+
+  Future<void> validateMediaSize() async {
+    File videoFile = File(mediaFile.value.path);
+    int fileSize = await videoFile.length();
+
+    if(fileSize > AppConstants.maxVideoFileSize) {
+      AppUtilities.logger.w("VideoFile size $fileSize is above maximum. Starting compression");
+      MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.LowQuality);
+      if(mediaInfo != null) videoFile = mediaInfo.file!;
+      fileSize = await videoFile.length();
+
+      if(fileSize <= AppConstants.maxVideoFileSize) {
+        AppUtilities.logger.w("VideoFile size $fileSize is now below limit");
+        mediaFile.value = XFile(videoFile.path);
+      } else {
+        AppUtilities.logger.w("VideoFile size $fileSize is still above limit");
+        // if(context != null) Navigator.pop(context);
+        Get.back();
+        AppUtilities.showSnackBar(AppFlavour.appInUse.value, AppTranslationConstants.videoAboveSizeMsg.tr,);
+        return;
+      }
+    } else {
+      AppUtilities.logger.d("VideoFile size $fileSize is below maximum.");
+    }
+  }
+
+  Future<void> initializeVideoTrimmer() async {
+    await trimmer.value.loadVideo(videoFile: File(mediaFile.value.path));
+    await trimmer.value.videoPlayerController?.initialize();
+    if (trimmer.value.videoPlayerController!.value.duration.inSeconds <= AppConstants.maxVideoDurationInSeconds) {
+      trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
+    } else {
+      trimmedEndValue.value = trimmer.value.videoPlayerController!.value.duration.inSeconds.toDouble();
+    }
+    // videoPlayerController = trimmer.videoPlayerController!;
+    // await videoPlayerController.initialize();
+    //
+
+    //
+    // videoPlayerController.setLooping(true);
+    update([AppPageIdConstants.upload]);
+  }
+
+  Future<String> saveVideo() async {
+    String trimmedVideoPath = '';
+
+    await trimmer.value.saveTrimmedVideo(
+        startValue: trimmedStartValue.value,
+        endValue: trimmedEndValue.value,
+        onSave: (value) {
+          AppUtilities.logger.i('Trimming Video to output path: $value');
+          trimmedVideoPath = value.toString();
+          AppUtilities.showSnackBar("Gigmeout", 'Video Saved with new duration of ${AppUtilities.getDurationInMinutes(trimmedEndValue.value.ceil() - trimmedStartValue.value.ceil())} successfully');
+        });
+
+    return trimmedVideoPath;
+  }
+
+  // @override
+  // Future<void> playPauseVideo() async {
+  //   logger.d("playPauseVideo");
+  //   // videoPlayerController.value.isPlaying ? await videoPlayerController.pause() : videoPlayerController.play();
+  //   // logger.t("isPlaying ${videoPlayerController.value.isPlaying}");
+  //
+  //   bool playbackState = await trimmer.value.videoPlaybackControl(
+  //     startValue: trimmedStartValue.value,
+  //     endValue: trimmedEndValue.value,
+  //   );
+  //
+  //   isPlaying.value = playbackState;
+  //   logger.d("isPlaying: $isPlaying");
+  //   update([AppPageIdConstants.upload]);
+  // }
+
+  void setTrimmedStart(double value) {
+    trimmedStartValue.value = value;
+    update([AppPageIdConstants.upload]);
+  }
+
+  void setTrimmedEnd(double value) {
+    trimmedEndValue.value = value;
+    update([AppPageIdConstants.upload]);
+  }
+
+  void setIsPlaying(bool value) {
+    if(isPlaying.value != value) {
+      isPlaying.value = value;
+      update([AppPageIdConstants.upload]);
+    }
   }
 
 
   @override
-  Future<void> playPauseVideo() async {
-    logger.d("");
-    videoPlayerController.value.isPlaying ?
-    await videoPlayerController.pause()
-        : videoPlayerController.play();
-    update([AppPageIdConstants.upload]);
+  void clearMedia(){
+    mediaFile.value =  XFile("");
+    croppedImageFile.value = File("");
+    trimmedMediaFile.value = File("");
+    postType = PostType.pending;
+    if(videoPlayerController.value.isInitialized) disposeVideoPlayer();
+    if(!trimmer.isDisposed) trimmer.dispose();
+    update([AppPageIdConstants.upload, AppPageIdConstants.postComments,
+      AppPageIdConstants.timeline, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.event]);
   }
-
 
   @override
   void disposeVideoPlayer() {
     if(videoPlayerController.value.isPlaying) videoPlayerController.pause();
-    videoPlayerController = VideoPlayerController.network("");
+    videoPlayerController = VideoPlayerController.networkUrl(Uri());
     videoPlayerController.dispose();
   }
 
-
   @override
   Future<void> handleSubmit() async {
-    isUploading = true;
-    isButtonDisabled = true;
+    isUploading.value = true;
+    isButtonDisabled.value = true;
 
     update([AppPageIdConstants.upload]);
 
     try {
       if (postType == PostType.image) {
-        _mediaUrl = await AppUploadFirestore().uploadImage(_mediaId, croppedImageFile, UploadImageType.post);
+        mediaUrl = await AppUploadFirestore().uploadImage(_mediaId, croppedImageFile.value, UploadImageType.post);
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
-        _file = File(imageFile.path);
-        thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);
-        _mediaUrl = await AppUploadFirestore().uploadVideo(_mediaId, _file);
+        mediaFile.value = XFile(await saveVideo());
+        await validateMediaSize();
+        _file = File(mediaFile.value.path);
+        _thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);
+        mediaUrl = await AppUploadFirestore().uploadVideo(_mediaId, _file);
       } else {
         postType = PostType.caption;
       }
@@ -363,14 +418,13 @@ class PostUploadController extends GetxController implements PostUploadService {
       logger.e(e.toString());
     }
 
-    logger.d("File uploaded to $_mediaUrl");
+    logger.d("File uploaded to $mediaUrl");
     await handlePostUpload();
   }
 
-
   @override
   Future<void> handlePostUpload() async {
-    logger.d("");
+    logger.t("handlePostUpload");
 
     try {
       if (_position?.latitude == 0 && profile.position?.latitude != 0.0) {
@@ -382,9 +436,8 @@ class PostUploadController extends GetxController implements PostUploadService {
         postHashtags.add(element.substring(1));
       });
 
-
       String location = locationController.text.isNotEmpty ? locationController.text
-          :  locationSuggestions.isNotEmpty ? locationSuggestions.first : "";
+          :  locationSuggestions.value.isNotEmpty ? locationSuggestions.value.first : "";
 
       _post = Post(caption: captionController.text,
           hashtags: postHashtags,
@@ -392,8 +445,8 @@ class PostUploadController extends GetxController implements PostUploadService {
           profileName: profile.name,
           profileImgUrl: profile.photoUrl,
           ownerId: profile.id,
-          thumbnailUrl: thumbnailUrl,
-          mediaUrl: _mediaUrl,
+          thumbnailUrl: _thumbnailUrl,
+          mediaUrl: mediaUrl,
           position: _position,
           location:  location,
           isCommentEnabled: true,
@@ -414,8 +467,8 @@ class PostUploadController extends GetxController implements PostUploadService {
       if(_post.id.isNotEmpty) {
         locationController.clear();
         captionController.clear();
-        isUploading = false;
-        imageFile =  XFile("");
+        isUploading.value = false;
+        mediaFile.value =  XFile("");
 
         if(await ProfileFirestore().addPost(_post.ownerId, _post.id)) {
           profile.posts!.add(_post.id);
@@ -458,15 +511,30 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   @override
-  void getBackToUploadImage() {
-    clearImage();
-    Get.back();
+  void getBackToUploadImage(BuildContext context) {
+    clearMedia();
+    Navigator.pop(context);
     update([AppPageIdConstants.upload]);
   }
 
   void setCaption(String text) {
-    caption = text;
+    caption.value = text;
     update([AppPageIdConstants.upload]);
   }
+
+  ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
+  // Future<bool> isFrontCameraPhoto(File imgFile) async {
+  //   final exifData = await readExifFromFile(imgFile);
+  //   return exifData['LensModel']?.values.toString().contains('front') ?? false;
+  // }
+  //
+  // Future<void> mirrorFrontCameraPhoto(File imgFile) async {
+  //   img.Image image = img.decodeImage(imgFile.readAsBytesSync())!;
+  //   img.Image mirroredImage = img.copyRotate(image, angle: 180); // Flip the image horizontally
+  //
+  //   File mirroredImgFile = File('mirrored_image.jpg');
+  //   mirroredImgFile.writeAsBytesSync(img.encodeJpg(mirroredImage));
+  //   imageFile.value = XFile(mirroredImgFile.path);
+  // }
 
 }

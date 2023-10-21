@@ -20,17 +20,15 @@ class PostDetailsController extends GetxController implements PostDetailsService
 
   var logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
-  Post post = Post();
-  String postId = "";
-  bool showInfo = true;
-
-  final RxBool _isLoading = true.obs;
-  bool get isLoading => _isLoading.value;
-  set isLoading(bool isLoading) => _isLoading.value = isLoading;
 
   AppProfile profile = AppProfile();
+  Post post = Post();
+  String postId = "";
 
+  bool showInfo = true;
   bool isLiked = false;
+
+  final RxBool isLoading = true.obs;
 
   @override
   void onInit() async {
@@ -60,7 +58,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
     if(postId.isNotEmpty) {
       await retrievePost();
     }
-    isLoading = false;
+    isLoading.value = false;
     update([AppPageIdConstants.postDetails]);
   }
 
@@ -73,7 +71,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       logger.e(e.toString());
     }
 
-    isLoading = false;
+    isLoading.value = false;
     update([AppPageIdConstants.postDetails]);
   }
 

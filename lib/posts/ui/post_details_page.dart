@@ -31,7 +31,7 @@ class PostDetailsPage extends StatelessWidget {
         body: SingleChildScrollView(
           child: Container(
             decoration: AppTheme.boxDecoration,
-            child: Obx(()=> _.isLoading ? const Center(child: CircularProgressIndicator())
+            child: Obx(()=> _.isLoading.value ? const Center(child: CircularProgressIndicator())
                 : InteractiveViewer(
               onInteractionStart: (scale) => {
                 if(scale.pointerCount > 1) {
@@ -54,7 +54,7 @@ class PostDetailsPage extends StatelessWidget {
                       }
                     },
                     onDoubleTap: () {
-                      Get.back();
+                      Navigator.pop(context);
                     },
                   ),
                   _.showInfo ? Container(

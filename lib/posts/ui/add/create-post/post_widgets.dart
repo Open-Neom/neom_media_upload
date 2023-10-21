@@ -8,10 +8,10 @@ Widget buildLocationSuggestions(BuildContext context, PostUploadController _) {
     height: 22,
     child: ListView.separated(
         separatorBuilder:  (context, index) => const Divider(),
-        itemCount: _.locationSuggestions.length,
+        itemCount: _.locationSuggestions.value.length,
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
-          String locationSuggestion = _.locationSuggestions.elementAt(index);
+          String locationSuggestion = _.locationSuggestions.value.elementAt(index);
           return GestureDetector(
             onTap: () {
               _.setUserLocation(locationSuggestion);

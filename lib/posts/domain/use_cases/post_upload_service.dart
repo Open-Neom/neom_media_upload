@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
 
@@ -8,12 +9,11 @@ abstract class PostUploadService {
   Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
     UploadImageType uploadImageType, double ratioX = 1, double ratioY = 1});
   Future<void> compressFileImage();
-  Future<void> cropImage({double ratioX = 1, double ratioY = 1});
   Future<String> handleUploadImage(UploadImageType uploadImageType);
-  void clearImage();
+  void clearMedia();
 
-  Future<void> handleVideo(AppFileFrom appFileFrom);
-  Future<void> playPauseVideo();
+  Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery});
+  // Future<void> playPauseVideo();
   void disposeVideoPlayer();
 
 
@@ -22,7 +22,7 @@ abstract class PostUploadService {
 
   void setUserLocation(String locationSuggestion);
   void clearUserLocation();
-  void getBackToUploadImage();
+  void getBackToUploadImage(BuildContext context);
   void updatePage();
 
 }

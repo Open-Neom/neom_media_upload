@@ -1,3 +1,4 @@
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,8 +11,8 @@ import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
-import 'package:video_player/video_player.dart';
 
+import '../widgets/stateful_trimmer_view.dart';
 import 'create-post/post_widgets.dart';
 import 'post_upload_controller.dart';
 
@@ -30,59 +31,67 @@ class PostUploadDescriptionPage extends StatelessWidget {
           backgroundColor: AppColor.appBar,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => _.getBackToUploadImage(),
+            onPressed: () => _.getBackToUploadImage(context),
           ),
           title: Text(AppTranslationConstants.newPost.tr),
           actions: <Widget>[
-            _.isUploading ? Container() : IconButton(
+            _.isUploading.value ? Container() : IconButton(
               icon: const Icon(Icons.check, size: 30, color: AppColor.mystic),
               onPressed: () async => {
-                if(!_.isButtonDisabled) await _.handleSubmit(),
+                if(!_.isButtonDisabled.value) await _.handleSubmit(),
               },
             ),
           ],
         ),
-        body: _.isLoading ? const Center(child: CircularProgressIndicator())
-        : _.isUploading ? const SplashPage()
+        body: _.isLoading.value ? const Center(child: CircularProgressIndicator())
+        : _.isUploading.value ? const SplashPage()
         : Container(
           decoration: AppTheme.appBoxDecoration,
+          height: AppTheme.fullHeight(context),
           child: Column(
             children: <Widget>[
-              AppTheme.heightSpace10,
-              Center(
+              if(_.postType == PostType.image) Center(
                 child: AspectRatio(
-                  aspectRatio: AppTheme.aspectRatio,
-                  child: _.postType == PostType.image ?
-                    fileImage(_.croppedImageFile.path) :
-                Stack (
-                  children: [
-                    VideoPlayer(_.videoPlayerController),
-                    Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0x36FFFFFF).withOpacity(0.1),
-                              const Color(0x0FFFFFFF).withOpacity(0.1)
-                            ],
-                            begin: FractionalOffset.topLeft,
-                            end: FractionalOffset.bottomRight
-                          ),
-                          borderRadius: BorderRadius.circular(50)
-                        ),
-                        child: IconButton(
-                          icon: Icon(_.videoPlayerController.value.isPlaying
-                              ? Icons.pause : Icons.play_arrow,
-                          ),
-                          iconSize: 30,
-                          color: Colors.white70.withOpacity(0.5),
-                          onPressed: () => _.playPauseVideo(),
-                        ),
-                      ),
-                    ),
-                  ]),
+                  aspectRatio: AppTheme.landscapeAspectRatio,
+                  child: fileImage(_.croppedImageFile.value.path)
+              ///DEPRECATED
+              // Stack(
+              //     children: [
+              //       VideoPlayer(_.videoPlayerController),
+              //
+              //       Center(
+              //         child: Container(
+              //           decoration: BoxDecoration(
+              //               gradient: LinearGradient(
+              //                   colors: [
+              //                     const Color(0x36FFFFFF).withOpacity(0.1),
+              //                     const Color(0x0FFFFFFF).withOpacity(0.1)
+              //                   ],
+              //                   begin: FractionalOffset.topLeft,
+              //                   end: FractionalOffset.bottomRight
+              //               ),
+              //               borderRadius: BorderRadius.circular(50)
+              //           ),
+              //           child: IconButton(
+              //             icon: Icon(_.isPlaying.value ? Icons.pause : Icons.play_arrow,),
+              //             iconSize: 30,
+              //             color: Colors.white70.withOpacity(0.5),
+              //             onPressed: () => _.playPauseVideo(),
+              //             // onPressed: () {
+              //             //   Navigator.of(context).push(
+              //             //     MaterialPageRoute(builder: (context) {
+              //             //       return TrimmerView(File(_.mediaFile.value.path));
+              //             //     }),
+              //             //   );
+              //             // },
+              //           ),
+              //         ),
+              //       ),
+              //     ]),
                 ),
               ),
+              // TrimmerView(),
+              if(_.postType == PostType.video) StatefulTrimmerView(uploadController: _),
               AppTheme.heightSpace10,
               ListTile(
                 leading: CircleAvatar(
@@ -103,11 +112,11 @@ class PostUploadDescriptionPage extends StatelessWidget {
                     maxLines: 10,
                     /// Called when detection (word starts with #, or # and @) is being typed
                     onDetectionTyped: (text) {
-                      AppUtilities.logger.d(text);
+                      AppUtilities.logger.t(text);
                     },
                     /// Called when detection is fully typed
                     onDetectionFinished: () {
-                      AppUtilities.logger.d("Type Detection Finished");
+                      AppUtilities.logger.t("Type Detection Finished");
                     },
                   ),
                 )

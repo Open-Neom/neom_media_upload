@@ -48,7 +48,7 @@ class BlogPage extends StatelessWidget {
           appBar: _.profile.id == _.blogOwnerId ? null : AppBarChild(title: "Blog de ${_.mate.name.capitalize}"),
           body: Container(
             decoration: AppTheme.appBoxDecoration,
-            child: _.isLoading ? const Center(child: CircularProgressIndicator(),)
+            child: _.isLoading.value ? const Center(child: CircularProgressIndicator(),)
                 : DefaultTabController(
                 initialIndex: _.tabIndex,
                 length: AppConstants.blogTabs.length,
@@ -87,7 +87,7 @@ class BlogPage extends StatelessWidget {
                 ),
             ),
           ),
-          floatingActionButton: _.isLoading ? Container()
+          floatingActionButton: _.isLoading.value ? Container()
               : Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

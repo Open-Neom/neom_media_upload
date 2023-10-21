@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
-// ignore: directives_ordering
 import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
@@ -40,26 +39,18 @@ class PostCommentsController extends GetxController implements PostCommentsServi
   PostFirestore postFirestore = PostFirestore();
   CommentFirestore commentFirestore = CommentFirestore();
 
-  final ScrollController scrollController = ScrollController();
-
-  final RxBool _isLoading = true.obs;
-  bool get isLoading => _isLoading.value;
-  set isLoading(bool isLoading) => _isLoading.value = isLoading;
-
-  final RxBool _isButtonDisabled = false.obs;
-  bool get isButtonDisabled => _isButtonDisabled.value;
-  set isButtonDisabled(bool isButtonDisabled) => _isButtonDisabled.value = isButtonDisabled;
-
-  TextEditingController commentController = TextEditingController();
-  bool isUploading = false;
-
-  final PickedFile _imageFile = PickedFile("");
-  PickedFile get imageFile => _imageFile;
-
   AppProfile profile = AppProfile();
   Post post = Post();
+
+  final ScrollController scrollController = ScrollController();
+  TextEditingController commentController = TextEditingController();
+
+  final RxBool isLoading = true.obs;
+  final RxBool isButtonDisabled = false.obs;
+  final RxBool isUploading = false.obs;
   RxList<PostComment> comments = <PostComment>[].obs;
 
+  final PickedFile imageFile = PickedFile("");
 
   Map likes = {};
   int likesCount = 0;
@@ -82,7 +73,6 @@ class PostCommentsController extends GetxController implements PostCommentsServi
 
   }
 
-
   @override
   void onReady() async {
     super.onReady();
@@ -104,7 +94,6 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     update([AppPageIdConstants.postComments, AppPageIdConstants.postDetails]);
   }
 
-
   @override
   Future<void> addComment() async {
     logger.d("Adding comment to Post and Comment Collections");
@@ -121,14 +110,14 @@ class PostCommentsController extends GetxController implements PostCommentsServi
         mediaUrl: post.mediaUrl,
       );
 
-      if(commentController.text.isNotEmpty || postUploadController.imageFile.path.isNotEmpty) {
-        isUploading = true;
-        isButtonDisabled = true;
+      if(commentController.text.isNotEmpty || postUploadController.mediaFile.value.path.isNotEmpty) {
+        isUploading.value = true;
+        isButtonDisabled.value = true;
         update([AppPageIdConstants.postComments]);
 
 
 
-        if (postUploadController.imageFile.path.isNotEmpty) {
+        if (postUploadController.mediaFile.value.path.isNotEmpty) {
           newComment.mediaUrl =
           await postUploadController.handleUploadImage(UploadImageType.comment);
           newComment.type = AppMediaType.image;
@@ -177,13 +166,12 @@ class PostCommentsController extends GetxController implements PostCommentsServi
       logger.e(e.toString());
     }
 
-    isUploading = false;
-    isButtonDisabled = false;
+    isUploading.value = false;
+    isButtonDisabled.value = false;
     update([AppPageIdConstants.postComments, AppPageIdConstants.timeline,
       AppPageIdConstants.postDetails, AppPageIdConstants.blogEntry,
       AppPageIdConstants.blogEditor]);
   }
-
 
   @override
   Future<void> handleImage(AppFileFrom appFileFrom) async {
@@ -191,26 +179,22 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     update([AppPageIdConstants.postComments]);
   }
 
-
   @override
   void clearComment()  {
     commentController.clear();
     update([AppPageIdConstants.postComments]);
   }
 
-
   @override
   void clearImage()  {
-    postUploadController.clearImage();
+    postUploadController.clearMedia();
     update([AppPageIdConstants.postComments]);
   }
-
 
   @override
   bool isLikedComment(PostComment comment) {
     return comment.likedProfiles.contains(profile.id);
   }
-
 
   @override
   Future<void> handleLikeComment(PostComment comment) async {
@@ -251,7 +235,6 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     update([AppPageIdConstants.postComments]);
   }
 
-
   @override
   Future<void> hideComment(PostComment comment) async {
 
@@ -270,7 +253,6 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     Get.back();
     update([AppPageIdConstants.postComments]);
   }
-
 
   @override
   Future<void> removeComment(PostComment comment) async {
@@ -292,6 +274,5 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     update([AppPageIdConstants.postComments]);
 
   }
-
 
 }

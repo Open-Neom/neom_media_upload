@@ -32,40 +32,18 @@ class BlogEditorController extends GetxController implements BlogEditorService {
   final blogController = Get.find<BlogController>();
   final postDetailController = Get.put(PostDetailsController());
 
-  final Rx<AppProfile> _profile = AppProfile().obs;
-  AppProfile get profile => _profile.value;
-  set profile(AppProfile profile) => _profile.value = profile;
-
-  final RxBool _isLoading = true.obs;
-  bool get isLoading => _isLoading.value;
-  set isLoading(bool isLoading) => _isLoading.value = isLoading;
-
-  final RxBool _isButtonDisabled = false.obs;
-  bool get isButtonDisabled => _isButtonDisabled.value;
-  set isButtonDisabled(bool isButtonDisabled) => _isButtonDisabled.value = isButtonDisabled;
+  final Rx<AppProfile> profile = AppProfile().obs;
+  final RxBool isLoading = true.obs;
+  final RxBool isButtonDisabled = false.obs;
+  final RxInt wordQty = 0.obs;
+  final Rx<Post> blogEntry = Post().obs;
+  final RxBool isLiked = false.obs;
+  ///DEPRECATED final RxMap<String, Post> blogEntries = <String, Post>{}.obs;
 
   TextEditingController entryTitleController = TextEditingController();
   String lastEntryTitle = "";
   TextEditingController entryTextController = TextEditingController();
   String lastEntryText = "";
-
-  final RxMap<String, Post> _blogEntries = <String, Post>{}.obs;
-  Map<String, Post> get blogEntries => _blogEntries;
-  set blogEntries(Map<String, Post> blogEntries) => _blogEntries.value = blogEntries;
-
-  final RxInt _wordQty = 0.obs;
-  int get wordQty => _wordQty.value;
-  set wordQty(int wordQty) => _wordQty.value = wordQty;
-
-  final Rx<Post> _blogEntry = Post().obs;
-  Post get blogEntry => _blogEntry.value;
-  set blogEntry(Post blogEntry) => _blogEntry.value = blogEntry;
-
-
-  final RxBool _isLiked = false.obs;
-  bool get isLiked => _isLiked.value;
-  set isLiked(bool isLiked) => _isLiked.value = isLiked;
-
   String thumbnailUrl = "";
 
   @override
@@ -75,13 +53,13 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
     try {
 
-      profile = userController.profile;
+      profile.value = userController.profile;
       if(Get.arguments != null && Get.arguments.isNotEmpty) {
-        blogEntry = Get.arguments[0];
+        blogEntry.value = Get.arguments[0];
       }
 
-      if(blogEntry.caption.isNotEmpty) {
-        List<String> blogEntryCaptionSplitted = blogEntry.caption.split(AppConstants.titleTextDivider);
+      if(blogEntry.value.caption.isNotEmpty) {
+        List<String> blogEntryCaptionSplitted = blogEntry.value.caption.split(AppConstants.titleTextDivider);
         if(blogEntryCaptionSplitted.isNotEmpty) {
           if(blogEntryCaptionSplitted.length > 1) {
             entryTitleController.text = blogEntryCaptionSplitted[0];
@@ -90,12 +68,12 @@ class BlogEditorController extends GetxController implements BlogEditorService {
             entryTextController.text = blogEntryCaptionSplitted[0];
           }
 
-          wordQty = entryTextController.text.split(' ').length;
+          wordQty.value = entryTextController.text.split(' ').length;
         }
 
       } else {
-        blogEntry.isDraft = true;
-        blogEntry.ownerId = profile.id;
+        blogEntry.value.isDraft = true;
+        blogEntry.value.ownerId = profile.value.id;
       }
 
     } catch (e) {
@@ -108,10 +86,10 @@ class BlogEditorController extends GetxController implements BlogEditorService {
     super.onReady();
     logger.d("Create Blog Entry Controller Ready");
     try {
-      postDetailController.profile = profile;
-      postDetailController.post = blogEntry;
-      isLiked = postDetailController.isLikedPost(blogEntry);
-      isLoading = false;
+      postDetailController.profile = profile.value;
+      postDetailController.post = blogEntry.value;
+      isLiked.value = postDetailController.isLikedPost(blogEntry.value);
+      isLoading.value = false;
     } catch (e) {
 
       logger.e(e.toString());
@@ -141,7 +119,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       lastEntryTitle = entryText;
     } else {
       lastEntryText = entryText;
-      wordQty = entryTextSplitted.length;
+      wordQty.value = entryTextSplitted.length;
     }
 
     logger.d("Blog entry has $wordQty words");
@@ -157,34 +135,34 @@ class BlogEditorController extends GetxController implements BlogEditorService {
     try {
 
       String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
-      blogEntry = Post(
-          id: blogEntry.id,
+      blogEntry.value = Post(
+          id: blogEntry.value.id,
           caption: blogEntryCaption,
           type: PostType.blogEntry,
-          profileName: profile.name,
-          profileImgUrl: profile.photoUrl,
-          ownerId: profile.id,
+          profileName: profile.value.name,
+          profileImgUrl: profile.value.photoUrl,
+          ownerId: profile.value.id,
           thumbnailUrl: thumbnailUrl,
-          position: profile.position,
-          location:  await GeoLocatorController().getAddressSimple(profile.position!),
+          position: profile.value.position,
+          location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
           isCommentEnabled: true,
           createdTime: DateTime.now().millisecondsSinceEpoch,
           isDraft: true
       );
 
-      if(blogEntry.id.isEmpty) {
-        blogEntry.id = await PostFirestore().insert(blogEntry);
-        if(blogEntry.id.isNotEmpty && !profile.blogEntries!.contains(blogEntry.id)) {
-          if(await ProfileFirestore().addBlogEntry(blogEntry.ownerId, blogEntry.id)) {
-            profile.blogEntries!.add(blogEntry.id);
+      if(blogEntry.value.id.isEmpty) {
+        blogEntry.value.id = await PostFirestore().insert(blogEntry.value);
+        if(blogEntry.value.id.isNotEmpty && !profile.value.blogEntries!.contains(blogEntry.value.id)) {
+          if(await ProfileFirestore().addBlogEntry(blogEntry.value.ownerId, blogEntry.value.id)) {
+            profile.value.blogEntries!.add(blogEntry.value.id);
           }
         }
       } else {
-        PostFirestore().update(blogEntry);
+        PostFirestore().update(blogEntry.value);
       }
 
-      blogController.draftEntries[blogEntry.id] = blogEntry;
-      logger.d("blogEntry ${blogEntry.id} was successfully updated");
+      blogController.draftEntries[blogEntry.value.id] = blogEntry.value;
+      logger.d("blogEntry ${blogEntry.value.id} was successfully updated");
     } catch (e) {
       logger.e(e.toString());
     }
@@ -195,8 +173,8 @@ class BlogEditorController extends GetxController implements BlogEditorService {
   Future<void> publishBlogEntry() async {
     logger.d("PUblishing Blog Entry");
 
-    isButtonDisabled = true;
-    isLoading = true;
+    isButtonDisabled.value = true;
+    isLoading.value = true;
     update([AppPageIdConstants.blogEditor]);
     try {
       List<String> postHashtags = [];
@@ -205,28 +183,28 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       });
 
       String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
-      blogEntry = Post(
-          id: blogEntry.id,
+      blogEntry.value = Post(
+          id: blogEntry.value.id,
           caption: blogEntryCaption,
           hashtags: postHashtags,
           type: PostType.blogEntry,
-          profileName: profile.name,
-          profileImgUrl: profile.photoUrl,
-          ownerId: profile.id,
+          profileName: profile.value.name,
+          profileImgUrl: profile.value.photoUrl,
+          ownerId: profile.value.id,
           thumbnailUrl: thumbnailUrl,
-          position: profile.position,
-          location:  await GeoLocatorController().getAddressSimple(profile.position!),
+          position: profile.value.position,
+          location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
           isCommentEnabled: true,
           createdTime: DateTime.now().millisecondsSinceEpoch,
           isDraft: false
       );
 
-      if(await PostFirestore().update(blogEntry)) {
-        if(blogEntry.hashtags.isNotEmpty) {
-          for (var hashtagId in blogEntry.hashtags) {
-            Hashtag hashtag = Hashtag(id: hashtagId, postIds: [blogEntry.id] , createdTime: DateTime.now().millisecondsSinceEpoch);
+      if(await PostFirestore().update(blogEntry.value)) {
+        if(blogEntry.value.hashtags.isNotEmpty) {
+          for (var hashtagId in blogEntry.value.hashtags) {
+            Hashtag hashtag = Hashtag(id: hashtagId, postIds: [blogEntry.value.id] , createdTime: DateTime.now().millisecondsSinceEpoch);
             if(await HashtagFirestore().exists(hashtagId)) {
-              await HashtagFirestore().addPost(hashtagId, blogEntry.id);
+              await HashtagFirestore().addPost(hashtagId, blogEntry.value.id);
             } else {
               await HashtagFirestore().insert(hashtag);
             }
@@ -237,38 +215,38 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       await Get.find<TimelineController>().getTimeline();
 
       FirebaseMessagingCalls.sendGlobalPushNotification(
-        fromProfile: profile,
+        fromProfile: profile.value,
         notificationType: PushNotificationType.blog,
-        referenceId: blogEntry.ownerId,
+        referenceId: blogEntry.value.ownerId,
       );
 
     } catch (e) {
       logger.e(e.toString());
     }
 
-    isButtonDisabled = false;
-    isLoading = false;
+    isButtonDisabled.value = false;
+    isLoading.value = false;
     update([AppPageIdConstants.blogEditor]);
     Get.offAllNamed(AppRouteConstants.home);
   }
 
   @override
   Future<void> handleLikePost() async {
-    logger.i("isLiked is $isLiked and # de likes: ${blogEntry.likedProfiles}");
+    logger.i("isLiked is $isLiked and # de likes: ${blogEntry.value.likedProfiles}");
     try {
-      await postDetailController.handleLikePost(blogEntry);
-      isLiked = postDetailController.isLikedPost(blogEntry);
+      await postDetailController.handleLikePost(blogEntry.value);
+      isLiked.value = postDetailController.isLikedPost(blogEntry.value);
     } catch (e) {
       logger.e(e.toString());
     }
-    logger.i("isLiked is $isLiked and # de likes: ${blogEntry.likedProfiles}");
+    logger.i("isLiked is $isLiked and # de likes: ${blogEntry.value.likedProfiles}");
     update([AppPageIdConstants.blogEntry, AppPageIdConstants.blogEditor, AppPageIdConstants.blog]);
   }
 
   @override
   void setCommentToBlogEntry(String commentId) {
-    if(!blogEntry.commentIds.contains(commentId)) {
-      blogEntry.commentIds.add(commentId);
+    if(!blogEntry.value.commentIds.contains(commentId)) {
+      blogEntry.value.commentIds.add(commentId);
     }
 
     update([AppPageIdConstants.blogEntry, AppPageIdConstants.blogEditor, AppPageIdConstants.blog]);

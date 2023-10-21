@@ -16,28 +16,17 @@ class BlogController extends GetxController implements BlogEntryService {
   final logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
 
-  Post currentBlogEntry = Post();
-  int tabIndex = 0;
-
-  final RxMap<String, Post> _blogEntries = <String, Post>{}.obs;
-  Map<String, Post> get blogEntries => _blogEntries;
-  set blogEntries(Map<String, Post> blogEntries) => _blogEntries.value = blogEntries;
-
-  final RxMap<String, Post> _draftEntries = <String, Post>{}.obs;
-  Map<String, Post> get draftEntries => _draftEntries;
-  set draftEntries(Map<String, Post> draftEntries) => _draftEntries.value = draftEntries;
-
   AppProfile profile = AppProfile();
   AppProfile mate = AppProfile();
   String blogOwnerId = "";
 
-  final RxBool _isLoading = true.obs;
-  bool get isLoading => _isLoading.value;
-  set isLoading(bool isLoading) => _isLoading.value = isLoading;
+  Post currentBlogEntry = Post();
+  int tabIndex = 0;
 
-  final RxBool _isButtonDisabled = false.obs;
-  bool get isButtonDisabled => _isButtonDisabled.value;
-  set isButtonDisabled(bool isButtonDisabled) => _isButtonDisabled.value = isButtonDisabled;
+  final RxBool isLoading = true.obs;
+  final RxBool isButtonDisabled = false.obs;
+  final RxMap<String, Post> blogEntries = <String, Post>{}.obs;
+  final RxMap<String, Post> draftEntries = <String, Post>{}.obs;
 
   TextEditingController newBlogEntryNameController = TextEditingController();
   TextEditingController newBlogEntryTextController = TextEditingController();
@@ -79,13 +68,13 @@ class BlogController extends GetxController implements BlogEntryService {
       logger.e(e.toString());
     }
 
-    isLoading = false;
+    isLoading.value = false;
     update([AppPageIdConstants.blog]);
   }
 
 
   void clear() {
-    blogEntries = <String, Post>{};
+    blogEntries.value = <String, Post>{};
     currentBlogEntry = Post();
   }
 
@@ -110,22 +99,22 @@ class BlogController extends GetxController implements BlogEntryService {
   }
 
   @override
-  Future<void> updateBlogEntry(String itemlistId, Post blogEntry) async {
+  Future<void> updateBlogEntry(String itemlistId, Post postBlogEntry) async {
 
-    logger.d("Updating to $blogEntry");
+    logger.d("Updating to $postBlogEntry");
 
     try {
-      isLoading = true;
+      isLoading.value = true;
       update([AppPageIdConstants.itemlist]);
 
       if(newBlogEntryNameController.text.isNotEmpty || newBlogEntryTextController.text.isNotEmpty) {
 
         if(newBlogEntryNameController.text.isNotEmpty) {
-          blogEntry.caption = newBlogEntryNameController.text;
+          postBlogEntry.caption = newBlogEntryNameController.text;
         }
 
         if(newBlogEntryTextController.text.isNotEmpty) {
-          blogEntry.caption = newBlogEntryTextController.text;
+          postBlogEntry.caption = newBlogEntryTextController.text;
         }
 
       }
@@ -134,7 +123,7 @@ class BlogController extends GetxController implements BlogEntryService {
     }
 
 
-    isLoading = false;
+    isLoading.value = false;
     Get.back();
     update([AppPageIdConstants.blog]);
   }
@@ -144,14 +133,14 @@ class BlogController extends GetxController implements BlogEntryService {
     logger.d("Getting Blog Entries Published and Drafts");
     try {
 
-      blogEntries = await PostFirestore().getBlogEntries(profileId: blogOwnerId);
+      blogEntries.value = await PostFirestore().getBlogEntries(profileId: blogOwnerId);
       if(blogEntries.isNotEmpty) {
-        blogEntries.values.where((blogEntry) => blogEntry.isDraft)
+        blogEntries.values.where((entry) => entry.isDraft)
             .forEach((draft) {
           draftEntries[draft.id] = draft;
         });
 
-        blogEntries.removeWhere((key, blogEntry) => blogEntry.isDraft);
+        blogEntries.removeWhere((key, entry) => entry.isDraft);
       }
     } catch (e) {
       logger.e(e.toString());

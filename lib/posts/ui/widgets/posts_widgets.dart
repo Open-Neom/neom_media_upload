@@ -41,6 +41,8 @@ Widget buildCommentList(BuildContext context, PostCommentsController _) {
             case AppMediaType.eventImage:
             //TODO
               break;
+            default:
+              break;
           }
         }
 
@@ -58,7 +60,7 @@ Widget buildMessageComposer(BuildContext context, PostCommentsController _) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        (_.postUploadController.imageFile.path.isEmpty) ?
+        (_.postUploadController.mediaFile.value.path.isEmpty) ?
         IconButton(
             icon: const Icon(Icons.photo),
             iconSize: 25.0,
@@ -70,7 +72,7 @@ Widget buildMessageComposer(BuildContext context, PostCommentsController _) {
               SizedBox(
                   width: 50.0,
                   height: 50.0,
-                  child: fileImage(_.postUploadController.imageFile.path)
+                  child: fileImage(_.postUploadController.mediaFile.value.path)
               ),
               Positioned(
                 width: 20,
@@ -102,7 +104,7 @@ Widget buildMessageComposer(BuildContext context, PostCommentsController _) {
             iconSize: 25.0,
             color: Theme.of(context).primaryColorLight,
             onPressed: () => {
-              if(!_.isButtonDisabled) _.addComment()
+              if(!_.isButtonDisabled.value) _.addComment()
             }
         ),
       ],

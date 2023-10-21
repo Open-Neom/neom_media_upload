@@ -27,20 +27,20 @@ class TextPostPage extends StatelessWidget {
           backgroundColor: AppColor.appBar,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => _.getBackToUploadImage(),
+            onPressed: () => _.getBackToUploadImage(context),
           ),
           title: Text(AppTranslationConstants.newPost.tr),
           actions: <Widget>[
-            _.isUploading ? Container() : IconButton(
+            _.isUploading.value ? Container() : IconButton(
               icon: const Icon(Icons.check, size: 30, color: AppColor.mystic),
               onPressed: () async => {
-                if(!_.isButtonDisabled) await _.handleSubmit(),
+                if(!_.isButtonDisabled.value) await _.handleSubmit(),
               },
             ),
           ],
         ),
-        body: _.isLoading ? const Center(child: CircularProgressIndicator())
-        : _.isUploading ? const SplashPage()
+        body: _.isLoading.value ? const Center(child: CircularProgressIndicator())
+        : _.isUploading.value ? const SplashPage()
         : Container(
           height:AppTheme.fullHeight(context),
           decoration: AppTheme.appBoxDecoration,
@@ -60,7 +60,7 @@ class TextPostPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: AppTheme.padding10),
                   child: TextField(
                     controller: _.captionController,
-                    maxLines: _.caption.length < 40 ? 2 : 4,
+                    maxLines: _.caption.value.length < 40 ? 2 : 4,
                     maxLength: 100,
                     decoration: const InputDecoration(border: InputBorder.none),
                     onChanged: (text) => _.setCaption(text),

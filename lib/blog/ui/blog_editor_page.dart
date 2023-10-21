@@ -25,7 +25,7 @@ class BlogEditorPage extends StatelessWidget {
         builder: (_) => Obx(()=> Scaffold(
           backgroundColor: const Color.fromRGBO(241, 234, 217, 1),
           body: SafeArea(
-            child: _.isLoading ? const Center(child: CircularProgressIndicator(),)
+            child: _.isLoading.value ? const Center(child: CircularProgressIndicator(),)
             : Container(
               padding: const EdgeInsets.only(bottom: 10),
               child: Column(
@@ -113,7 +113,7 @@ class BlogEditorPage extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Column(children: [
-                        _.profile.id == _.blogEntry.ownerId ? Row(
+                        _.profile.value.id == _.blogEntry.value.ownerId ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             InkWell(
@@ -143,12 +143,12 @@ class BlogEditorPage extends StatelessWidget {
                             ),
                             InkWell(
                               onTap: () async {
-                                if (!_.isButtonDisabled && _.entryTextController.text.isNotEmpty
+                                if (!_.isButtonDisabled.value && _.entryTextController.text.isNotEmpty
                                     && _.wordQty >= AppConstants.blogMinWords) {
                                   await _.publishBlogEntry();
                                 } else {
                                   Get.snackbar("¡Que siga esa inspiración!",
-                                      "Intenta agregar al menos ${AppConstants.blogMinWords - _.wordQty} palabras más ;)",
+                                      "Intenta agregar al menos ${AppConstants.blogMinWords - _.wordQty.value} palabras más ;)",
                                       snackPosition: SnackPosition.bottom
                                   );
                                 }
@@ -161,7 +161,7 @@ class BlogEditorPage extends StatelessWidget {
                                   color: AppColor.bondiBlue75,
                                   borderRadius: BorderRadius.circular(50),
                                 ),
-                                child: Text(_.blogEntry.isDraft ?
+                                child: Text(_.blogEntry.value.isDraft ?
                                 AppTranslationConstants.post.tr : AppTranslationConstants.update.tr,
                                   style: TextStyle(
                                     letterSpacing: 1,

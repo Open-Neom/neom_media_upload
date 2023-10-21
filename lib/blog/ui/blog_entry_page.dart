@@ -23,7 +23,7 @@ class BlogEntryPage extends StatelessWidget {
       builder: (_) => Obx(()=> Scaffold(
         backgroundColor: const Color.fromRGBO(241, 234, 217, 1), 
         body: SafeArea(
-          child: _.isLoading ? const Center(child: CircularProgressIndicator(),)
+          child: _.isLoading.value ? const Center(child: CircularProgressIndicator(),)
         : Container(
           padding: const EdgeInsets.all(10),
           width: AppTheme.fullWidth(context),

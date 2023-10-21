@@ -20,6 +20,9 @@ dependencies:
     git:
       url: https://github.com/Cyberneom/neom_timeline.git
 
+  camera: ^0.10.5+5
+  video_trimmer: ^3.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -30,7 +33,13 @@ dependency_overrides:
     path: ../neom_commons
   neom_timeline:
     path: ../neom_timeline
-  intl: 0.18.1
+  neom_music_player:
+    path: ../neom_music_player
+  http: 1.1.0
+  uuid: 4.1.0
+  logger: 2.0.2+1
+  google_api_headers: 2.0.3
+
 
 # The following section is specific to Flutter packages.
 flutter:

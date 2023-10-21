@@ -82,34 +82,34 @@ Widget blogLikeCommentShare(BlogEditorController _) {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   TextButton(
-                      onLongPress: () => Get.toNamed(AppRouteConstants.likedProfiles, arguments: _.blogEntry.likedProfiles),
+                      onLongPress: () => Get.toNamed(AppRouteConstants.likedProfiles, arguments: _.blogEntry.value.likedProfiles),
                       onPressed: () async => _.handleLikePost(),
                       child: Row(
                         children: <Widget>[
-                          Icon(_.isLiked ? FontAwesomeIcons.solidHeart
+                          Icon(_.isLiked.value ? FontAwesomeIcons.solidHeart
                             :  FontAwesomeIcons.heart,
                             size: AppTheme.postIconSize,
                             color: AppColor.white80),
                           AppTheme.widthSpace5,
-                          Text('${_.blogEntry.likedProfiles.length}',
+                          Text('${_.blogEntry.value.likedProfiles.length}',
                             style: const TextStyle(color: AppColor.white),
                           ),
                         ],
                       )
                   ),
                   TextButton(
-                      onPressed: () => Get.toNamed(AppRouteConstants.postComments, arguments: _.blogEntry),
+                      onPressed: () => Get.toNamed(AppRouteConstants.postComments, arguments: _.blogEntry.value),
                       child: Row(
                         children: <Widget>[
-                          Icon(_.blogEntry.commentIds.isNotEmpty
-                              ? _.postDetailController.verifyIfCommented(_.blogEntry.commentIds, _.profile.comments ?? [])
+                          Icon(_.blogEntry.value.commentIds.isNotEmpty
+                              ? _.postDetailController.verifyIfCommented(_.blogEntry.value.commentIds, _.profile.value.comments ?? [])
                               ? FontAwesomeIcons.solidMessage
                               : FontAwesomeIcons.message
                               : FontAwesomeIcons.message,
                               size: AppTheme.postIconSize,
                               color: AppColor.white80),
                           AppTheme.widthSpace5,
-                          Text(_.blogEntry.commentIds.length.toString(),
+                          Text(_.blogEntry.value.commentIds.length.toString(),
                             style: const TextStyle(color: AppColor.white),
                           )
                         ],
@@ -121,14 +121,14 @@ Widget blogLikeCommentShare(BlogEditorController _) {
                         color: AppColor.white
                     ),
                     onPressed: () {
-                      CoreUtilities().shareAppWithPost(_.blogEntry);
+                      CoreUtilities().shareAppWithPost(_.blogEntry.value);
                     },
                   ),
                 ]
             ),
             TextButton(
                 onPressed: () => Get.toNamed(AppRouteConstants.postComments,
-                    arguments: _.blogEntry),
+                    arguments: _.blogEntry.value),
                 child: Text(AppTranslationConstants.seeComments.tr,
                   style: const TextStyle(
                     color: AppColor.white,

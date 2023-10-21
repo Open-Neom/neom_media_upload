@@ -257,7 +257,7 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
                                   onChanged: (String? reportType) {
                                     reportController.setReportType(reportType ?? "");
                                   },
-                                  value: reportController.reportType,
+                                  value: reportController.reportType.value,
                                   alignment: Alignment.center,
                                   icon: const Icon(Icons.arrow_downward),
                                   iconSize: 20,
@@ -284,7 +284,7 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
                           DialogButton(
                             color: AppColor.bondiBlue75,
                             onPressed: () async {
-                              if(!reportController.isButtonDisabled) {
+                              if(!reportController.isButtonDisabled.value) {
                                 await reportController.sendReport(ReferenceType.comment, comment.id);
                                 AppUtilities.showAlert(context, AppTranslationConstants.report.tr, AppTranslationConstants.hasSentReport.tr);
                               }
@@ -328,7 +328,7 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
                           DialogButton(
                             color: AppColor.bondiBlue75,
                             onPressed: () async {
-                              if(!itemmateController.isButtonDisabled) {
+                              if(!itemmateController.isButtonDisabled.value) {
                                 await itemmateController.block(comment.profileId);
                                 AppUtilities.showAlert(context, AppTranslationConstants.blockProfile.tr, AppTranslationConstants.blockedProfileMsg.tr);
                               }
