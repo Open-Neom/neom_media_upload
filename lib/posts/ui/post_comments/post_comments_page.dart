@@ -15,7 +15,6 @@ class PostCommentsPage extends StatelessWidget {
 
   const PostCommentsPage({Key? key}) : super(key: key);
 
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<PostCommentsController>(
@@ -38,7 +37,7 @@ class PostCommentsPage extends StatelessWidget {
                       AppTheme.heightSpace10,
                       Obx(()=>buildCommentList(context, _)),
                       AppTheme.heightSpace50,
-                      AppTheme.heightSpace20,
+                      AppTheme.heightSpace30,
                     ],
                   ),
                 ),

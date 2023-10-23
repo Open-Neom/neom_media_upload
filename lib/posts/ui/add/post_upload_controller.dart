@@ -28,13 +28,14 @@ import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
+import 'package:neom_commons/core/utils/enums/user_role.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_trimmer/video_trimmer.dart';
 
 import '../../domain/use_cases/post_upload_service.dart';
+import '../widgets/stateful_video_editor.dart';
 
 class PostUploadController extends GetxController implements PostUploadService {
 
@@ -53,6 +54,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   final RxList<String> locationSuggestions = <String>[].obs;
   final RxString caption = "".obs;
   final RxBool takePhoto = false.obs;
+  final RxBool cameraControllerDisposed = false.obs;
 
   TextEditingController locationController = TextEditingController();
   TextEditingController captionController = TextEditingController();
@@ -68,7 +70,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   PostType postType = PostType.pending;
 
-  final Rx<Trimmer> trimmer = Trimmer().obs;
+  // final Rx<Trimmer> trimmer = Trimmer().obs;
   final RxDouble trimmedStartValue = 0.0.obs;
   final RxDouble trimmedEndValue = 0.0.obs;
   final RxBool isPlaying = false.obs;
@@ -105,10 +107,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   void onReady() async {
     super.onReady();
     try {
-      cameras = await availableCameras();
-      final rearCamera = cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
-      cameraController = CameraController(rearCamera, ResolutionPreset.high);
-      await cameraController?.initialize();
+      await initializeCameraController();
     } catch (e) {
       logger.e(e.toString());
     }
@@ -120,47 +119,67 @@ class PostUploadController extends GetxController implements PostUploadService {
   void onClose() {
     super.onClose();
     cameraController?.dispose();
-    trimmer.dispose();
+    cameraControllerDisposed.value = true;
+    // if(!trimmer.isDisposed) trimmer.dispose();
+  }
+
+  Future<void> initializeCameraController() async {
+    try {
+      cameras = await availableCameras();
+      final rearCamera = cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
+      cameraController = CameraController(rearCamera, ResolutionPreset.high);
+      await cameraController?.initialize();
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
+    }
+
   }
   
   @override
   Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
-    UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1, double ratioY = 1,
-    BuildContext? context}) async {
+    UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1,
+    double ratioY = 1, XFile? imageFile, BuildContext? context}) async {
 
     try {
       if(mediaFile.value.path.isNotEmpty) clearMedia();
 
-      switch (appFileFrom) {
-        case AppFileFrom.gallery:
-          mediaFile.value = (await ImagePicker().pickImage(
-              source: ImageSource.gallery,
-              imageQuality: AppConstants.imageQuality)
-          )!;
-          break;
-        case AppFileFrom.camera:
-          if(cameraController != null) takePhoto.value = true;
-          if(context != null) Navigator.pop(context);
+      if(imageFile == null) {
+        switch (appFileFrom) {
+          case AppFileFrom.gallery:
+            mediaFile.value = (await ImagePicker().pickImage(source: ImageSource.gallery,
+                imageQuality: AppConstants.imageQuality)) ?? XFile('');
+            update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
+            break;
+          case AppFileFrom.camera:
+            if(cameraController != null) {
+              takePhoto.value = true;
+              ///VERIFY IF NEEDED
+              // if(!cameraController!.value.isInitialized) await initializeCameraController();
+              if(context != null) Navigator.pop(context);
 
-          ///DEPRECATED
-          // imageFile.value = (await ImagePicker().pickImage(
-          //     source: ImageSource.camera,
-          //     imageQuality: AppConstants.imageQuality,
-          //   )
-          // )!;
+              ///DEPRECATED
+              // imageFile.value = (await ImagePicker().pickImage(
+              //     source: ImageSource.camera,
+              //     imageQuality: AppConstants.imageQuality,
+              //   )
+              // )!;
 
-          ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
-          // imageFile.value = await cameraController!.takePicture();
-          // bool isFrontal = await isFrontCameraPhoto(File(imageFile.value.path));
-          // if(isFrontal) {
-          //   mirrorFrontCameraPhoto(File(imageFile.value.path));
-          // }
-          break;
+              ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
+              // imageFile.value = await cameraController!.takePicture();
+              // bool isFrontal = await isFrontCameraPhoto(File(imageFile.value.path));
+              // if(isFrontal) {
+              //   mirrorFrontCameraPhoto(File(imageFile.value.path));
+              // }
+              break;
+            }
+        }
+      } else {
+        mediaFile.value = imageFile;
       }
 
-      if(mediaFile.value.path.isNotEmpty) {
+      if(mediaFile.value != null && mediaFile.value.path.isNotEmpty) {
         postType = PostType.image;
-        await compressFileImage();
+        mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);
         croppedImageFile.value = await AppUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
         if(croppedImageFile.value.path.isEmpty) {
           clearMedia();
@@ -170,6 +189,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
         switch(uploadImageType) {
           case UploadImageType.post:
+            takePhoto.value = false;
             Get.toNamed(AppRouteConstants.postUploadDescription);
             break;
           case UploadImageType.thumbnail:
@@ -202,22 +222,7 @@ class PostUploadController extends GetxController implements PostUploadService {
       logger.e(e.toString());
     }
 
-    update([AppPageIdConstants.upload,
-      AppPageIdConstants.onBoardingAddImage,
-      AppPageIdConstants.createBand]);
-  }
-
-  @override
-  Future<void> compressFileImage() async {
-
-    final lastIndex = mediaFile.value.path.lastIndexOf(RegExp(r'.jp'));
-
-    if(lastIndex >= 0) {
-      String subPath = mediaFile.value.path.substring(0, (lastIndex));
-      String outPath = "${subPath}_out${mediaFile.value.path.substring(lastIndex)}";
-      mediaFile.value = await FlutterImageCompress.compressAndGetFile(mediaFile.value.path, outPath) ?? XFile("");
-    }
-
+    update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
   }
 
   @override
@@ -239,20 +244,64 @@ class PostUploadController extends GetxController implements PostUploadService {
   }
 
   @override
-  Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery, BuildContext? context}) async {
+  Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery, XFile? videoFile, BuildContext? context}) async {
 
     try {
 
       if(mediaFile.value.path.isNotEmpty) clearMedia();
 
-      switch (appFileFrom) {
-        case AppFileFrom.gallery:
-          mediaFile.value = (await ImagePicker().pickVideo(source: ImageSource.gallery))!;
-          break;
-        case AppFileFrom.camera:
+      if(videoFile == null) {
+        switch (appFileFrom) {
+          case AppFileFrom.gallery:
+            mediaFile.value = (await ImagePicker().pickVideo(source: ImageSource.gallery))  ?? XFile('');
+            break;
+          case AppFileFrom.camera:
           // file = (await ImagePicker().pickVideo(source: ImageSource.camera))!;
           // break;
+        }
+      } else {
+        mediaFile.value = videoFile;
       }
+
+      if(mediaFile.value.path.isNotEmpty) {
+        postType = PostType.video;
+
+        Get.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
+
+        // _thumbnailFile = await VideoCompress.getFileThumbnail(
+        //   mediaFile.value.path,
+        //   quality: AppConstants.videoQuality,
+        // );
+        // await initializeVideoTrimmer();
+        //
+        // ///DEPRECATED
+        // // videoPlayerController = VideoPlayerController.file(videoFile);
+        // // videoPlayerController = trimmer.videoPlayerController!;
+        // // await videoPlayerController.initialize();
+        // //
+        // // if (videoPlayerController.value.duration.inSeconds > AppConstants.maxVideoDurationInSeconds) {
+        // //   trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
+        // //   // return;
+        // // }
+        // //
+        // // videoPlayerController.setLooping(true);
+        //
+        // Get.toNamed(AppRouteConstants.postUploadDescription);
+      }
+
+    } catch (e) {
+      logger.e(e.toString());
+    }
+
+    update([AppPageIdConstants.upload]);
+  }
+
+  Future<void> setProcessedVideo(XFile videoFile) async {
+
+    try {
+
+      if(mediaFile.value.path.isNotEmpty) clearMedia();
+      mediaFile.value = videoFile;
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.video;
@@ -260,19 +309,23 @@ class PostUploadController extends GetxController implements PostUploadService {
           mediaFile.value.path,
           quality: AppConstants.videoQuality,
         );
-        await initializeVideoTrimmer();
 
+        // await initializeVideoTrimmer();
+
+        videoPlayerController = VideoPlayerController.file(File(videoFile.path));
         ///DEPRECATED
-        // videoPlayerController = VideoPlayerController.file(videoFile);
         // videoPlayerController = trimmer.videoPlayerController!;
-        // await videoPlayerController.initialize();
+        await videoPlayerController.initialize();
+        videoPlayerController.play();
+        isPlaying.value = true;
+        videoPlayerController.setLooping(true);
         //
         // if (videoPlayerController.value.duration.inSeconds > AppConstants.maxVideoDurationInSeconds) {
         //   trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
         //   // return;
         // }
         //
-        // videoPlayerController.setLooping(true);
+
 
         Get.toNamed(AppRouteConstants.postUploadDescription);
       }
@@ -284,78 +337,103 @@ class PostUploadController extends GetxController implements PostUploadService {
     update([AppPageIdConstants.upload]);
   }
 
+
+
   Future<void> validateMediaSize() async {
-    File videoFile = File(mediaFile.value.path);
-    int fileSize = await videoFile.length();
+    AppUtilities.logger.d("validateMediaSize");
 
-    if(fileSize > AppConstants.maxVideoFileSize) {
-      AppUtilities.logger.w("VideoFile size $fileSize is above maximum. Starting compression");
-      MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.LowQuality);
-      if(mediaInfo != null) videoFile = mediaInfo.file!;
-      fileSize = await videoFile.length();
+    try {
+      File videoFile = File(mediaFile.value.path);
+      int fileSize = await videoFile.length();
 
-      if(fileSize <= AppConstants.maxVideoFileSize) {
-        AppUtilities.logger.w("VideoFile size $fileSize is now below limit");
-        mediaFile.value = XFile(videoFile.path);
+      if(fileSize > AppConstants.maxVideoFileSize) {
+        AppUtilities.logger.w("VideoFile size $fileSize is above maximum. Starting compression");
+        MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.LowQuality);
+        if(mediaInfo != null) videoFile = mediaInfo.file!;
+        fileSize = await videoFile.length();
+
+        if(fileSize <= AppConstants.maxVideoFileSize) {
+          AppUtilities.logger.w("VideoFile size $fileSize is now below limit");
+          mediaFile.value = XFile(videoFile.path);
+        } else {
+          AppUtilities.logger.w("VideoFile size $fileSize is still above limit");
+          // if(context != null) Navigator.pop(context);
+          Get.back();
+          AppUtilities.showSnackBar(message: AppTranslationConstants.videoAboveSizeMsg);
+          return;
+        }
       } else {
-        AppUtilities.logger.w("VideoFile size $fileSize is still above limit");
-        // if(context != null) Navigator.pop(context);
-        Get.back();
-        AppUtilities.showSnackBar(AppFlavour.appInUse.value, AppTranslationConstants.videoAboveSizeMsg.tr,);
-        return;
+        AppUtilities.logger.d("VideoFile size $fileSize is below maximum.");
       }
-    } else {
-      AppUtilities.logger.d("VideoFile size $fileSize is below maximum.");
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
     }
-  }
 
-  Future<void> initializeVideoTrimmer() async {
-    await trimmer.value.loadVideo(videoFile: File(mediaFile.value.path));
-    await trimmer.value.videoPlayerController?.initialize();
-    if (trimmer.value.videoPlayerController!.value.duration.inSeconds <= AppConstants.maxVideoDurationInSeconds) {
-      trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
-    } else {
-      trimmedEndValue.value = trimmer.value.videoPlayerController!.value.duration.inSeconds.toDouble();
-    }
-    // videoPlayerController = trimmer.videoPlayerController!;
-    // await videoPlayerController.initialize();
-    //
-
-    //
-    // videoPlayerController.setLooping(true);
     update([AppPageIdConstants.upload]);
   }
 
-  Future<String> saveVideo() async {
-    String trimmedVideoPath = '';
+  Future<void> initializeVideoTrimmer() async {
+    AppUtilities.logger.d("initializeVideoTrimmer");
 
-    await trimmer.value.saveTrimmedVideo(
-        startValue: trimmedStartValue.value,
-        endValue: trimmedEndValue.value,
-        onSave: (value) {
-          AppUtilities.logger.i('Trimming Video to output path: $value');
-          trimmedVideoPath = value.toString();
-          AppUtilities.showSnackBar("Gigmeout", 'Video Saved with new duration of ${AppUtilities.getDurationInMinutes(trimmedEndValue.value.ceil() - trimmedStartValue.value.ceil())} successfully');
-        });
+    int maxDurationInSeconds = userController.user!.userRole == UserRole.subscriber
+        ? AppConstants.verifiedMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
 
-    return trimmedVideoPath;
+    try {
+      // await trimmer.value.loadVideo(videoFile: File(mediaFile.value.path));
+      // await trimmer.value.videoPlayerController?.initialize();
+      // await trimmer.value.videoPlayerController?.setLooping(true);
+      // if (trimmer.value.videoPlayerController!.value.duration.inSeconds <= maxDurationInSeconds) {
+      //   trimmedEndValue.value = maxDurationInSeconds.toDouble();
+      // } else {
+      //   trimmedEndValue.value = trimmer.value.videoPlayerController!.value.duration.inSeconds.toDouble();
+      // }
+      // videoPlayerController = trimmer.videoPlayerController!;
+      // await videoPlayerController.initialize();
+      //
+
+      //
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
+    }
+
+    update([AppPageIdConstants.upload]);
   }
 
-  // @override
-  // Future<void> playPauseVideo() async {
-  //   logger.d("playPauseVideo");
-  //   // videoPlayerController.value.isPlaying ? await videoPlayerController.pause() : videoPlayerController.play();
-  //   // logger.t("isPlaying ${videoPlayerController.value.isPlaying}");
+  // Future<String> saveVideo() async {
+  //   String trimmedVideoPath = '';
   //
-  //   bool playbackState = await trimmer.value.videoPlaybackControl(
-  //     startValue: trimmedStartValue.value,
-  //     endValue: trimmedEndValue.value,
-  //   );
+  //   try {
+  //     // await trimmer.value.saveTrimmedVideo(
+  //     //     startValue: trimmedStartValue.value,
+  //     //     endValue: trimmedEndValue.value,
+  //     //     onSave: (value) {
+  //     //       AppUtilities.logger.i('Trimming Video to output path: $value');
+  //     //       trimmedVideoPath = value.toString();
+  //     //       AppUtilities.showSnackBar(message: 'Video Saved with new duration of ${AppUtilities.getDurationInMinutes(trimmedEndValue.value.ceil() - trimmedStartValue.value.ceil())} successfully');
+  //     //     });
+  //   } catch (e) {
+  //     AppUtilities.logger.e(e.toString());
+  //   }
   //
-  //   isPlaying.value = playbackState;
-  //   logger.d("isPlaying: $isPlaying");
-  //   update([AppPageIdConstants.upload]);
+  //   return trimmedVideoPath;
   // }
+
+  @override
+  Future<void> playPauseVideo() async {
+    logger.d("playPauseVideo");
+    videoPlayerController.value.isPlaying ? await videoPlayerController.pause() : videoPlayerController.play();
+    logger.t("isPlaying ${videoPlayerController.value.isPlaying}");
+
+    // bool playbackState = await trimmer.value.videoPlaybackControl(
+    //   startValue: trimmedStartValue.value,
+    //   endValue: trimmedEndValue.value,
+    // );
+    // isPlaying.value = playbackState;
+
+    isPlaying.value = !isPlaying.value;
+    logger.d("isPlaying: $isPlaying");
+    update([AppPageIdConstants.upload]);
+  }
 
   void setTrimmedStart(double value) {
     trimmedStartValue.value = value;
@@ -382,7 +460,7 @@ class PostUploadController extends GetxController implements PostUploadService {
     trimmedMediaFile.value = File("");
     postType = PostType.pending;
     if(videoPlayerController.value.isInitialized) disposeVideoPlayer();
-    if(!trimmer.isDisposed) trimmer.dispose();
+    // if(!trimmer.isDisposed) trimmer.dispose();
     update([AppPageIdConstants.upload, AppPageIdConstants.postComments,
       AppPageIdConstants.timeline, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.event]);
   }
@@ -406,7 +484,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         mediaUrl = await AppUploadFirestore().uploadImage(_mediaId, croppedImageFile.value, UploadImageType.post);
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
-        mediaFile.value = XFile(await saveVideo());
+        // mediaFile.value = XFile(await saveVideo());
         await validateMediaSize();
         _file = File(mediaFile.value.path);
         _thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);

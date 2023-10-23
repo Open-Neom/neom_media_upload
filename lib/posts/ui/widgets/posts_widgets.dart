@@ -6,14 +6,15 @@ import '../post_comments/post_comments_controller.dart';
 import '../post_comments/post_comments_widgets.dart';
 
 Widget buildCommentList(BuildContext context, PostCommentsController _) {
-  return ListView.builder(
+  return ListView.separated(
       shrinkWrap: true,
       controller: _.scrollController,
       itemCount: _.comments.length,
+      separatorBuilder: (context, index) => AppTheme.heightSpace5,
       itemBuilder: (context, index) {
         PostComment comment = _.comments.elementAt(index);
         Widget widget = Container();
-        if(comment.postOwnerId == comment.profileId) {
+        if(comment.postOwnerId == comment.ownerId) {
           //TODO Comment Reply when self
           //widget = commentReply(context, comment);
           widget = othersComment(context, _,  comment);
@@ -91,10 +92,11 @@ Widget buildMessageComposer(BuildContext context, PostCommentsController _) {
           child: TextField(
             controller: _.commentController,
             //TODO Verify how to improve this
+            minLines: 1,
             maxLines: 20,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               hintText: AppTranslationConstants.writeComment.tr,
-              contentPadding: const EdgeInsets.only(top: AppTheme.padding20),
               border: InputBorder.none,
             ),
           ),

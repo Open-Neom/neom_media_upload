@@ -56,19 +56,19 @@ class CommentFirestore implements CommentRepository {
       if(await PostFirestore().addComment(comment.postId, commentId)) {
         logger.d("CommentId added to Post");
 
-        await ProfileFirestore().addComment(comment.profileId, commentId);
+        await ProfileFirestore().addComment(comment.ownerId, commentId);
         logger.d("CommentId added to Profile");
 
-        if (comment.profileId != comment.postOwnerId && commentId.isNotEmpty) {
+        if (comment.ownerId != comment.postOwnerId && commentId.isNotEmpty) {
           ActivityFeed activityFeed = ActivityFeed(
               ownerId: comment.postOwnerId,
               createdTime: comment.createdTime,
               activityReferenceId: comment.postId,
               activityFeedType: ActivityFeedType.comment,
               message: comment.text,
-              profileId: comment.profileId,
-              profileName: comment.profileName,
-              profileImgUrl: comment.profileImgUrl,
+              profileId: comment.ownerId,
+              profileName: comment.ownerName,
+              profileImgUrl: comment.ownerImgUrl,
               mediaUrl: comment.mediaUrl);
 
           await ActivityFeedFirestore().insert(activityFeed);
@@ -89,7 +89,7 @@ class CommentFirestore implements CommentRepository {
 
   @override
   Future<bool> handleLikeComment(String profileId, String commentId, bool isLiked) async {
-    logger.d("");
+    logger.t("handleLikeComment");
     try {
         await commentReference.get()
             .then((querySnapshot) async {
@@ -120,7 +120,7 @@ class CommentFirestore implements CommentRepository {
         logger.d("Comment ${comment.id} removed");
       }
 
-      await ProfileFirestore().removeComment(comment.profileId, comment.id);
+      await ProfileFirestore().removeComment(comment.ownerId, comment.id);
       return true;
 
     } catch (e) {

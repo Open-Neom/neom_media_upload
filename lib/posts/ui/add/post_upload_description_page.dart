@@ -11,6 +11,7 @@ import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
+import 'package:video_player/video_player.dart';
 
 import '../widgets/stateful_trimmer_view.dart';
 import 'create-post/post_widgets.dart';
@@ -54,44 +55,49 @@ class PostUploadDescriptionPage extends StatelessWidget {
                 child: AspectRatio(
                   aspectRatio: AppTheme.landscapeAspectRatio,
                   child: fileImage(_.croppedImageFile.value.path)
-              ///DEPRECATED
-              // Stack(
-              //     children: [
-              //       VideoPlayer(_.videoPlayerController),
-              //
-              //       Center(
-              //         child: Container(
-              //           decoration: BoxDecoration(
-              //               gradient: LinearGradient(
-              //                   colors: [
-              //                     const Color(0x36FFFFFF).withOpacity(0.1),
-              //                     const Color(0x0FFFFFFF).withOpacity(0.1)
-              //                   ],
-              //                   begin: FractionalOffset.topLeft,
-              //                   end: FractionalOffset.bottomRight
-              //               ),
-              //               borderRadius: BorderRadius.circular(50)
-              //           ),
-              //           child: IconButton(
-              //             icon: Icon(_.isPlaying.value ? Icons.pause : Icons.play_arrow,),
-              //             iconSize: 30,
-              //             color: Colors.white70.withOpacity(0.5),
-              //             onPressed: () => _.playPauseVideo(),
-              //             // onPressed: () {
-              //             //   Navigator.of(context).push(
-              //             //     MaterialPageRoute(builder: (context) {
-              //             //       return TrimmerView(File(_.mediaFile.value.path));
-              //             //     }),
-              //             //   );
-              //             // },
-              //           ),
-              //         ),
-              //       ),
-              //     ]),
                 ),
               ),
+              if(_.postType == PostType.video) Container(
+                color: AppColor.appBlack,
+                height: AppTheme.fullWidth(context)/(_.videoPlayerController.value.aspectRatio > 1 ? _.videoPlayerController.value.aspectRatio : 1),
+                width: AppTheme.fullWidth(context)*(_.videoPlayerController.value.aspectRatio <= 1 ? _.videoPlayerController.value.aspectRatio : 1),
+                child: Container(
+                  // aspectRatio: _.videoPlayerController.value.aspectRatio,
+                  child: Container(
+                  child: Stack(
+                  children: [
+                    VideoPlayer(_.videoPlayerController),
+                    Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                                colors: [
+                                  const Color(0x36FFFFFF).withOpacity(0.1),
+                                  const Color(0x0FFFFFFF).withOpacity(0.1)
+                                ],
+                                begin: FractionalOffset.topLeft,
+                                end: FractionalOffset.bottomRight
+                            ),
+                            borderRadius: BorderRadius.circular(50)
+                        ),
+                        child: IconButton(
+                          icon: Icon(_.isPlaying.value ? Icons.pause : Icons.play_arrow,),
+                          iconSize: 30,
+                          color: Colors.white70.withOpacity(0.5),
+                          onPressed: () => _.playPauseVideo(),
+                          // onPressed: () {
+                          //   Navigator.of(context).push(
+                          //     MaterialPageRoute(builder: (context) {
+                          //       return TrimmerView(File(_.mediaFile.value.path));
+                          //     }),
+                          //   );
+                          // },
+                        ),
+                      ),
+                    ),
+                  ]),),),),
               // TrimmerView(),
-              if(_.postType == PostType.video) StatefulTrimmerView(uploadController: _),
+              // if(_.postType == PostType.video) StatefulTrimmerView(uploadController: _),
               AppTheme.heightSpace10,
               ListTile(
                 leading: CircleAvatar(

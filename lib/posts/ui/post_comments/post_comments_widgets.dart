@@ -19,19 +19,19 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
     crossAxisAlignment: CrossAxisAlignment.start,
     children: <Widget>[
       GestureDetector(
-        onTap: () => _.profile.id == comment.profileId ? Get.toNamed(AppRouteConstants.profile)
-            : Get.toNamed(AppRouteConstants.mateDetails, arguments: comment.profileId),
+        onTap: () => _.profile.id == comment.ownerId ? Get.toNamed(AppRouteConstants.profile)
+            : Get.toNamed(AppRouteConstants.mateDetails, arguments: comment.ownerId),
         child: CircleAvatar(
           backgroundColor: Colors.transparent,
-          backgroundImage: CachedNetworkImageProvider(comment.profileImgUrl),
-          radius: 15
+          backgroundImage: CachedNetworkImageProvider(comment.ownerImgUrl),
+          radius: 20
         ),
       ),
       AppTheme.widthSpace10,
       Expanded(
         child: Container(
           decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           border: Border.all(
             style: BorderStyle.solid, color: Colors.grey, width: 0.5)),
           child: Card(
@@ -98,8 +98,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
 
 
 Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, PostComment comment,
-    {showDots = true, UserRole role = UserRole.subscriber}
-) {
+    {showDots = true, UserRole role = UserRole.subscriber}) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: <Widget>[
@@ -112,9 +111,9 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   GestureDetector(
-                    onTap: () => profileId == comment.profileId ? Get.toNamed(AppRouteConstants.profile)
-                        : Get.toNamed(AppRouteConstants.mateDetails, arguments: comment.profileId),
-                    child: Text(comment.profileName,
+                    onTap: () => profileId == comment.ownerId ? Get.toNamed(AppRouteConstants.profile)
+                        : Get.toNamed(AppRouteConstants.mateDetails, arguments: comment.ownerId),
+                    child: Text(comment.ownerName,
                       style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -127,8 +126,8 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
                       DateTime.fromMillisecondsSinceEpoch(comment.createdTime),
                       locale: 'en_short'),
                       style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[700]
+                          fontSize: 12,
+                          color: AppColor.white
                       )
                   ),                  
                 ],
@@ -144,7 +143,7 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
               context: context,
               builder: (context) {
                 return _buildCommentBottomNavMenu(context,
-                    profileId == comment.profileId, comment, role);
+                    profileId == comment.ownerId, comment, role);
               }),
           icon: const Icon(FontAwesomeIcons.ellipsisVertical, size: 20)
       ) : Container(),            //moreOptions3Dots(context),
@@ -165,7 +164,7 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
         Icons.hide_source, AppTranslationConstants.hideComment));
     listMore.add(Menu3DotsModel(AppTranslationConstants.reportComment, AppTranslationConstants.reportCommentMsg,
         Icons.info, AppTranslationConstants.reportComment));
-    listMore.add(Menu3DotsModel('${AppTranslationConstants.toBlock.tr} ${comment.profileName}',
+    listMore.add(Menu3DotsModel('${AppTranslationConstants.toBlock.tr} ${comment.ownerName}',
         AppTranslationConstants.blockProfileMsg, Icons.block, AppTranslationConstants.blockProfile));
 
     if(userRole != UserRole.subscriber) {
@@ -192,196 +191,25 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
               onTap: () async {
                 switch (listMore[index].action) {
                   case AppTranslationConstants.editPost:
-                    Get.snackbar(AppTranslationConstants.underConstruction.tr,
-                        AppTranslationConstants.underConstructionMsg.tr,
-                        snackPosition: SnackPosition.bottom
-                    );
+                    AppUtilities.showSnackBar(title: AppTranslationConstants.underConstruction, message: AppTranslationConstants.underConstructionMsg);
                     break;
                   case AppTranslationConstants.hideComment:
-                    Alert(
-                        context: context,
-                        style: AlertStyle(
-                          backgroundColor: AppColor.main50,
-                          titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        title: AppTranslationConstants.hideComment.tr,
-                        content: Column(
-                          children: [
-                            Text(AppTranslationConstants.hideCommentMsg2.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ],),
-                        buttons: [
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              Get.back();
-                            },
-                            child: Text(AppTranslationConstants.goBack.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ),
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              await Get.find<PostCommentsController>().hideComment(comment);
-                              AppUtilities.showAlert(context, AppTranslationConstants.hideComment.tr, AppTranslationConstants.hiddenCommentMsg.tr);
-                            },
-                            child: Text(AppTranslationConstants.toHide.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          )
-                        ]
-                    ).show();
+                    PostCommentsController postCommentsController = Get.find<PostCommentsController>();
+                    postCommentsController.showHideCommentAlert(context, comment);
                     break;
                   case AppTranslationConstants.reportComment:
                     ReportController reportController = Get.put(ReportController());
-                    //_.alreadySent ? {} :
-                    Alert(
-                        context: context,
-                        style: AlertStyle(
-                          backgroundColor: AppColor.main50,
-                          titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        title: AppTranslationConstants.sendReport.tr,
-                        content: Column(
-                          children: <Widget>[
-                            Obx(()=>
-                                DropdownButton<String>(
-                                  items: ReportType.values.map((ReportType reportType) {
-                                    return DropdownMenuItem<String>(
-                                      value: reportType.name,
-                                      child: Text(reportType.name.tr),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? reportType) {
-                                    reportController.setReportType(reportType ?? "");
-                                  },
-                                  value: reportController.reportType.value,
-                                  alignment: Alignment.center,
-                                  icon: const Icon(Icons.arrow_downward),
-                                  iconSize: 20,
-                                  elevation: 16,
-                                  style: const TextStyle(color: Colors.white),
-                                  dropdownColor: AppColor.main75,
-                                  underline: Container(
-                                    height: 1,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                            ),
-                            TextField(
-                              onChanged: (text) {
-                                reportController.setMessage(text);
-                              },
-                              decoration: InputDecoration(
-                                  labelText: AppTranslationConstants.message.tr
-                              ),
-                            ),
-                          ],
-                        ),
-                        buttons: [
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              if(!reportController.isButtonDisabled.value) {
-                                await reportController.sendReport(ReferenceType.comment, comment.id);
-                                AppUtilities.showAlert(context, AppTranslationConstants.report.tr, AppTranslationConstants.hasSentReport.tr);
-                              }
-                            },
-                            child: Text(AppTranslationConstants.send.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          )
-                        ]
-                    ).show();
+                    reportController.showSendReportAlert(context, comment.id, referenceType: ReferenceType.comment);
                     break;
                   case AppTranslationConstants.blockProfile:
-                    MateController itemmateController = Get.put(MateController());
-                    Alert(
-                        context: context,
-                        style: AlertStyle(
-                          backgroundColor: AppColor.main50,
-                          titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        title: AppTranslationConstants.blockProfile.tr,
-                        content: Column(
-                          children: [
-                            Text(AppTranslationConstants.blockProfileMsg.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                            AppTheme.heightSpace10,
-                            Text(AppTranslationConstants.blockProfileMsg2.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ],),
-                        buttons: [
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              Get.back();
-                            },
-                            child: Text(AppTranslationConstants.goBack.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ),
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              if(!itemmateController.isButtonDisabled.value) {
-                                await itemmateController.block(comment.profileId);
-                                AppUtilities.showAlert(context, AppTranslationConstants.blockProfile.tr, AppTranslationConstants.blockedProfileMsg.tr);
-                              }
-                            },
-                            child: Text(AppTranslationConstants.toBlock.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          )
-                        ]
-                    ).show();
+                    PostCommentsController postCommentsController = Get.find<PostCommentsController>();
+                    postCommentsController.showBlockProfileAlert(context, comment.ownerId);
                     break;
                   case AppTranslationConstants.removeComment:
-                    Alert(
-                        context: context,
-                        style: AlertStyle(
-                          backgroundColor: AppColor.main50,
-                          titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        title: AppTranslationConstants.removeThisPost.tr,
-                        content: Column(
-                          children: [
-                            Text(AppTranslationConstants.removePostMsg.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ],),
-                        buttons: [
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              Get.back();
-                            },
-                            child: Text(AppTranslationConstants.goBack.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ),
-                          DialogButton(
-                            color: AppColor.bondiBlue75,
-                            onPressed: () async {
-                              await Get.find<PostCommentsController>().removeComment(comment);
-                              AppUtilities.showAlert(context,
-                                  AppTranslationConstants.removeComment.tr,
-                                  AppTranslationConstants.removedCommentMsg.tr
-                              );
-                            },
-                            child: Text(AppTranslationConstants.toRemove.tr,
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          )
-                        ]
-                    ).show();
+                    PostCommentsController postCommentsController = Get.find<PostCommentsController>();
+                    postCommentsController.showRemoveCommentAlert(context, comment);
                     break;
                 }
-                //Get.back();
               },
             );
           })

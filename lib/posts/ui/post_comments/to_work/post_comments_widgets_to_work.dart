@@ -39,7 +39,7 @@
 //         CircleAvatar(
 //             backgroundColor: Colors.grey,
 //             child: ClipOval(
-//                 child: Image.network(Comment.ProfileImgUrl)
+//                 child: Image.network(comment.ownerImgUrl)
 //             ),
 //             radius: 20),
 //       ],
@@ -89,7 +89,7 @@
 //         CircleAvatar(
 //             backgroundColor: Colors.grey,
 //             child: ClipOval(
-//                 child: Image.network(Comment.ProfileImgUrl)
+//                 child: Image.network(comment.ownerImgUrl)
 //             ),
 //             radius: 20),
 //         AppTheme.widthSpace20,

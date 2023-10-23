@@ -9,48 +9,52 @@ import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import '../../../camera/neom_camera_handler.dart';
+import '../widgets/stateful_video_editor.dart';
 import 'post_upload_controller.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class PostUploadPage extends StatelessWidget {
   const PostUploadPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<PostUploadController>(
-      id: AppPageIdConstants.upload,
-      init: PostUploadController(),
-      builder: (_) {
-        List<Widget> actionWidgets = [
-          IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.image_outlined),
-              color: Colors.white70,
-              onPressed: ()=> _.handleImage()
-          ),
-          IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.camera_alt_outlined),
-              color: Colors.white70,
-              onPressed: ()=> {
-                Get.toNamed(AppRouteConstants.feedActivity)
-              }
-          ),
-        ];
-         return MaterialApp(
-            theme: ThemeData.dark(),
-        home: Scaffold(
-           // extendBodyBehindAppBar: true,
-           appBar: AppBarChild(title: AppTranslationConstants.createPost.tr, ),
-           backgroundColor: AppColor.main50,
-           body: Obx(()=> Container(
+    List<Widget> actionWidgets = [
+      IconButton(
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.image_outlined),
+          color: Colors.white70,
+          onPressed: ()=> Get.find<PostUploadController>().handleImage()
+      ),
+    ];
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBarChild(title: AppTranslationConstants.createPost.tr, actionWidgets: actionWidgets, color: AppColor.getMain(),),
+      backgroundColor: AppColor.main50,
+      body: GetBuilder<PostUploadController>(
+        id: AppPageIdConstants.upload,
+        init: PostUploadController(),
+        builder: (_) {
+          List<Widget> actionWidgets = [
+            IconButton(
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.image_outlined),
+                color: Colors.white70,
+                onPressed: ()=> _.handleImage()
+            ),
+          ];
+
+          return Obx(()=> Container(
               decoration: AppTheme.appBoxDecoration,
-              child: (_.takePhoto.value) ? NeomCameraHandler(cameraController: _.cameraController,) : Center(child: Column(
+              child: (_.takePhoto.value && !_.cameraControllerDisposed.value)
+                  ? NeomCameraHandler(cameraController: _.cameraController,)
+                  : Center(
+                child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 GestureDetector(
                   child: Column(children: [
                     Image.asset(AppAssets.uploadVector, width: AppTheme.fullWidth(context)*0.66, fit: BoxFit.fitWidth,),
-                    Padding(
+                    Container(
                       padding: const EdgeInsets.only(top: 10.0),
                       child: Text(
                         AppTranslationConstants.tapToUploadImage.tr,
@@ -58,12 +62,22 @@ class PostUploadPage extends StatelessWidget {
                             fontSize: 20.0,
                           ),
                         ),
-                      ),  
-                    ],
+                      ),
+                    Container(
+                      width: AppTheme.fullWidth(context)*0.75,
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Text(
+                        AppTranslationConstants.allowedContentReminderMsg.tr,
+                        style: const TextStyle(
+                          fontSize: 12.0,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                   ),
                   onTap: ()=>
-                      // _.handleImage()
-                    // TODO Once frontal camera is repaired
+                    _.userController.user!.isVerified ?
                     showDialog(
                       context: context,
                       builder: (context) {
@@ -72,9 +86,7 @@ class PostUploadPage extends StatelessWidget {
                           title: Text(AppTranslationConstants.createPost.tr),
                           children: <Widget>[
                             SimpleDialogOption(
-                              child: Text(
-                                  AppTranslationConstants.takePhoto.tr
-                              ),
+                              child: Text(AppTranslationConstants.takePhoto.tr),
                               onPressed: () => _.handleImage(appFileFrom: AppFileFrom.camera, context: context),
                             ),
                             SimpleDialogOption(
@@ -83,10 +95,9 @@ class PostUploadPage extends StatelessWidget {
                               ),
                               onPressed: () => _.handleImage(),
                             ),
-                            //TODO Once we know we have budget to upload multimedia content
-                            SimpleDialogOption(
+                            if(_.userController.user!.isVerified) SimpleDialogOption(
                               child: Text(
-                                  AppTranslationConstants.videoFromGallery.tr
+                                AppTranslationConstants.videoFromGallery.tr
                               ),
                               onPressed: () => _.handleVideo(),
                             ),
@@ -99,14 +110,14 @@ class PostUploadPage extends StatelessWidget {
                           ],
                         );
                       }
-                    ),
+                    ) : _.handleImage(),
                   ),
                 ],
                 ),
               ),
-           ),),),
-        );
+           ),);
+
       }
-    );
+    ),);
   }
 }

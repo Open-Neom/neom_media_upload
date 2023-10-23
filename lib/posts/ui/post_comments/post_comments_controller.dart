@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,11 +7,13 @@ import 'package:neom_commons/core/data/api_services/push_notification/firebase_m
 import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
+import 'package:neom_commons/core/data/implementations/mate_controller.dart';
 import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/domain/model/activity_feed.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
 import 'package:neom_commons/core/domain/model/post_comment.dart';
+import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/enums/activity_feed_type.dart';
@@ -20,6 +22,7 @@ import 'package:neom_commons/core/utils/enums/app_media_type.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
+import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 
 import '../../../blog/ui/blog_editor_controller.dart';
@@ -31,7 +34,6 @@ import '../post_details_controller.dart';
 
 class PostCommentsController extends GetxController implements PostCommentsService {
 
-  var logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
   final timelineController = Get.find<TimelineController>();
   final postUploadController = Get.put(PostUploadController());
@@ -60,7 +62,7 @@ class PostCommentsController extends GetxController implements PostCommentsServi
   @override
   void onInit() async {
     super.onInit();
-    logger.d("Post Controller Init");
+    AppUtilities.logger.d("Post Controller Init");
 
     profile = userController.profile;
 
@@ -68,7 +70,7 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     try {
       post = Get.arguments ?? Post();
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
   }
@@ -76,7 +78,7 @@ class PostCommentsController extends GetxController implements PostCommentsServi
   @override
   void onReady() async {
     super.onReady();
-    logger.d("Post Comments Controller Ready");
+    AppUtilities.logger.d("Post Comments Controller Ready");
     post = await PostFirestore().retrieve(post.id);
 
     if(post.comments.isNotEmpty) {
@@ -96,15 +98,15 @@ class PostCommentsController extends GetxController implements PostCommentsServi
 
   @override
   Future<void> addComment() async {
-    logger.d("Adding comment to Post and Comment Collections");
+    AppUtilities.logger.d("Adding comment to Post and Comment Collections");
     try {
       PostComment newComment = PostComment(
         postOwnerId: post.ownerId,
         text: commentController.text,
         postId: post.id,
-        profileId: profile.id,
-        profileImgUrl: profile.photoUrl,
-        profileName: profile.name,
+        ownerId: profile.id,
+        ownerImgUrl: profile.photoUrl,
+        ownerName: profile.name,
         createdTime: DateTime
             .now().millisecondsSinceEpoch,
         mediaUrl: post.mediaUrl,
@@ -155,15 +157,23 @@ class PostCommentsController extends GetxController implements PostCommentsServi
         clearComment();
         clearImage();
       } else {
-        logger.d("Comment and Comment Image are empty");
+        AppUtilities.logger.d("Comment and Comment Image are empty");
       }
 
-      Get.find<PostDetailsController>().setCommentToPost(newComment.id);
+      PostDetailsController postDetailsController;
+      if (Get.isRegistered<PostDetailsController>()) {
+        postDetailsController = Get.find<PostDetailsController>();
+      } else {
+        postDetailsController = PostDetailsController();
+        Get.put(postDetailsController);
+      }
+      postDetailsController.setCommentToPost(newComment.id);
+
       if(post.type == PostType.blogEntry) {
         Get.find<BlogEditorController>().setCommentToBlogEntry(newComment.id);
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     isUploading.value = false;
@@ -198,38 +208,36 @@ class PostCommentsController extends GetxController implements PostCommentsServi
 
   @override
   Future<void> handleLikeComment(PostComment comment) async {
+    AppUtilities.logger.d("handleLikeComment");
+    try {
+      isLiked = isLikedComment(comment);
+      isLiked ? comment.likedProfiles.remove(profile.id)
+          : comment.likedProfiles.add(profile.id);
+      update([AppPageIdConstants.postComments]);
 
-    isLiked = isLikedComment(comment);
+      if (await commentFirestore.handleLikeComment(profile.id, comment.id, isLiked)) {
 
-
-    if (await commentFirestore.handleLikeComment(profile.id, comment.id, isLiked)) {
-
-      if(profile.id != comment.profileId) {
-
-        if(isLiked) {
-          ActivityFeedFirestore()
-              .removeByReferenceActivity(comment.postOwnerId, ActivityFeedType.commentLike,
-              activityReferenceId: post.id);
-        } else {
-          ActivityFeed activityFeed = ActivityFeed();
-
-          activityFeed.ownerId =  comment.profileId;
-          activityFeed.profileId = profile.id;
-          activityFeed.createdTime = DateTime.now().millisecondsSinceEpoch;
-          activityFeed.activityReferenceId = post.id;
-          activityFeed.activityFeedType = ActivityFeedType.commentLike;
-          activityFeed.profileName = profile.name;
-          activityFeed.profileImgUrl = profile.photoUrl;
-          activityFeed.mediaUrl = comment.mediaUrl.isNotEmpty ? comment.mediaUrl : post.mediaUrl;
-          await ActivityFeedFirestore().insert(activityFeed);
+        if(profile.id != comment.ownerId) {
+          if(isLiked) {
+            ActivityFeedFirestore().removeByReferenceActivity(comment.postOwnerId,
+                ActivityFeedType.commentLike, activityReferenceId: post.id);
+          } else {
+            ActivityFeed activityFeed = ActivityFeed();
+            activityFeed.ownerId =  comment.ownerId;
+            activityFeed.profileId = profile.id;
+            activityFeed.createdTime = DateTime.now().millisecondsSinceEpoch;
+            activityFeed.activityReferenceId = post.id;
+            activityFeed.activityFeedType = ActivityFeedType.commentLike;
+            activityFeed.profileName = profile.name;
+            activityFeed.profileImgUrl = profile.photoUrl;
+            activityFeed.mediaUrl = comment.mediaUrl.isNotEmpty ? comment.mediaUrl : post.mediaUrl;
+            ActivityFeedFirestore().insert(activityFeed);
+          }
         }
       }
-
-      if(await CommentFirestore().handleLikeComment(profile.id, comment.id, isLiked)) {
-        isLiked ? comment.likedProfiles.remove(profile.id)
-            : comment.likedProfiles.add(profile.id);
-      }
-
+      
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
     }
 
     update([AppPageIdConstants.postComments]);
@@ -242,16 +250,92 @@ class PostCommentsController extends GetxController implements PostCommentsServi
       if(await ProfileFirestore().hideComment(profile.id, comment.id)) {
         comments.remove(comment);
       } else {
-        logger.i("Something happened while hidding post");
+        AppUtilities.logger.i("Something happened while hidding comment");
       }
-
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
-    Get.back();
-    Get.back();
     update([AppPageIdConstants.postComments]);
+  }
+
+  @override
+  Future<void> showHideCommentAlert(BuildContext context, PostComment comment) async {
+    Alert(
+        context: context,
+        style: AlertStyle(
+          backgroundColor: AppColor.main50,
+          titleStyle: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        title: AppTranslationConstants.hideComment.tr,
+        content: Column(
+          children: [
+            Text(AppTranslationConstants.hideCommentMsg2.tr,
+              style: const TextStyle(fontSize: 15),
+            ),
+          ],),
+        buttons: [
+          DialogButton(
+            color: AppColor.bondiBlue75,
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppTranslationConstants.goBack.tr,
+              style: const TextStyle(fontSize: 15),
+            ),
+          ),
+          DialogButton(
+            color: AppColor.bondiBlue75,
+            onPressed: () async {
+              await hideComment(comment);
+              Navigator.pop(context);
+              Navigator.pop(context);
+              AppUtilities.showSnackBar(message: AppTranslationConstants.hiddenCommentMsg.tr);
+            },
+            child: Text(AppTranslationConstants.toHide.tr,
+              style: const TextStyle(fontSize: 15),
+            ),
+          )
+        ]
+    ).show();
+  }
+
+  @override
+  Future<void> showRemoveCommentAlert(BuildContext context, PostComment comment) async {
+    Alert(
+        context: context,
+        style: AlertStyle(
+          backgroundColor: AppColor.main50,
+          titleStyle: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        title: AppTranslationConstants.removeThisComment.tr,
+        content: Column(
+          children: [
+            Text(AppTranslationConstants.removeCommentMsg.tr,
+              style: const TextStyle(fontSize: 15),
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            color: AppColor.bondiBlue75,
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppTranslationConstants.goBack.tr,
+              style: const TextStyle(fontSize: 15),
+            ),
+          ),
+          DialogButton(
+            color: AppColor.bondiBlue75,
+            onPressed: () async {
+              await removeComment(comment);
+              Navigator.pop(context);
+              Navigator.pop(context);
+              AppUtilities.showSnackBar(message: AppTranslationConstants.removedCommentMsg);
+            },
+            child: Text(AppTranslationConstants.toRemove.tr,
+              style: const TextStyle(fontSize: 15),
+            ),
+          )
+        ]
+    ).show();
   }
 
   @override
@@ -262,17 +346,21 @@ class PostCommentsController extends GetxController implements PostCommentsServi
         timelineController.removeCommentToPost(post.id, comment);
         comments.remove(comment);
       } else {
-        logger.i("Something happened while removing post");
+        AppUtilities.logger.w("Something happened while removing post");
       }
-
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
-    Get.back();
-    Get.back();
-    update([AppPageIdConstants.postComments]);
-
+    update([AppPageIdConstants.timeline]);
+  }
+  @override
+  Future<void> showBlockProfileAlert(BuildContext context, String commentOwnerId) async {
+    MateController itemmateController = Get.put(MateController());
+    itemmateController.showBlockProfileAlert(context, commentOwnerId);
+    userController.profile.blockTo!.add(commentOwnerId);
+    comments.removeWhere((element) => element.ownerId == commentOwnerId);
+    update([AppPageIdConstants.timeline]);
   }
 
 }
