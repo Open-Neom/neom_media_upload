@@ -1,20 +1,13 @@
 import 'dart:io';
-import 'package:get/get.dart';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_editor/video_editor.dart';
 
 import '../../../neom_posts.dart';
 import 'video_crop_page.dart';
-import 'video_export_result.dart';
 import 'video_export_service.dart';
 
 class StatefulVideoEditor extends StatefulWidget {
@@ -114,11 +107,9 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
 
         if(editedFile.path.isNotEmpty) {
           editedVideo = XFile(editedFile.path);
-          if (editedVideo != null) {
-            AppUtilities.logger.i('Video recorded to ${editedVideo.path}');
-            hadChanges = false;
-            uploadController?.setProcessedVideo(editedVideo);
-          }
+          AppUtilities.logger.i('Video recorded to ${editedVideo.path}');
+          hadChanges = false;
+          uploadController?.setProcessedVideo(editedVideo);
         }
       },
     );
@@ -188,7 +179,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
             decoration: AppTheme.appBoxDecoration,
             child: Column(
               children: [
-                Container(
+                SizedBox(
                   height: AppTheme.fullHeight(context)/2,
                   child: Stack(
                     alignment: Alignment.center,
@@ -321,7 +312,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
 
           return Container(
             width: AppTheme.fullWidth(context),
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
                 children: [
                   Text('${AppUtilities.getDurationInMinutes(Duration(seconds: pos.toInt()).inMilliseconds)} / ${AppUtilities.getDurationInMinutes(endTrim)}',),
@@ -343,7 +334,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
       ),
       Container(
         width: AppTheme.fullWidth(context),
-        margin: EdgeInsets.symmetric(vertical: 10),
+        margin: const EdgeInsets.symmetric(vertical: 10),
         child: TrimSlider(
           controller: _controller,
           horizontalMargin: 10,
@@ -355,7 +346,4 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
       )
     ];
   }
-
-
 }
-

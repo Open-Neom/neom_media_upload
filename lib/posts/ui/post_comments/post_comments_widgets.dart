@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:hashtagable_v3/hashtagable.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'post_comments_controller.dart';
@@ -74,7 +73,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    IconButton(
+                    if(_.profile.id != comment.ownerId) IconButton(
                       constraints: const BoxConstraints(),
                       icon: Icon(_.isLikedComment(comment) ? FontAwesomeIcons.solidHeart
                           :  FontAwesomeIcons.heart, size: AppTheme.postIconSize),
@@ -125,7 +124,7 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
                   Text(timeago.format(
                       DateTime.fromMillisecondsSinceEpoch(comment.createdTime),
                       locale: 'en_short'),
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 12,
                           color: AppColor.white
                       )

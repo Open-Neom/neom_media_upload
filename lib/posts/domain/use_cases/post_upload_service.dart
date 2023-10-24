@@ -14,7 +14,7 @@ abstract class PostUploadService {
   void clearMedia();
 
   Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery, XFile? videoFile, BuildContext? context});
-  // Future<void> playPauseVideo();
+  Future<void> playPauseVideo();
   void disposeVideoPlayer();
 
 

@@ -1,29 +1,11 @@
 import 'dart:async';
-import 'package:rflutter_alert/rflutter_alert.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
-import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
-import 'package:neom_commons/core/data/firestore/post_firestore.dart';
-import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
-import 'package:neom_commons/core/data/implementations/mate_controller.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
-import 'package:neom_commons/core/domain/model/activity_feed.dart';
-import 'package:neom_commons/core/domain/model/app_profile.dart';
-import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/domain/model/post_comment.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/enums/activity_feed_type.dart';
-import 'package:neom_commons/core/utils/enums/app_file_from.dart';
-import 'package:neom_commons/core/utils/enums/app_media_type.dart';
-import 'package:neom_commons/core/utils/enums/post_type.dart';
-import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
-import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 import '../../../blog/ui/blog_editor_controller.dart';
 import '../../data/firestore/comment_firestore.dart';
@@ -125,6 +107,8 @@ class PostCommentsController extends GetxController implements PostCommentsServi
           newComment.type = AppMediaType.image;
         }
 
+        addCommentToList(newComment);
+
         newComment.id = await CommentFirestore().insert(newComment);
         if(newComment.id.isNotEmpty) {
           userController.profile.comments = [];
@@ -153,9 +137,7 @@ class PostCommentsController extends GetxController implements PostCommentsServi
           post.commentIds.add(newComment.id);
         }
 
-        comments.add(newComment);
-        clearComment();
-        clearImage();
+
       } else {
         AppUtilities.logger.d("Comment and Comment Image are empty");
       }
@@ -187,6 +169,16 @@ class PostCommentsController extends GetxController implements PostCommentsServi
   Future<void> handleImage(AppFileFrom appFileFrom) async {
     await postUploadController.handleImage(appFileFrom: appFileFrom, uploadImageType: UploadImageType.profile);
     update([AppPageIdConstants.postComments]);
+  }
+
+  @override
+  void addCommentToList(PostComment newComment)  {
+    comments.add(newComment);
+    clearComment();
+    clearImage();
+    update([AppPageIdConstants.postComments, AppPageIdConstants.timeline,
+      AppPageIdConstants.postDetails, AppPageIdConstants.blogEntry,
+      AppPageIdConstants.blogEditor]);
   }
 
   @override

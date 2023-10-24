@@ -21,10 +21,8 @@ dependencies:
       url: https://github.com/Cyberneom/neom_timeline.git
 
   camera: ^0.10.5+5
-#  video_trimmer: ^3.0.1
   video_editor: ^3.0.0
   fraction: ^5.0.2
-#  ffmpeg_kit_flutter_min: ^5.1.0
   ffmpeg_kit_flutter_min: ^6.0.3
 
 dev_dependencies:
@@ -43,9 +41,6 @@ dependency_overrides:
   uuid: 4.1.0
   logger: 2.0.2+1
   google_api_headers: 2.0.3
-#  ffmpeg_kit_flutter_min: ^5.1.0
-#  video_player: 2.6.1
-
 
 # The following section is specific to Flutter packages.
 flutter:

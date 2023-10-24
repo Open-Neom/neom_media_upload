@@ -37,13 +37,18 @@ class PostDetailsController extends GetxController implements PostDetailsService
     profile = userController.profile;
     try {
 
-      if(Get.arguments != null && Get.arguments.isNotEmpty) {
-        if (Get.arguments[0] is Post) {
-          post = Get.arguments[0];
-          postId = post.id;
-        } else if (Get.arguments[0] is String) {
-          postId = Get.arguments[0];
+      if(Get.arguments != null) {
+        if(Get.arguments is Post) {
+          post = Get.arguments;
+        } else if(Get.arguments.isNotEmpty) {
+          if (Get.arguments[0] is Post) {
+            post = Get.arguments[0];
+            postId = post.id;
+          } else if (Get.arguments[0] is String) {
+            postId = Get.arguments[0];
+          }
         }
+
       }
 
     } catch (e) {

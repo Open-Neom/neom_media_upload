@@ -41,10 +41,7 @@ class PostCommentsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  bottom: 0.0,
-                  left: 0.0,
-                  right: 0.0,
+                Positioned(bottom: 0.0, left: 0.0, right: 0.0,
                   child: buildMessageComposer(context, _),
                 ),
               ]

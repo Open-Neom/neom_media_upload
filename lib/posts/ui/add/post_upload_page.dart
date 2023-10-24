@@ -5,13 +5,10 @@ import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_assets.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import '../../../camera/neom_camera_handler.dart';
-import '../widgets/stateful_video_editor.dart';
 import 'post_upload_controller.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class PostUploadPage extends StatelessWidget {
   const PostUploadPage({Key? key}) : super(key: key);
@@ -34,15 +31,6 @@ class PostUploadPage extends StatelessWidget {
         id: AppPageIdConstants.upload,
         init: PostUploadController(),
         builder: (_) {
-          List<Widget> actionWidgets = [
-            IconButton(
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.image_outlined),
-                color: Colors.white70,
-                onPressed: ()=> _.handleImage()
-            ),
-          ];
-
           return Obx(()=> Container(
               decoration: AppTheme.appBoxDecoration,
               child: (_.takePhoto.value && !_.cameraControllerDisposed.value)
@@ -74,8 +62,7 @@ class PostUploadPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  ],
-                  ),
+                  ],),
                   onTap: ()=>
                     _.userController.user!.isVerified ?
                     showDialog(
@@ -115,9 +102,10 @@ class PostUploadPage extends StatelessWidget {
                 ],
                 ),
               ),
-           ),);
-
-      }
-    ),);
+           ),
+          );
+        }
+      ),
+    );
   }
 }

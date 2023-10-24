@@ -1,18 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:neom_commons/core/app_flavour.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
+import 'package:get/get.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_player/video_player.dart';
 
 import '../neom_posts.dart';
-import 'package:get/get.dart';
 
 class NeomCameraHandler extends StatefulWidget {
 
@@ -105,20 +99,20 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: AppTheme.fullHeight(context),
       child: Stack(
       alignment: Alignment.center,
       children: [
-        (!isDisposed) ? Container(
+        (!isDisposed) ? SizedBox(
           width: AppTheme.fullWidth(context),
           child: ClipRRect(
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(50.0),
               bottomRight: Radius.circular(50.0),
             ),
             child: _cameraPreviewWidget(),),
-        ) : Container(child: CircularProgressIndicator(),),
+        ) : const CircularProgressIndicator(),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(

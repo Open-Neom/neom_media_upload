@@ -189,7 +189,7 @@
     },
     {
       "name": "camera_platform_interface",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/camera_platform_interface-2.5.2",
+      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/camera_platform_interface-2.6.0",
       "packageUri": "lib/",
       "languageVersion": "2.19"
     },
@@ -1653,13 +1653,13 @@
     },
     {
       "name": "url_launcher_platform_interface",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/url_launcher_platform_interface-2.1.5",
+      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/url_launcher_platform_interface-2.2.0",
       "packageUri": "lib/",
       "languageVersion": "2.19"
     },
     {
       "name": "url_launcher_web",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/url_launcher_web-2.0.20",
+      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/url_launcher_web-2.1.0",
       "packageUri": "lib/",
       "languageVersion": "3.1"
     },
@@ -1832,7 +1832,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2023-10-23T11:40:03.081153Z",
+  "generated": "2023-10-24T13:07:36.945649Z",
   "generator": "pub",
   "generatorVersion": "3.1.4"
 }
