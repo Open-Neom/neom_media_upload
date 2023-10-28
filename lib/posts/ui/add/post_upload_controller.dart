@@ -63,7 +63,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   File _file = File("");
   File _thumbnailFile = File("");
   String mediaUrl = "";
-  String _thumbnailUrl = "";
+  String thumbnailUrl = "";
 
   PostType postType = PostType.pending;
 
@@ -229,10 +229,9 @@ class PostUploadController extends GetxController implements PostUploadService {
 
     try {
       imageUrl = await AppUploadFirestore()
-          .uploadImage(_mediaId,
-          croppedImageFile.value.path.isNotEmpty ? croppedImageFile.value : File(mediaFile.value.path),
-          uploadImageType);
-      logger.d("File uploaded to $mediaUrl");
+          .uploadImage(_mediaId, croppedImageFile.value.path.isNotEmpty
+          ? croppedImageFile.value : File(mediaFile.value.path), uploadImageType);
+      logger.d("File uploaded to $imageUrl");
     } catch (e) {
       logger.e(e.toString());
     }
@@ -435,22 +434,30 @@ class PostUploadController extends GetxController implements PostUploadService {
     try {
       if (postType == PostType.image) {
         mediaUrl = await AppUploadFirestore().uploadImage(_mediaId, croppedImageFile.value, UploadImageType.post);
+        logger.d("File uploaded to $mediaUrl");
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
         // mediaFile.value = XFile(await saveVideo());
         await validateMediaSize();
         _file = File(mediaFile.value.path);
-        _thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);
+        thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);
         mediaUrl = await AppUploadFirestore().uploadVideo(_mediaId, _file);
+        logger.d("Video File uploaded to $mediaUrl & thumbnailURL to ${thumbnailUrl}");
       } else {
         postType = PostType.caption;
       }
+
+      if(mediaUrl.isNotEmpty || postType == PostType.caption) {
+        await handlePostUpload();
+      } else {
+        Get.offAllNamed(AppRouteConstants.home);
+        AppUtilities.showSnackBar(message: AppTranslationConstants.postUploadErrorMsg.tr);
+      }
     } catch (e) {
       logger.e(e.toString());
+      Get.offAllNamed(AppRouteConstants.home);
+      AppUtilities.showSnackBar(message: AppTranslationConstants.postUploadErrorMsg.tr);
     }
-
-    logger.d("File uploaded to $mediaUrl");
-    await handlePostUpload();
   }
 
   @override
@@ -476,7 +483,7 @@ class PostUploadController extends GetxController implements PostUploadService {
           profileName: profile.name,
           profileImgUrl: profile.photoUrl,
           ownerId: profile.id,
-          thumbnailUrl: _thumbnailUrl,
+          thumbnailUrl: thumbnailUrl,
           mediaUrl: mediaUrl,
           position: _position,
           location:  location,
@@ -505,22 +512,23 @@ class PostUploadController extends GetxController implements PostUploadService {
           profile.posts!.add(_post.id);
         }
 
-        await Get.find<TimelineController>().getTimeline();
-
+        // await Get.find<TimelineController>().getTimeline();
         FirebaseMessagingCalls.sendGlobalPushNotification(
           fromProfile: profile,
           notificationType: PushNotificationType.post,
           referenceId: _post.id,
           imgUrl: _post.mediaUrl
+
         );
+
+        await Get.find<TimelineController>().getTimeline();
+        Get.offAllNamed(AppRouteConstants.home);
       }
 
     } catch (e) {
       logger.e(e.toString());
     }
 
-
-    Get.offAllNamed(AppRouteConstants.home);
   }
 
   @override
