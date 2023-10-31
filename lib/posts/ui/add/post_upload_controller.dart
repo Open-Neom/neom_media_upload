@@ -77,7 +77,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   Future<void> onInit() async {
     super.onInit();
-    logger.d("PostUpload Controller Init");
+    logger.t("PostUpload Controller Init");
     profile = userController.profile;
 
     try {
@@ -442,7 +442,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         _file = File(mediaFile.value.path);
         thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);
         mediaUrl = await AppUploadFirestore().uploadVideo(_mediaId, _file);
-        logger.d("Video File uploaded to $mediaUrl & thumbnailURL to ${thumbnailUrl}");
+        logger.d("Video File uploaded to $mediaUrl & thumbnailURL to $thumbnailUrl");
       } else {
         postType = PostType.caption;
       }

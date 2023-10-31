@@ -60,17 +60,7 @@ class CommentFirestore implements CommentRepository {
         logger.d("CommentId added to Profile");
 
         if (comment.ownerId != comment.postOwnerId && commentId.isNotEmpty) {
-          ActivityFeed activityFeed = ActivityFeed(
-              ownerId: comment.postOwnerId,
-              createdTime: comment.createdTime,
-              activityReferenceId: comment.postId,
-              activityFeedType: ActivityFeedType.comment,
-              message: comment.text,
-              profileId: comment.ownerId,
-              profileName: comment.ownerName,
-              profileImgUrl: comment.ownerImgUrl,
-              mediaUrl: comment.mediaUrl);
-
+          ActivityFeed activityFeed = ActivityFeed.fromComment(comment: comment, type: ActivityFeedType.comment);
           await ActivityFeedFirestore().insert(activityFeed);
           logger.d("ActivityFeed created for comment");
 

@@ -214,15 +214,8 @@ class PostCommentsController extends GetxController implements PostCommentsServi
             ActivityFeedFirestore().removeByReferenceActivity(comment.postOwnerId,
                 ActivityFeedType.commentLike, activityReferenceId: post.id);
           } else {
-            ActivityFeed activityFeed = ActivityFeed();
-            activityFeed.ownerId =  comment.ownerId;
-            activityFeed.profileId = profile.id;
-            activityFeed.createdTime = DateTime.now().millisecondsSinceEpoch;
-            activityFeed.activityReferenceId = post.id;
-            activityFeed.activityFeedType = ActivityFeedType.commentLike;
-            activityFeed.profileName = profile.name;
-            activityFeed.profileImgUrl = profile.photoUrl;
-            activityFeed.mediaUrl = comment.mediaUrl.isNotEmpty ? comment.mediaUrl : post.mediaUrl;
+            ActivityFeed activityFeed = ActivityFeed.fromComment(comment: comment, type: ActivityFeedType.commentLike,
+              fromProfile: profile, mediaUrl: comment.mediaUrl.isNotEmpty ? comment.mediaUrl : post.mediaUrl);
             ActivityFeedFirestore().insert(activityFeed);
           }
         }

@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:hashtagable_v3/hashtagable.dart';
+import 'package:neom_commons/core/ui/widgets/hashtag_link_text.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
-import 'package:timeago/timeago.dart' as timeago;
-
 import 'post_comments_controller.dart';
 
 Widget othersComment(BuildContext context, PostCommentsController _, PostComment comment) {
@@ -35,8 +33,8 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
             style: BorderStyle.solid, color: Colors.grey, width: 0.5)),
           child: Card(
             color: AppColor.getContextCardColor(context),
-          elevation: 0,
-          child: Container(
+            elevation: 0,
+            child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(
               children: <Widget>[
@@ -47,9 +45,9 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                 Column(
                   children: [
                     SizedBox(
-                        height: 250,
-                        width: 250,
-                        child: customCachedNetworkHeroImage(comment.mediaUrl)),
+                      height: 250, width: 250,
+                      child: customCachedNetworkHeroImage(comment.mediaUrl),
+                    ),
                   AppTheme.heightSpace5,
                 ],),
                 Row(
@@ -81,9 +79,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                     ),
                   ],
                 ),
-                AppTheme.heightSpace5,
-                //TODO
-                //Divider(thickness: 1),
+                ///TODO
                 //menuReply(comment),
               ],
             ),
@@ -94,7 +90,6 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
     ],
   );
 }
-
 
 Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, PostComment comment,
     {showDots = true, UserRole role = UserRole.subscriber}) {
@@ -120,14 +115,9 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
                       ))
                     ,
                   ),
-                  const SizedBox(width: 10),
-                  Text(timeago.format(
-                      DateTime.fromMillisecondsSinceEpoch(comment.createdTime),
-                      locale: 'en_short'),
-                      style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColor.white
-                      )
+                  AppTheme.widthSpace5,
+                  Text(AppUtilities.getTimeAgo(comment.createdTime, showShort: false),
+                      style: const TextStyle(fontSize: 12, color: AppColor.white)
                   ),                  
                 ],
               ),
@@ -237,33 +227,12 @@ Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
                 context, _.profile.id, _.post,
                 role: _.userController.user!.userRole),
             AppTheme.heightSpace5,
-            Visibility(
-                visible: caption.isNotEmpty,
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: (caption.contains("http") || caption.contains("https"))
-                        ?
-                    Linkify(
-                      onOpen: (link)  {
-                        CoreUtilities.launchURL(link.url);
-                      },
-                      text: caption,
-                      maxLines: 20,
-                      style: const TextStyle(fontSize: 16),
-                      linkStyle: const TextStyle(fontSize: 16, color: AppColor.dodgetBlue),
-                    ) :
-                    HashTagText(
-                      text: caption,
-                      softWrap: true,
-                      maxLines: 20,
-                      basicStyle: const TextStyle(fontSize: 16),
-                      decoratedStyle: const TextStyle(fontSize: 16, color: AppColor.dodgetBlue),
-                      onTap: (text) {
-                        AppUtilities.logger.e(text);
-                      },
-                    )
-                )
-            )
+            if(caption.isNotEmpty)
+              Align(
+                  alignment: Alignment.centerLeft,
+                  child: HashtagLinkText(text: caption,)
+              )
+
           ],
         ),
       ),

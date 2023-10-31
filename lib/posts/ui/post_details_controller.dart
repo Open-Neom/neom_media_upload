@@ -101,18 +101,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       if (await PostFirestore().handleLikePost(profile.id, post.id, isLiked)) {
 
         if(profile.id != post.ownerId) {
-          ActivityFeed activityFeed = ActivityFeed(
-              id: post.id,
-              ownerId: post.ownerId,
-              profileId: profile.id,
-              createdTime: DateTime.now().millisecondsSinceEpoch);
-
-          activityFeed.activityFeedType = ActivityFeedType.like;
-          activityFeed.profileName = profile.name;
-          activityFeed.profileImgUrl = profile.photoUrl;
-          activityFeed.mediaUrl = post.mediaUrl;
-          activityFeed.activityReferenceId = post.id;
-
+          ActivityFeed activityFeed = ActivityFeed.fromPost(post: post, fromProfile: profile, type: ActivityFeedType.like);
           isLiked ? await ActivityFeedFirestore()
               .removeActivityById(activityFeed.ownerId, activityFeed.id)
               : ActivityFeedFirestore().insert(activityFeed);

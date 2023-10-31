@@ -162,7 +162,7 @@ class BlogEditorPage extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(50),
                                 ),
                                 child: Text(_.blogEntry.value.isDraft ?
-                                AppTranslationConstants.post.tr : AppTranslationConstants.update.tr,
+                                AppTranslationConstants.toPost.tr : AppTranslationConstants.update.tr,
                                   style: TextStyle(
                                     letterSpacing: 1,
                                     fontSize: 16,

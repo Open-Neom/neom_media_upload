@@ -53,7 +53,7 @@ Widget buildCommentList(BuildContext context, PostCommentsController _) {
 
 }
 
-Widget buildMessageComposer(BuildContext context, PostCommentsController _) {
+Widget buildCommentComposer(BuildContext context, PostCommentsController _) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 10.0),
     height: 80.0,
