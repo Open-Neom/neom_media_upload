@@ -61,7 +61,7 @@ Widget buildCommentComposer(BuildContext context, PostCommentsController _) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        (_.postUploadController.mediaFile.value.path.isEmpty) ?
+        (_.postUploadController.croppedImageFile.value.path.isEmpty) ?
         IconButton(
             icon: const Icon(Icons.photo),
             iconSize: 25.0,
@@ -73,7 +73,7 @@ Widget buildCommentComposer(BuildContext context, PostCommentsController _) {
               SizedBox(
                   width: 50.0,
                   height: 50.0,
-                  child: fileImage(_.postUploadController.mediaFile.value.path)
+                  child: fileImage(_.postUploadController.croppedImageFile.value.path)
               ),
               Positioned(
                 width: 20,
@@ -86,7 +86,8 @@ Widget buildCommentComposer(BuildContext context, PostCommentsController _) {
                     onPressed:  ()=> _.clearImage()
                 ),
               ),
-            ]),
+            ]
+        ),
         AppTheme.widthSpace10,
         Expanded(
           child: TextField(

@@ -272,12 +272,6 @@
       "languageVersion": "2.19"
     },
     {
-      "name": "dart_des",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/dart_des-1.0.2",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
       "name": "device_info_plus",
       "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/device_info_plus-9.1.0",
       "packageUri": "lib/",
@@ -462,18 +456,6 @@
       "rootUri": "file:///Users/serzen/src/flutter/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.0"
-    },
-    {
-      "name": "flutter_app_badger",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "flutter_archive",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/flutter_archive-5.0.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.15"
     },
     {
       "name": "flutter_cache_manager",
@@ -810,12 +792,6 @@
       "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/html-0.15.4",
       "packageUri": "lib/",
       "languageVersion": "2.19"
-    },
-    {
-      "name": "html_unescape",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/html_unescape-2.0.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
     },
     {
       "name": "http",
@@ -1790,12 +1766,6 @@
       "languageVersion": "3.1"
     },
     {
-      "name": "workmanager",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/workmanager-0.5.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.1"
-    },
-    {
       "name": "xdg_directories",
       "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/xdg_directories-1.0.3",
       "packageUri": "lib/",
@@ -1814,12 +1784,6 @@
       "languageVersion": "2.19"
     },
     {
-      "name": "youtube_explode_dart",
-      "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/youtube_explode_dart-2.0.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.0"
-    },
-    {
       "name": "youtube_player_flutter",
       "rootUri": "file:///Users/serzen/.pub-cache/hosted/pub.dev/youtube_player_flutter-8.1.2",
       "packageUri": "lib/",
@@ -1832,7 +1796,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2023-10-31T23:26:40.941918Z",
+  "generated": "2023-11-03T22:30:44.967880Z",
   "generator": "pub",
-  "generatorVersion": "3.1.4"
+  "generatorVersion": "3.1.5"
 }

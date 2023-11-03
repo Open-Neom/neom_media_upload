@@ -45,6 +45,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   final RxBool isButtonDisabled = false.obs;
   final RxBool isLoading = false.obs;
   final RxBool isUploading = false.obs;
+  final RxBool cropImage = true.obs;
   final Rx<XFile> mediaFile = XFile("").obs;
   final Rx<File> croppedImageFile = File("").obs;
   final Rx<File> trimmedMediaFile = File("").obs;
@@ -135,10 +136,11 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
     UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1,
-    double ratioY = 1, XFile? imageFile, BuildContext? context}) async {
+    double ratioY = 1, XFile? imageFile, bool crop = true, BuildContext? context}) async {
 
     try {
       if(mediaFile.value.path.isNotEmpty) clearMedia();
+      cropImage.value = crop;
 
       if(imageFile == null) {
         switch (appFileFrom) {
@@ -176,12 +178,15 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.image;
-        mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);
-        croppedImageFile.value = await AppUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
-        if(croppedImageFile.value.path.isEmpty) {
-          clearMedia();
-          if(context != null) Navigator.pop(context);
-          return;
+        mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);        
+
+        if(cropImage.value) {
+          croppedImageFile.value = await AppUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
+          if(croppedImageFile.value.path.isEmpty) {
+            clearMedia();
+            if(context != null) Navigator.pop(context);
+            return;
+          }
         }
 
         switch(uploadImageType) {
@@ -224,13 +229,13 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   @override
   Future<String> handleUploadImage(UploadImageType uploadImageType) async {
-    logger.d("");
+    logger.d("handleUploadImage ${uploadImageType.name}");
     String imageUrl = "";
 
     try {
-      imageUrl = await AppUploadFirestore()
-          .uploadImage(_mediaId, croppedImageFile.value.path.isNotEmpty
-          ? croppedImageFile.value : File(mediaFile.value.path), uploadImageType);
+      imageUrl = await AppUploadFirestore().uploadImage(_mediaId,
+          croppedImageFile.value.path.isNotEmpty
+              ? croppedImageFile.value : File(mediaFile.value.path), uploadImageType);
       logger.d("File uploaded to $imageUrl");
     } catch (e) {
       logger.e(e.toString());
@@ -241,6 +246,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   @override
   Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery, XFile? videoFile, BuildContext? context}) async {
+    AppUtilities.logger.d("handleVideo");
 
     try {
 
@@ -294,7 +300,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   }
 
   Future<void> setProcessedVideo(XFile videoFile) async {
-
+    AppUtilities.logger.d("setProcessedVideo");
     try {
 
       if(mediaFile.value.path.isNotEmpty) clearMedia();
@@ -433,7 +439,8 @@ class PostUploadController extends GetxController implements PostUploadService {
 
     try {
       if (postType == PostType.image) {
-        mediaUrl = await AppUploadFirestore().uploadImage(_mediaId, croppedImageFile.value, UploadImageType.post);
+        mediaUrl = await AppUploadFirestore().uploadImage(_mediaId,  croppedImageFile.value.path.isNotEmpty
+            ? croppedImageFile.value : File(mediaFile.value.path), UploadImageType.post);
         logger.d("File uploaded to $mediaUrl");
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
