@@ -444,6 +444,8 @@ class PostUploadController extends GetxController implements PostUploadService {
         logger.d("File uploaded to $mediaUrl");
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
+
+
         // mediaFile.value = XFile(await saveVideo());
         await validateMediaSize();
         _file = File(mediaFile.value.path);
