@@ -13,7 +13,7 @@ import 'package:neom_commons/core/utils/constants/app_translation_constants.dart
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:video_player/video_player.dart';
 
-import 'create-post/post_widgets.dart';
+import 'create_post/post_widgets.dart';
 import 'post_upload_controller.dart';
 
 class PostUploadDescriptionPage extends StatelessWidget {
@@ -24,10 +24,10 @@ class PostUploadDescriptionPage extends StatelessWidget {
     return GetBuilder<PostUploadController>(
       id: AppPageIdConstants.upload,
       init: PostUploadController(),
-      builder: (_) => Scaffold(
+      builder: (_) => Obx(()=> Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: AppColor.main50,
-        appBar: AppBar(
+        appBar: !_.isUploading.value ? AppBar(
           backgroundColor: AppColor.appBar,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -35,14 +35,14 @@ class PostUploadDescriptionPage extends StatelessWidget {
           ),
           title: Text(AppTranslationConstants.newPost.tr),
           actions: <Widget>[
-            _.isUploading.value ? Container() : IconButton(
+            IconButton(
               icon: const Icon(Icons.check, size: 30, color: AppColor.mystic),
               onPressed: () async => {
                 if(!_.isButtonDisabled.value) await _.handleSubmit(),
               },
             ),
           ],
-        ),
+        ) : null,
         body: _.isLoading.value ? const Center(child: CircularProgressIndicator())
         : _.isUploading.value ? const SplashPage()
         : Container(
@@ -147,11 +147,11 @@ class PostUploadDescriptionPage extends StatelessWidget {
                 ],
               ),
               const Divider(),
-              Obx(()=>buildLocationSuggestions(context, _),),
+              buildLocationSuggestions(context, _)
             ],
           ),
         ),
-      ),
+      ),),
     );
   }
 }

@@ -445,7 +445,6 @@ class PostUploadController extends GetxController implements PostUploadService {
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
 
-
         // mediaFile.value = XFile(await saveVideo());
         await validateMediaSize();
         _file = File(mediaFile.value.path);
@@ -512,11 +511,6 @@ class PostUploadController extends GetxController implements PostUploadService {
       }
 
       if(_post.id.isNotEmpty) {
-        locationController.clear();
-        captionController.clear();
-        isUploading.value = false;
-        mediaFile.value =  XFile("");
-
         if(await ProfileFirestore().addPost(_post.ownerId, _post.id)) {
           profile.posts!.add(_post.id);
         }
@@ -530,10 +524,18 @@ class PostUploadController extends GetxController implements PostUploadService {
 
         );
 
-        await Get.find<TimelineController>().getTimeline();
+        if (Get.isRegistered<TimelineController>()) {
+          await Get.find<TimelineController>().getTimeline();
+        } else {
+          await Get.put(TimelineController()).getTimeline();
+        }
+
+        locationController.clear();
+        captionController.clear();
+        isUploading.value = false;
+        mediaFile.value =  XFile("");
         Get.offAllNamed(AppRouteConstants.home);
       }
-
     } catch (e) {
       logger.e(e.toString());
     }

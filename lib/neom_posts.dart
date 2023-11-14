@@ -22,9 +22,9 @@ export 'posts/domain/use_cases/post_details_service.dart';
 export 'posts/domain/use_cases/post_upload_service.dart';
 //POSTS
 export 'posts/posts_routes.dart';
-export 'posts/ui/add/create-post-text/text_post_page.dart';
 //POSTS UI
-export 'posts/ui/add/create-post/post_widgets.dart';
+export 'posts/ui/add/create_post/post_widgets.dart';
+export 'posts/ui/add/create_post_text/text_post_page.dart';
 export 'posts/ui/add/post_upload_controller.dart';
 export 'posts/ui/add/post_upload_description_page.dart';
 export 'posts/ui/add/post_upload_page.dart';

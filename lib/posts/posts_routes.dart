@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'ui/add/create-post-text/text_post_page.dart';
+import 'ui/add/create_post_text/text_post_page.dart';
 import 'ui/add/post_upload_description_page.dart';
 import 'ui/add/post_upload_page.dart';
 import 'ui/likes_list_page.dart';

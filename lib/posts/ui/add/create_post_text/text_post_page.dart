@@ -9,7 +9,7 @@ import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import '../create-post/post_widgets.dart';
+import '../create_post/post_widgets.dart';
 import '../post_upload_controller.dart';
 
 class TextPostPage extends StatelessWidget {
@@ -20,10 +20,10 @@ class TextPostPage extends StatelessWidget {
     return GetBuilder<PostUploadController>(
       id: AppPageIdConstants.upload,
       init: PostUploadController(),
-      builder: (_) => Scaffold(
+      builder: (_) => Obx(()=> Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: AppColor.main50,
-        appBar: AppBar(
+        appBar: !_.isUploading.value ? AppBar(
           backgroundColor: AppColor.appBar,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -31,14 +31,14 @@ class TextPostPage extends StatelessWidget {
           ),
           title: Text(AppTranslationConstants.newPost.tr),
           actions: <Widget>[
-            _.isUploading.value ? Container() : IconButton(
+            if(_.caption.value.isNotEmpty) IconButton(
               icon: const Icon(Icons.check, size: 30, color: AppColor.mystic),
               onPressed: () async => {
                 if(!_.isButtonDisabled.value) await _.handleSubmit(),
               },
             ),
           ],
-        ),
+        ) : null,
         body: _.isLoading.value ? const Center(child: CircularProgressIndicator())
         : _.isUploading.value ? const SplashPage()
         : Container(
@@ -55,48 +55,44 @@ class TextPostPage extends StatelessWidget {
                   title: Text(_.userController.profile.name)
                 ),
                 AppTheme.heightSpace10,
-              Obx(()=> _.caption.contains(AppConstants.http) ?
+              _.caption.contains(AppConstants.http) ?
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: AppTheme.padding10),
                   child: TextField(
                     controller: _.captionController,
+                    minLines: 2,
                     maxLines: _.caption.value.length < 40 ? 2 : 4,
                     maxLength: 100,
                     decoration: const InputDecoration(border: InputBorder.none),
                     onChanged: (text) => _.setCaption(text),
                   ),
                 )
-                : Stack (
-                    children: [
-                      Center(
-                        child: Container(
-                          width: AppTheme.fullWidth(context) * 0.95,
-                          padding: const EdgeInsets.all(AppTheme.padding10),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0x36FFFFFF).withOpacity(0.1),
-                                const Color(0x0FFFFFFF).withOpacity(0.1)
-                              ],
-                              begin: FractionalOffset.topLeft,
-                              end: FractionalOffset.bottomRight
-                            ),
-                            borderRadius: BorderRadius.circular(25)
-                          ),
-                          child: AutoSizeTextField(
-                            controller: _.captionController,
-                            textAlign: TextAlign.center,
-                            minFontSize: 40,
-                            maxFontSize: 60,
-                            maxLines: 5,
-                            maxLength: 100,
-                            decoration: const InputDecoration(border: InputBorder.none),
-                            onChanged: (text) => _.setCaption(text),
-                          ),
-                        ),
-                      ),
-                    ]),
-              ),
+                : Container(
+                  margin:  const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.all(AppTheme.padding10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0x36FFFFFF).withOpacity(0.1),
+                        const Color(0x0FFFFFFF).withOpacity(0.1)
+                      ],
+                      begin: FractionalOffset.topLeft,
+                      end: FractionalOffset.bottomRight
+                    ),
+                    borderRadius: BorderRadius.circular(25)
+                  ),
+                  child: AutoSizeTextField(
+                    controller: _.captionController,
+                    textAlign: TextAlign.center,
+                    minFontSize: 35,
+                    maxFontSize: 50,
+                    minLines: 2,
+                    maxLines: 5,
+                    maxLength: 100,
+                    decoration: const InputDecoration(border: InputBorder.none),
+                    onChanged: (text) => _.setCaption(text),
+                  ),
+                ),
               AppTheme.heightSpace10,
               const Divider(),
               AppTheme.heightSpace10,
@@ -125,12 +121,12 @@ class TextPostPage extends StatelessWidget {
               AppTheme.heightSpace10,
               const Divider(),
               AppTheme.heightSpace10,
-              Obx(()=>buildLocationSuggestions(context, _),),
+              buildLocationSuggestions(context, _),
             ],
           ),
         ),
         ),
-      ),
+      ),),
     );
   }
 }
