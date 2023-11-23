@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
+import 'package:neom_commons/core/ui/widgets/handled_cached_network_image.dart';
 import 'package:neom_commons/core/ui/widgets/read_more_container.dart';
 
 import 'package:neom_commons/core/utils/app_color.dart';
@@ -57,26 +58,12 @@ class PostDetailsPage extends StatelessWidget {
                 subtitle: Text(_.post.location),
                   // trailing: const Icon(Icons.more_vert),
               ),
-              InteractiveViewer(
-                onInteractionStart: (scale) {
-                  if(scale.pointerCount > 1) {
-                    ///Activate when interaction is fullscren and not in container size
-                    // _.showPostInfo(false);
-                  }
-                  },
-                  onInteractionEnd: (details) {
-                    ///Activate when interaction is fullscren and not in container size
-                    // _.showPostInfo(true);
-                  },
-                  child: GestureDetector(
-                    child: Center(
-                        child: CachedNetworkImage(imageUrl: _.post.mediaUrl)
-                    ),
-                    ///Activate when interaction is fullscren and not in container size
-                    // onTap: () => _.showPostInfo(_.showInfo ? false : true),
-                    onDoubleTap: () => Navigator.pop(context),
-                  ),
-                ),
+              GestureDetector(
+                child: HandledCachedNetworkImage(_.post.mediaUrl),
+                ///Activate when interaction is fullscren and not in container size
+                // onTap: () => _.showPostInfo(_.showInfo ? false : true),
+                onDoubleTap: () => Navigator.pop(context),
+              ),
                 _.showInfo ? Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     child: Column(

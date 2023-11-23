@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
 
 import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
@@ -13,6 +14,7 @@ class BlogEntryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     var brightness = MediaQuery.of(context).platformBrightness;
     bool isDarkMode = brightness == Brightness.dark;
     isDarkMode = false;
@@ -23,7 +25,7 @@ class BlogEntryPage extends StatelessWidget {
       builder: (_) => Obx(()=> Scaffold(
         backgroundColor: const Color.fromRGBO(241, 234, 217, 1), 
         body: SafeArea(
-          child: _.isLoading.value ? const Center(child: CircularProgressIndicator(),)
+          child: _.isLoading.value ? const AppCircularProgressIndicator()
         : Container(
           padding: const EdgeInsets.all(10),
           width: AppTheme.fullWidth(context),

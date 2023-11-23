@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
 
 import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
@@ -15,14 +16,13 @@ class BlogMatePage extends StatelessWidget {
     return GetBuilder<BlogController>(
         id: AppPageIdConstants.blog,
         init: BlogController(),
-        builder: (_) => Scaffold(
-          appBar: AppBarChild(title: "Blog de ${_.mate.name.capitalize}"),
-          body: Obx(()=> Container(
+        builder: (_) => Obx(()=> Scaffold(
+          appBar: _.isLoading.value ? null : AppBarChild(title: "Blog de ${_.mate.name.capitalize}"),
+          body: Container(
             decoration: AppTheme.appBoxDecoration,
-            child: SingleChildScrollView(
+            child: _.isLoading.value ? const AppCircularProgressIndicator() : SingleChildScrollView(
                 child: SizedBox.fromSize(
-                  size: Size.fromHeight(
-                      AppTheme.fullHeight(context)),
+                  size: Size.fromHeight(AppTheme.fullHeight(context)),
                   child: buildBlogEntryList(_.blogEntries.values),
                 )
             ),

@@ -40,7 +40,7 @@ Widget buildBlogEntryList(Iterable<Post> blogEntries) {
             children: <Widget>[
               Text(title.length > AppConstants.maxItemlistNameLength
                   ? "${title.substring(0,AppConstants.maxItemlistNameLength)}..."
-                  : title),
+                  : title, style: const TextStyle(fontWeight: FontWeight.w600),),
             ]),
         subtitle: Text(entry, maxLines: 3,),
         trailing: IconButton(
