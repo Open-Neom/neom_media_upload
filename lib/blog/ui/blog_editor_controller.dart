@@ -147,7 +147,8 @@ class BlogEditorController extends GetxController implements BlogEditorService {
           location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
           isCommentEnabled: true,
           createdTime: DateTime.now().millisecondsSinceEpoch,
-          isDraft: true
+          isDraft: true,
+          isVerified: profile.value.isVerified
       );
 
       if(blogEntry.value.id.isEmpty) {

@@ -496,7 +496,10 @@ class PostUploadController extends GetxController implements PostUploadService {
           position: _position,
           location:  location,
           isCommentEnabled: true,
-          createdTime: DateTime.now().millisecondsSinceEpoch);
+          createdTime: DateTime.now().millisecondsSinceEpoch,
+          isVerified: profile.isVerified,
+      );
+
       _post.id = await PostFirestore().insert(_post);
 
       if(_post.hashtags.isNotEmpty) {

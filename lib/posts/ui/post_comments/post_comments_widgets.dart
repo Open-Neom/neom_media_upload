@@ -224,8 +224,9 @@ Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
         child: Column(
           children: <Widget>[
             userAvatarSection(
-                context, _.profile.id, _.post,
-                role: _.userController.user!.userRole),
+              context, _.profile.id, _.post,
+              role: _.userController.user!.userRole,
+            ),
             AppTheme.heightSpace5,
             if(caption.isNotEmpty)
               Align(
