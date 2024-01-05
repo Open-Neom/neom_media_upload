@@ -72,6 +72,7 @@ class PostUploadController extends GetxController implements PostUploadService {
   final RxDouble trimmedStartValue = 0.0.obs;
   final RxDouble trimmedEndValue = 0.0.obs;
   final RxBool isPlaying = false.obs;
+  final RxBool maxVideosPerWeekReached = false.obs;
 
 
 
@@ -104,8 +105,22 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   void onReady() async {
     super.onReady();
+
     try {
       await initializeCameraController();
+
+      List<Post> profilePosts = await PostFirestore().getProfilePosts(profile.id);
+      DateTime today = DateTime.now();
+      DateTime previousMonday = today.subtract(Duration(days: (today.weekday - 1 + 7) % 7));
+      int videosPerWeekCounter = 0;
+
+      for (var profilePost in profilePosts) {
+        if(profilePost.type == PostType.video && profilePost.createdTime > previousMonday.millisecondsSinceEpoch) {
+          videosPerWeekCounter++;
+        }
+      }
+
+      if(videosPerWeekCounter >= AppConstants.maxVideosPerWeek) maxVideosPerWeekReached.value = true;
     } catch (e) {
       logger.e(e.toString());
     }
@@ -250,6 +265,11 @@ class PostUploadController extends GetxController implements PostUploadService {
 
     try {
 
+      if(maxVideosPerWeekReached.value) {
+        AppUtilities.showSnackBar(message: AppTranslationConstants.maxVideosPerWeekReachedMsg.tr, duration: const Duration(seconds: 5));
+        return;
+      }
+
       if(mediaFile.value.path.isNotEmpty) clearMedia();
 
       if(videoFile == null) {
@@ -330,7 +350,6 @@ class PostUploadController extends GetxController implements PostUploadService {
         // }
         //
 
-
         Get.toNamed(AppRouteConstants.postUploadDescription);
       }
 
@@ -352,7 +371,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(fileSize > AppConstants.maxVideoFileSize) {
         AppUtilities.logger.w("VideoFile size $fileSize is above maximum. Starting compression");
-        MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.LowQuality);
+        MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.DefaultQuality);
         if(mediaInfo != null) videoFile = mediaInfo.file!;
         fileSize = await videoFile.length();
 
