@@ -7,6 +7,7 @@ import 'package:neom_commons/core/utils/constants/app_assets.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
+import 'package:neom_commons/core/utils/enums/verification_level.dart';
 import '../../../camera/neom_camera_handler.dart';
 import 'post_upload_controller.dart';
 
@@ -64,7 +65,7 @@ class PostUploadPage extends StatelessWidget {
                     ),
                   ],),
                   onTap: ()=>
-                    _.userController.user!.isVerified ?
+                    _.profile.verificationLevel != VerificationLevel.none ?
                     showDialog(
                       context: context,
                       builder: (context) {

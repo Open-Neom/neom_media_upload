@@ -26,6 +26,7 @@ import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
+import 'package:neom_commons/core/utils/enums/verification_level.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
@@ -516,7 +517,7 @@ class PostUploadController extends GetxController implements PostUploadService {
           location:  location,
           isCommentEnabled: true,
           createdTime: DateTime.now().millisecondsSinceEpoch,
-          isVerified: profile.isVerified,
+          isVerified: profile.verificationLevel != VerificationLevel.none,
       );
 
       _post.id = await PostFirestore().insert(_post);

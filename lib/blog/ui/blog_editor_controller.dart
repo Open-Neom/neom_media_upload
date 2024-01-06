@@ -18,6 +18,7 @@ import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
+import 'package:neom_commons/core/utils/enums/verification_level.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 
 import '../../posts/ui/post_details_controller.dart';
@@ -148,7 +149,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
           isCommentEnabled: true,
           createdTime: DateTime.now().millisecondsSinceEpoch,
           isDraft: true,
-          isVerified: profile.value.isVerified
+          isVerified: profile.value.verificationLevel != VerificationLevel.none
       );
 
       if(blogEntry.value.id.isEmpty) {
