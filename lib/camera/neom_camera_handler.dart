@@ -115,14 +115,14 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
         ) : const CircularProgressIndicator(),
         Align(
           alignment: Alignment.bottomCenter,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.only(bottom: 30.0),
             child: _modeControlRowWidget(),
           )
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.only(bottom: 30.0),
             child: GestureDetector(
               onTap: () {
@@ -210,7 +210,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
   //         mainAxisSize: MainAxisSize.min,
   //         children: <Widget>[
   //           if (localVideoController == null && imageFile == null)
-  //             Container()
+  //             SizedBox.shrink()
   //           else
   //             SizedBox(
   //               width: 64.0,

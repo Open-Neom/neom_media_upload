@@ -26,7 +26,7 @@ class BlogEditorPage extends StatelessWidget {
           backgroundColor: const Color.fromRGBO(241, 234, 217, 1),
           body: SafeArea(
             child: _.isLoading.value ? const Center(child: CircularProgressIndicator(),)
-            : Container(
+            : Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +119,7 @@ class BlogEditorPage extends StatelessWidget {
                             InkWell(
                               onTap: () => Navigator.pop(context),
                               borderRadius: BorderRadius.circular(50),
-                              child: Container(
+                              child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 15, vertical: 10),
                                 child: Text(AppTranslationConstants.goBack.tr,
@@ -173,7 +173,7 @@ class BlogEditorPage extends StatelessWidget {
                               ),
                             ),
                           ],
-                        ) : Container(),
+                        ) : const SizedBox.shrink(),
                       ],)
                     ),
                   ),

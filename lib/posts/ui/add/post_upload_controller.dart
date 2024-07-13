@@ -172,13 +172,6 @@ class PostUploadController extends GetxController implements PostUploadService {
               // if(!cameraController!.value.isInitialized) await initializeCameraController();
               if(context != null) Navigator.pop(context);
 
-              ///DEPRECATED
-              // imageFile.value = (await ImagePicker().pickImage(
-              //     source: ImageSource.camera,
-              //     imageQuality: AppConstants.imageQuality,
-              //   )
-              // )!;
-
               ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
               // imageFile.value = await cameraController!.takePicture();
               // bool isFrontal = await isFrontCameraPhoto(File(imageFile.value.path));
@@ -288,31 +281,8 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.video;
-
         Get.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
-
-        ///DELETE IN NEXT CHECK UP
-        // _thumbnailFile = await VideoCompress.getFileThumbnail(
-        //   mediaFile.value.path,
-        //   quality: AppConstants.videoQuality,
-        // );
-        // await initializeVideoTrimmer();
-        //
-        // ///DEPRECATED
-        // // videoPlayerController = VideoPlayerController.file(videoFile);
-        // // videoPlayerController = trimmer.videoPlayerController!;
-        // // await videoPlayerController.initialize();
-        // //
-        // // if (videoPlayerController.value.duration.inSeconds > AppConstants.maxVideoDurationInSeconds) {
-        // //   trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
-        // //   // return;
-        // // }
-        // //
-        // // videoPlayerController.setLooping(true);
-        //
-        // Get.toNamed(AppRouteConstants.postUploadDescription);
       }
-
     } catch (e) {
       logger.e(e.toString());
     }
@@ -334,22 +304,12 @@ class PostUploadController extends GetxController implements PostUploadService {
           quality: AppConstants.videoQuality,
         );
 
-        ///DELETE IN NEXT CHECK UP
-        // await initializeVideoTrimmer();
-        // videoPlayerController = trimmer.videoPlayerController!;
         videoPlayerController = VideoPlayerController.file(File(videoFile.path));
 
         await videoPlayerController.initialize();
         videoPlayerController.play();
         isPlaying.value = true;
         videoPlayerController.setLooping(true);
-
-        ///DELETE IN NEXT CHECK UP
-        // if (videoPlayerController.value.duration.inSeconds > AppConstants.maxVideoDurationInSeconds) {
-        //   trimmedEndValue.value = AppConstants.maxVideoDurationInSeconds.toDouble();
-        //   // return;
-        // }
-        //
 
         Get.toNamed(AppRouteConstants.postUploadDescription);
       }
@@ -364,7 +324,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   Future<void> validateMediaSize() async {
-    AppUtilities.logger.d("validateMediaSize");
+    AppUtilities.logger.t("validateMediaSize");
 
     try {
       File videoFile = File(mediaFile.value.path);
@@ -400,13 +360,6 @@ class PostUploadController extends GetxController implements PostUploadService {
     logger.d("playPauseVideo");
     videoPlayerController.value.isPlaying ? await videoPlayerController.pause() : videoPlayerController.play();
     logger.t("isPlaying ${videoPlayerController.value.isPlaying}");
-
-    ///DELETE IN NEXT CHECK UP
-    // bool playbackState = await trimmer.value.videoPlaybackControl(
-    //   startValue: trimmedStartValue.value,
-    //   endValue: trimmedEndValue.value,
-    // );
-    // isPlaying.value = playbackState;
 
     isPlaying.value = !isPlaying.value;
     logger.d("isPlaying: $isPlaying");
@@ -609,53 +562,5 @@ class PostUploadController extends GetxController implements PostUploadService {
   //   mirroredImgFile.writeAsBytesSync(img.encodeJpg(mirroredImage));
   //   imageFile.value = XFile(mirroredImgFile.path);
   // }
-
-///DELETE IN NEXT CHECK UP
-// Future<void> initializeVideoTrimmer() async {
-//   AppUtilities.logger.d("initializeVideoTrimmer");
-//
-//   int maxDurationInSeconds = userController.user!.userRole == UserRole.subscriber
-//       ? AppConstants.verifiedMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
-//
-//   try {
-//     // await trimmer.value.loadVideo(videoFile: File(mediaFile.value.path));
-//     // await trimmer.value.videoPlayerController?.initialize();
-//     // await trimmer.value.videoPlayerController?.setLooping(true);
-//     // if (trimmer.value.videoPlayerController!.value.duration.inSeconds <= maxDurationInSeconds) {
-//     //   trimmedEndValue.value = maxDurationInSeconds.toDouble();
-//     // } else {
-//     //   trimmedEndValue.value = trimmer.value.videoPlayerController!.value.duration.inSeconds.toDouble();
-//     // }
-//     // videoPlayerController = trimmer.videoPlayerController!;
-//     // await videoPlayerController.initialize();
-//     //
-//
-//     //
-//   } catch (e) {
-//     AppUtilities.logger.e(e.toString());
-//   }
-//
-//   update([AppPageIdConstants.upload]);
-// }
-
-// Future<String> saveVideo() async {
-//   String trimmedVideoPath = '';
-//
-//   try {
-//     // await trimmer.value.saveTrimmedVideo(
-//     //     startValue: trimmedStartValue.value,
-//     //     endValue: trimmedEndValue.value,
-//     //     onSave: (value) {
-//     //       AppUtilities.logger.i('Trimming Video to output path: $value');
-//     //       trimmedVideoPath = value.toString();
-//     //       AppUtilities.showSnackBar(message: 'Video Saved with new duration of ${AppUtilities.getDurationInMinutes(trimmedEndValue.value.ceil() - trimmedStartValue.value.ceil())} successfully');
-//     //     });
-//   } catch (e) {
-//     AppUtilities.logger.e(e.toString());
-//   }
-//
-//   return trimmedVideoPath;
-// }
-
 
 }

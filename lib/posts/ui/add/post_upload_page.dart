@@ -43,7 +43,7 @@ class PostUploadPage extends StatelessWidget {
                 GestureDetector(
                   child: Column(children: [
                     Image.asset(AppAssets.uploadVector, width: AppTheme.fullWidth(context)*0.66, fit: BoxFit.fitWidth,),
-                    Container(
+                    Padding(
                       padding: const EdgeInsets.only(top: 10.0),
                       child: Text(
                         AppTranslationConstants.tapToUploadImage.tr,

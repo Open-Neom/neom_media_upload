@@ -13,7 +13,7 @@ Widget buildCommentList(BuildContext context, PostCommentsController _) {
       separatorBuilder: (context, index) => AppTheme.heightSpace5,
       itemBuilder: (context, index) {
         PostComment comment = _.comments.elementAt(index);
-        Widget widget = Container();
+        Widget widget = const SizedBox.shrink();
         if(comment.postOwnerId == comment.ownerId) {
           //TODO Comment Reply when self
           //widget = commentReply(context, comment);

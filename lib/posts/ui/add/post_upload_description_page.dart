@@ -143,7 +143,7 @@ class PostUploadDescriptionPage extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => _.clearUserLocation(),
-                  ) : Container()
+                  ) : const SizedBox.shrink()
                 ],
               ),
               const Divider(),

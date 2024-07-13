@@ -34,14 +34,14 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
           child: Card(
             color: AppColor.getContextCardColor(context),
             elevation: 0,
-            child: Container(
+            child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(
               children: <Widget>[
                 usernameSectionWithoutAvatar(context, _.profile.id, comment,
                     role: _.userController.user?.userRole ?? UserRole.subscriber),
                 AppTheme.heightSpace5,
-                (comment.mediaUrl.isEmpty ||  comment.mediaUrl == _.post.mediaUrl) ? Container() :
+                (comment.mediaUrl.isEmpty ||  comment.mediaUrl == _.post.mediaUrl) ? const SizedBox.shrink() :
                 Column(
                   children: [
                     SizedBox(
@@ -53,7 +53,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    comment.text.isEmpty ? Container() :
+                    comment.text.isEmpty ? const SizedBox.shrink() :
                     Expanded(
                       child: (comment.text.contains("http") || comment.text.contains("https"))
                           ? Linkify(
@@ -135,7 +135,7 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
                     profileId == comment.ownerId, comment, role);
               }),
           icon: const Icon(FontAwesomeIcons.ellipsisVertical, size: 20)
-      ) : Container(),            //moreOptions3Dots(context),
+      ) : const SizedBox.shrink(),            //moreOptions3Dots(context),
     ],
   );
 }

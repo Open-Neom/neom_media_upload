@@ -89,7 +89,7 @@ class BlogPage extends StatelessWidget {
                 ),
             ),
           ),
-          floatingActionButton: _.isLoading.value ? Container()
+          floatingActionButton: _.isLoading.value ? const SizedBox.shrink()
               : Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

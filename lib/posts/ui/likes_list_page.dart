@@ -63,7 +63,7 @@ class LikesListPage extends StatelessWidget {
                   ]),
                 ),
               onLongPress: () => {},
-            ) : Container();
+            ) : const SizedBox.shrink();
           },
         ),
       )

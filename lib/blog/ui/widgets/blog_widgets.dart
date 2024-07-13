@@ -34,7 +34,7 @@ Widget buildBlogEntryList(Iterable<Post> blogEntries) {
         //     width: 50,
         //     child: blogEntry.thumbnailUrl.isNotEmpty
         //         ? CachedNetworkImage(imageUrl: blogEntry.thumbnailUrl)
-        //         : Container()
+        //         : SizedBox.shrink()
         // ),
         title: Row(
             children: <Widget>[

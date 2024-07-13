@@ -41,7 +41,7 @@ class PostDetailsPage extends StatelessWidget {
               if(_.showInfo) ListTile(
                 leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(_.post.profileImgUrl),),
                 title: GestureDetector(
-                  child: Text(_.post.profileName.capitalizeFirst,
+                  child: Text(CoreUtilities.capitalizeFirstLetter(_.post.profileName),
                     style: const TextStyle(fontSize: 15,
                         color: Colors.white,
                         fontWeight: FontWeight.bold
@@ -64,7 +64,7 @@ class PostDetailsPage extends StatelessWidget {
                 // onTap: () => _.showPostInfo(_.showInfo ? false : true),
                 onDoubleTap: () => Navigator.pop(context),
               ),
-                _.showInfo ? Container(
+                _.showInfo ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +165,7 @@ class PostDetailsPage extends StatelessWidget {
                         ),
                       ]
                     )
-                ) : Container()
+                ) : const SizedBox.shrink()
               ],
             ),),
           ),

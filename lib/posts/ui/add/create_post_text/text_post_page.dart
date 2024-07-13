@@ -56,7 +56,7 @@ class TextPostPage extends StatelessWidget {
                 ),
                 AppTheme.heightSpace10,
               _.caption.contains(AppConstants.http) ?
-                Container(
+              Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppTheme.padding10),
                   child: TextField(
                     controller: _.captionController,
@@ -115,7 +115,7 @@ class TextPostPage extends StatelessWidget {
                     IconButton(
                        icon: const Icon(Icons.close),
                        onPressed: () => _.clearUserLocation(),
-                    ) : Container()
+                    ) : const SizedBox.shrink()
                 ],
               ),
               AppTheme.heightSpace10,

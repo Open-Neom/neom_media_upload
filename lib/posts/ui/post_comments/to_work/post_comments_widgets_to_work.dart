@@ -19,9 +19,9 @@
 //                 padding: EdgeInsets.all(10.0),
 //                 child: Column(
 //                   children: <Widget>[
-//                     Comment.mediaUrl.isEmpty ? Container() :
+//                     Comment.mediaUrl.isEmpty ? SizedBox.shrink() :
 //                     cachedNetworkImage(Comment.mediaUrl),
-//                     Comment.text.isEmpty ? Container() :
+//                     Comment.text.isEmpty ? SizedBox.shrink() :
 //                     Text(Comment.text,
 //                         softWrap: true,
 //                         maxLines: 3,
