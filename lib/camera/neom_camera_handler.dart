@@ -47,7 +47,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
   int _pointers = 0;
   List<CameraDescription> cameras = [];
 
-  PostUploadController? uploadController;
+  late PostUploadController uploadController;
 
   @override
   void initState() {
@@ -131,13 +131,13 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
                 }
               },
               onLongPress: () {
-                if((uploadController?.userController.user?.isVerified ?? false) && controller != null
+                if((uploadController.userController.user.isVerified) && controller != null
                     && controller!.value.isInitialized && !controller!.value.isRecordingVideo) {
                   onVideoRecordButtonPressed();
                 }
               },
               onLongPressEnd: (details) {
-                if((uploadController?.userController.user?.isVerified ?? false) && controller != null
+                if((uploadController.userController.user.isVerified) && controller != null
                     && controller!.value.isInitialized && controller!.value.isRecordingVideo) {
                   onStopButtonPressed();
                 }
@@ -252,7 +252,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
               ? AppColor.mystic : AppColor.yellow,
           onPressed: controller != null ? onFlashModeButtonPressed : null,
         ),
-        if (uploadController?.userController.user?.isVerified ?? false) IconButton(
+        if (uploadController.userController.user.isVerified) IconButton(
           icon: Icon(enableAudio ? Icons.volume_up : Icons.volume_mute),
           color: enableAudio ? AppColor.mystic : AppColor.yellow,
           onPressed: controller != null ? onAudioModeButtonPressed : null,
@@ -356,7 +356,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
 
       if (file != null) {
         AppUtilities.logger.i('Picture saved to ${file.path}');
-        uploadController?.handleImage(imageFile: file);
+        uploadController.handleImage(imageFile: file);
       }
     });
   }
@@ -440,7 +440,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
 
       if (file != null) {
         AppUtilities.logger.i('Video recorded to ${file.path}');
-        uploadController?.handleVideo(videoFile: file);
+        uploadController.handleVideo(videoFile: file);
       }
     });
   }
@@ -498,7 +498,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
     try {
       await cameraController.startVideoRecording();
 
-      int maxDurationInSeconds = uploadController?.userController.user!.userRole == UserRole.subscriber
+      int maxDurationInSeconds = uploadController.userController.user.userRole == UserRole.subscriber
           ? AppConstants.verifiedMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
       Duration duration = Duration(seconds: maxDurationInSeconds);
       Timer(duration, () async {

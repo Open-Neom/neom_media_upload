@@ -83,7 +83,7 @@ class PostUploadPage extends StatelessWidget {
                               ),
                               onPressed: () => _.handleImage(),
                             ),
-                            if(_.userController.user!.isVerified) SimpleDialogOption(
+                            if(_.userController.user.isVerified) SimpleDialogOption(
                               child: Text(
                                 AppTranslationConstants.videoFromGallery.tr
                               ),

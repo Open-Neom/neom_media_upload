@@ -39,7 +39,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
             child: Column(
               children: <Widget>[
                 usernameSectionWithoutAvatar(context, _.profile.id, comment,
-                    role: _.userController.user?.userRole ?? UserRole.subscriber),
+                    role: _.userController.user.userRole),
                 AppTheme.heightSpace5,
                 (comment.mediaUrl.isEmpty ||  comment.mediaUrl == _.post.mediaUrl) ? const SizedBox.shrink() :
                 Column(
@@ -225,7 +225,7 @@ Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
           children: <Widget>[
             userAvatarSection(
               context, _.profile.id, _.post,
-              role: _.userController.user!.userRole,
+              role: _.userController.user.userRole,
             ),
             AppTheme.heightSpace5,
             if(caption.isNotEmpty)

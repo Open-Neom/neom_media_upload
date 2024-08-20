@@ -137,19 +137,20 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
       String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
       blogEntry.value = Post(
-          id: blogEntry.value.id,
-          caption: blogEntryCaption,
-          type: PostType.blogEntry,
-          profileName: profile.value.name,
-          profileImgUrl: profile.value.photoUrl,
-          ownerId: profile.value.id,
-          thumbnailUrl: thumbnailUrl,
-          position: profile.value.position,
-          location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
-          isCommentEnabled: true,
-          createdTime: DateTime.now().millisecondsSinceEpoch,
-          isDraft: true,
-          isVerified: profile.value.verificationLevel != VerificationLevel.none
+        id: blogEntry.value.id,
+        caption: blogEntryCaption,
+        type: PostType.blogEntry,
+        profileName: profile.value.name,
+        profileImgUrl: profile.value.photoUrl,
+        ownerId: profile.value.id,
+        thumbnailUrl: thumbnailUrl,
+        position: profile.value.position,
+        location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
+        isCommentEnabled: true,
+        createdTime: DateTime.now().millisecondsSinceEpoch,
+        isDraft: true,
+        isVerified: profile.value.verificationLevel != VerificationLevel.none,
+        lastInteraction: DateTime.now().millisecondsSinceEpoch,
       );
 
       if(blogEntry.value.id.isEmpty) {
@@ -186,19 +187,20 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
       String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
       blogEntry.value = Post(
-          id: blogEntry.value.id,
-          caption: blogEntryCaption,
-          hashtags: postHashtags,
-          type: PostType.blogEntry,
-          profileName: profile.value.name,
-          profileImgUrl: profile.value.photoUrl,
-          ownerId: profile.value.id,
-          thumbnailUrl: thumbnailUrl,
-          position: profile.value.position,
-          location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
-          isCommentEnabled: true,
-          createdTime: DateTime.now().millisecondsSinceEpoch,
-          isDraft: false
+        id: blogEntry.value.id,
+        caption: blogEntryCaption,
+        hashtags: postHashtags,
+        type: PostType.blogEntry,
+        profileName: profile.value.name,
+        profileImgUrl: profile.value.photoUrl,
+        ownerId: profile.value.id,
+        thumbnailUrl: thumbnailUrl,
+        position: profile.value.position,
+        location:  await GeoLocatorController().getAddressSimple(profile.value.position!),
+        isCommentEnabled: true,
+        createdTime: DateTime.now().millisecondsSinceEpoch,
+        isDraft: false,
+        lastInteraction: DateTime.now().millisecondsSinceEpoch,
       );
 
       if(await PostFirestore().update(blogEntry.value)) {

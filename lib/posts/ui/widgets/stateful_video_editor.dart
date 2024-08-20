@@ -38,7 +38,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
     super.initState();
 
     final userController = Get.find<UserController>();
-    int maxDurationInSeconds = userController.user!.userRole == UserRole.subscriber
+    int maxDurationInSeconds = userController.user.userRole == UserRole.subscriber
         ? AppConstants.verifiedMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
 
     _controller = VideoEditorController.file(

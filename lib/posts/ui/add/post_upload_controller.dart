@@ -459,18 +459,19 @@ class PostUploadController extends GetxController implements PostUploadService {
           :  locationSuggestions.value.isNotEmpty ? locationSuggestions.value.first : "";
 
       _post = Post(caption: captionController.text,
-          hashtags: postHashtags,
-          type: postType,
-          profileName: profile.name,
-          profileImgUrl: profile.photoUrl,
-          ownerId: profile.id,
-          thumbnailUrl: thumbnailUrl,
-          mediaUrl: mediaUrl,
-          position: _position,
-          location:  location,
-          isCommentEnabled: true,
-          createdTime: DateTime.now().millisecondsSinceEpoch,
-          isVerified: profile.verificationLevel != VerificationLevel.none,
+        hashtags: postHashtags,
+        type: postType,
+        profileName: profile.name,
+        profileImgUrl: profile.photoUrl,
+        ownerId: profile.id,
+        thumbnailUrl: thumbnailUrl,
+        mediaUrl: mediaUrl,
+        position: _position,
+        location:  location,
+        isCommentEnabled: true,
+        createdTime: DateTime.now().millisecondsSinceEpoch,
+        isVerified: profile.verificationLevel != VerificationLevel.none,
+        lastInteraction: DateTime.now().millisecondsSinceEpoch,
       );
 
       _post.id = await PostFirestore().insert(_post);

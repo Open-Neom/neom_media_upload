@@ -14,7 +14,7 @@ class PostsRoutes {
     GetPage(
       name: AppRouteConstants.postComments,
       page: () => const PostCommentsPage(),
-      transition: Transition.downToUp,
+      transition: Transition.fade,
     ),
     GetPage(
         name: AppRouteConstants.postDetails,
