@@ -5,4 +5,3 @@ dependency_overrides:
     path: ../neom_timeline
   uuid: 4.4.0
   rxdart: 0.28.0
-  #  logger: 2.0.2+1
