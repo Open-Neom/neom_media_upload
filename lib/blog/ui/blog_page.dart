@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
 
 import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
+import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
 import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
@@ -12,7 +13,7 @@ import 'blog_controller.dart';
 import 'widgets/blog_widgets.dart';
 
 class BlogPage extends StatelessWidget {
-  const BlogPage({Key? key}) : super(key: key);
+  const BlogPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,8 @@ class BlogPage extends StatelessWidget {
         init: BlogController(),
         builder: (_) => Obx(()=> Scaffold(
           appBar: _.isLoading.value ? null : AppBarChild(title: _.profile.id == _.blogOwnerId ? "Blog Inspiracional":"Blog de ${_.mate.name.capitalize}"),
-          body: Container(
+            backgroundColor: AppColor.main50,
+            body: Container(
             decoration: AppTheme.appBoxDecoration,
             child: _.isLoading.value ? const AppCircularProgressIndicator()
                 : DefaultTabController(

@@ -29,10 +29,11 @@ class PostCommentsController extends GetxController implements PostCommentsServi
   final ScrollController scrollController = ScrollController();
   TextEditingController commentController = TextEditingController();
 
-  final RxBool isLoading = true.obs;
+  bool isLoading = true;
   final RxBool isButtonDisabled = false.obs;
   final RxBool isUploading = false.obs;
   RxList<PostComment> comments = <PostComment>[].obs;
+  final RxBool sendingMessage = false.obs;
 
   final PickedFile imageFile = PickedFile("");
 
@@ -75,12 +76,16 @@ class PostCommentsController extends GetxController implements PostCommentsServi
     }
 
     comments.sort((a, b) => a.createdTime.compareTo(b.createdTime));
+
+    isLoading = false;
     update([AppPageIdConstants.postComments, AppPageIdConstants.postDetails]);
   }
 
   @override
   Future<void> addComment() async {
     AppUtilities.logger.d("Adding comment to Post and Comment Collections");
+    sendingMessage.value = true;
+
     try {
       PostComment newComment = PostComment(
         postOwnerId: post.ownerId,
@@ -158,8 +163,11 @@ class PostCommentsController extends GetxController implements PostCommentsServi
       AppUtilities.logger.e(e.toString());
     }
 
+    clearComment();
     isUploading.value = false;
     isButtonDisabled.value = false;
+    sendingMessage.value = false;
+
     update([AppPageIdConstants.postComments, AppPageIdConstants.timeline,
       AppPageIdConstants.postDetails, AppPageIdConstants.blogEntry,
       AppPageIdConstants.blogEditor]);

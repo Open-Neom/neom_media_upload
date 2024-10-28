@@ -10,7 +10,7 @@ import 'widgets/blog_widgets.dart';
 
 class BlogEntryPage extends StatelessWidget {
 
-  const BlogEntryPage({Key? key}) : super(key: key);
+  const BlogEntryPage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -12,6 +12,7 @@ class BlogRoutes {
     GetPage(
       name: AppRouteConstants.blog,
       page: () => const BlogPage(),
+      transition: Transition.leftToRight,
     ),
     GetPage(
       name: AppRouteConstants.blogEditor,
@@ -24,6 +25,7 @@ class BlogRoutes {
     GetPage(
       name: AppRouteConstants.blogEntry,
       page: () => const BlogEntryPage(),
+      transition: Transition.leftToRight,
     ),
   ];
 

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/ui/widgets/hashtag_link_text.dart';
+import 'package:neom_commons/core/ui/widgets/read_more_container.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'post_comments_controller.dart';
@@ -27,20 +27,24 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
       AppTheme.widthSpace10,
       Expanded(
         child: Container(
-          decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          border: Border.all(
-            style: BorderStyle.solid, color: Colors.grey, width: 0.5)),
+          decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(50)),
+          /// border: Border.all(
+          ///   style: BorderStyle.solid, color: Colors.grey, width: 0.1)
+          ),
           child: Card(
             color: AppColor.getContextCardColor(context),
             elevation: 0,
             child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.only(
+              bottom: 15,
+              left: 15,
+              top: 5,
+            ),
             child: Column(
               children: <Widget>[
                 usernameSectionWithoutAvatar(context, _.profile.id, comment,
                     role: _.userController.user.userRole),
-                AppTheme.heightSpace5,
                 (comment.mediaUrl.isEmpty ||  comment.mediaUrl == _.post.mediaUrl) ? const SizedBox.shrink() :
                 Column(
                   children: [
@@ -127,6 +131,7 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
       ),
       showDots ? IconButton(
           constraints: const BoxConstraints(),
+          padding: EdgeInsets.zero,
           onPressed: () => showModalBottomSheet(
               backgroundColor: AppTheme.canvasColor75(context),
               context: context,
@@ -212,15 +217,19 @@ Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
   }
 
   return Container(
-    decoration: BoxDecoration(
-      borderRadius: const BorderRadius.all(Radius.circular(8)),
-      border: Border.all(style: BorderStyle.solid, color: Colors.grey, width: 0.5),
+    decoration: const BoxDecoration(
+      borderRadius: BorderRadius.all(Radius.circular(50)),
+      /// border: Border.all(style: BorderStyle.solid, color: Colors.grey, width: 0.5),
     ),
     child: Card(
       elevation: 0,
       color: AppColor.getContextCardColor(context),
       child: Padding(
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.only(
+          bottom: 15,
+          left: 15,
+          top: 5,
+        ),
         child: Column(
           children: <Widget>[
             userAvatarSection(
@@ -228,12 +237,11 @@ Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
               role: _.userController.user.userRole,
             ),
             AppTheme.heightSpace5,
-            if(caption.isNotEmpty)
-              Align(
-                  alignment: Alignment.centerLeft,
-                  child: HashtagLinkText(text: caption,)
-              )
-
+            if(_.post.caption.isNotEmpty)
+              Padding(padding: const EdgeInsets.only(right: 15),
+              child: ReadMoreContainer(text: _.post.caption,
+                fontSize: 14, trimLines: 10, letterSpacing: 0.1, padding: 0,
+              ),),
           ],
         ),
       ),

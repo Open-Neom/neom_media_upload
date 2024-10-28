@@ -12,7 +12,7 @@ import '../../../camera/neom_camera_handler.dart';
 import 'post_upload_controller.dart';
 
 class PostUploadPage extends StatelessWidget {
-  const PostUploadPage({Key? key}) : super(key: key);
+  const PostUploadPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ class PostUploadPage extends StatelessWidget {
                         ),
                       ),
                     Container(
-                      width: AppTheme.fullWidth(context)*0.75,
+                      width: AppTheme.fullWidth(context)*0.5,
                       padding: const EdgeInsets.only(top: 10.0),
                       child: Text(
                         AppTranslationConstants.allowedContentReminderMsg.tr,

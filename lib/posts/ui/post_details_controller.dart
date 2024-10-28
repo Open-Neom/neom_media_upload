@@ -18,7 +18,6 @@ import '../domain/use_cases/post_details_service.dart';
 
 class PostDetailsController extends GetxController implements PostDetailsService {
 
-  var logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
 
   AppProfile profile = AppProfile();
@@ -33,7 +32,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
   @override
   void onInit() async {
     super.onInit();
-    logger.i("PostDetails Controller Init");
+    AppUtilities.logger.i("PostDetails Controller Init");
     profile = userController.profile;
     try {
 
@@ -52,7 +51,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       }
 
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
   }
 
@@ -64,6 +63,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       await retrievePost();
     }
     isLoading.value = false;
+    showInfo = true;
     update([AppPageIdConstants.postDetails]);
   }
 
@@ -73,7 +73,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       post = await PostFirestore().retrieve(postId);
       post.comments = await CommentFirestore().retrieveComments(postId: postId);
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     isLoading.value = false;
@@ -132,7 +132,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
 
       Get.find<TimelineController>().handleLikeOnPost(post);
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities. logger.e(e.toString());
     }
 
     update([AppPageIdConstants.postDetails, AppPageIdConstants.blogEntry]);

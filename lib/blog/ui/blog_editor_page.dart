@@ -11,14 +11,14 @@ import 'blog_editor_controller.dart';
 
 class BlogEditorPage extends StatelessWidget {
 
-  const BlogEditorPage({Key? key}) : super(key: key);
+  const BlogEditorPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     var brightness = MediaQuery.of(context).platformBrightness;
     bool isDarkMode = brightness == Brightness.dark;
-    isDarkMode = false;
-
+    isDarkMode = false; //TODO Improve color design
+    Color blogColor = isDarkMode ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.4);
     return GetBuilder<BlogEditorController>(
         id: AppPageIdConstants.blogEditor,
         init: BlogEditorController(),
@@ -33,24 +33,22 @@ class BlogEditorPage extends StatelessWidget {
                 children: [
                   AppTheme.heightSpace20,
                   Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                      margin:  const EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(
-                        color: isDarkMode
-                            ? Colors.black.withOpacity(0.2)
-                            : Colors.white.withOpacity(0.5),
+                        color: blogColor,
+                        borderRadius: BorderRadius.circular(12), // Add rounded corners here
                       ),
                       child: TextField(
                           controller: _.entryTitleController,
                           textCapitalization: TextCapitalization.sentences,
-                          maxLength: 60,
+                          maxLength: 40,
                           cursorColor: isDarkMode ? Colors.blue.shade100 : AppColor.blogEditor,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1,
                             fontSize: 16,
-                            color: isDarkMode
-                                ? Colors.grey.shade300
-                                : Colors.grey.shade800,
+                            color: isDarkMode ? Colors.grey.shade300 : Colors.grey.shade800,
                           ),
                           maxLines: 1,
                           decoration: InputDecoration(
@@ -59,7 +57,7 @@ class BlogEditorPage extends StatelessWidget {
                               letterSpacing: 1,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: isDarkMode ? Colors.grey.shade600 : Colors.grey,
+                              color: isDarkMode ? Colors.grey.shade200 : Colors.grey.shade700,
                             ),
                             border: InputBorder.none,
                           ),
@@ -68,13 +66,14 @@ class BlogEditorPage extends StatelessWidget {
                           }
                       ),
                   ),
+                  AppTheme.heightSpace10,
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                      margin:  const EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(
-                        color: isDarkMode
-                            ? Colors.black.withOpacity(0.2)
-                            : Colors.white.withOpacity(0.5),
+                        color: blogColor,
+                        borderRadius: BorderRadius.circular(12), // Add rounded corners here
                       ),
                       child: TextField(
                         controller: _.entryTextController,
@@ -85,9 +84,7 @@ class BlogEditorPage extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                           letterSpacing: 1,
                           fontSize: 16,
-                          color: isDarkMode
-                              ? Colors.grey.shade300
-                              : Colors.grey.shade800,
+                          color: isDarkMode ? Colors.grey.shade300 : Colors.grey.shade800,
                         ),
                         maxLines: 30,
                         decoration: InputDecoration(
@@ -96,7 +93,7 @@ class BlogEditorPage extends StatelessWidget {
                             letterSpacing: 1,
                             fontWeight: FontWeight.w500,
                             fontSize: 16,
-                            color: isDarkMode ? Colors.grey.shade600 : Colors.grey,
+                            color: isDarkMode ? Colors.grey.shade200 : Colors.grey.shade700,
                             height: 1.5,
                           ),
                           border: InputBorder.none,

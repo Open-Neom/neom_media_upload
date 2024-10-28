@@ -13,7 +13,7 @@ import '../create_post/post_widgets.dart';
 import '../post_upload_controller.dart';
 
 class TextPostPage extends StatelessWidget {
-  const TextPostPage({Key? key}) : super(key: key);
+  const TextPostPage({super.key});
 
   @override
   Widget build(BuildContext context) {

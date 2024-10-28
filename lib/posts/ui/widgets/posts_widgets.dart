@@ -53,15 +53,11 @@ Widget buildCommentList(BuildContext context, PostCommentsController _) {
 
 }
 
-Widget buildCommentComposer(BuildContext context, PostCommentsController _) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-    height: 80.0,
-    color: AppColor.getMain(),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        (_.postUploadController.croppedImageFile.value.path.isEmpty) ?
+Widget buildCommentComposer(BuildContext context, PostCommentsController _,) {
+  return Row(
+    children: [
+      SizedBox(
+        child: (_.postUploadController.mediaFile.value.path.isEmpty || _.sendingMessage.value) ?
         IconButton(
             icon: const Icon(Icons.photo),
             iconSize: 25.0,
@@ -70,47 +66,56 @@ Widget buildCommentComposer(BuildContext context, PostCommentsController _) {
         ) :
         Stack(
             children: [
-              SizedBox(
-                  width: 50.0,
-                  height: 50.0,
-                  child: fileImage(_.postUploadController.croppedImageFile.value.path)
+              Container(
+                  width: 40.0, height: 40.0,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(52), // Add rounded corners here
+                  ),
+                  child: fileImage(_.postUploadController.mediaFile.value.path)
               ),
               Positioned(
-                width: 20,
-                height: 20,
-                top: 30,
-                left: 30,
+                width: 20, height: 20,
+                top: 30, left: 30,
                 child: FloatingActionButton(
                     backgroundColor: Theme.of(context).primaryColorLight,
                     child: const Icon(Icons.close, color: Colors.white70, size: 15),
-                    onPressed:  ()=> _.clearImage()
+                    onPressed: () => _.clearImage()
                 ),
               ),
             ]
         ),
-        AppTheme.widthSpace10,
-        Expanded(
+      ),
+      if(_.postUploadController.mediaFile.value.path.isNotEmpty) AppTheme.widthSpace10,
+      Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          decoration: BoxDecoration(
+            color: AppColor.main50,
+            borderRadius: BorderRadius.circular(12), // Add rounded corners here
+          ),
           child: TextField(
-            controller: _.commentController,
-            //TODO Verify how to improve this
+            controller: !_.sendingMessage.value ? _.commentController : TextEditingController(),
             minLines: 1,
             maxLines: 20,
             textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
-              hintText: AppTranslationConstants.writeComment.tr,
+              hintText: '${AppTranslationConstants.toComment.tr}...',
               border: InputBorder.none,
             ),
           ),
         ),
-        IconButton(
-            icon: const Icon(Icons.send),
-            iconSize: 25.0,
-            color: Theme.of(context).primaryColorLight,
-            onPressed: () => {
-              if(!_.isButtonDisabled.value) _.addComment()
-            }
+      ),
+      if(_.sendingMessage.value) AppTheme.widthSpace5,
+      Container(
+        child: _.sendingMessage.value ? const SizedBox(height: 25, width: 25, child: CircularProgressIndicator())
+            : IconButton(
+          icon: const Icon(Icons.send),
+          iconSize: 25.0,
+          color: Theme.of(context).primaryColorLight,
+
+          onPressed: () => _.sendingMessage.value || _.commentController.text.isEmpty ? {} : _.addComment(),
         ),
-      ],
-    ),
+      )
+    ],
   );
 }

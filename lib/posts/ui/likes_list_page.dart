@@ -11,7 +11,7 @@ import 'package:neom_commons/core/utils/constants/app_translation_constants.dart
 import 'package:neom_commons/core/utils/core_utilities.dart';
 
 class LikesListPage extends StatelessWidget {
-  const LikesListPage({Key? key}) : super(key: key);
+  const LikesListPage({super.key});
 
   @override
   Widget build(BuildContext context) {

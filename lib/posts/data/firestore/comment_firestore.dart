@@ -13,12 +13,11 @@ import '../../domain/repository/comment_repository.dart';
 
 class CommentFirestore implements CommentRepository {
 
-  var logger = AppUtilities.logger;
   final commentReference = FirebaseFirestore.instance.collection(AppFirestoreCollectionConstants.comments);
 
   @override
   Future<List<PostComment>> retrieveComments({required String postId}) async {
-    logger.d("RetrievingComments for PostId $postId");
+    AppUtilities.logger.d("RetrievingComments for PostId $postId");
     List<PostComment> comments = [];
 
     try {
@@ -27,17 +26,17 @@ class CommentFirestore implements CommentRepository {
           AppFirestoreConstants.postId, isEqualTo: postId).get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        logger.d("Snapshot is not empty");
+        AppUtilities.logger.d("Snapshot is not empty");
         for (var commentSnapshot in querySnapshot.docs) {
           PostComment comment = PostComment.fromJSON(commentSnapshot.data());
           comment.id = commentSnapshot.id;
-          logger.d(comment.toString());
+          AppUtilities.logger.d(comment.toString());
           comments.add(comment);
         }
-        logger.d("${comments .length} comments found");
+        AppUtilities.logger.d("${comments .length} comments found");
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
     return comments;
   }
@@ -54,23 +53,23 @@ class CommentFirestore implements CommentRepository {
       commentId = documentReference.id;
 
       if(await PostFirestore().addComment(comment.postId, commentId)) {
-        logger.d("CommentId added to Post");
+        AppUtilities.logger.d("CommentId added to Post");
 
         await ProfileFirestore().addComment(comment.ownerId, commentId);
-        logger.d("CommentId added to Profile");
+        AppUtilities.logger.d("CommentId added to Profile");
 
         if (comment.ownerId != comment.postOwnerId && commentId.isNotEmpty) {
           ActivityFeed activityFeed = ActivityFeed.fromComment(comment: comment, type: ActivityFeedType.comment);
           await ActivityFeedFirestore().insert(activityFeed);
-          logger.d("ActivityFeed created for comment");
+          AppUtilities.logger.d("ActivityFeed created for comment");
 
 
         } else {
-          logger.d("Self Comment");
+          AppUtilities.logger.d("Self Comment");
         }
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     return commentId;
@@ -79,7 +78,7 @@ class CommentFirestore implements CommentRepository {
 
   @override
   Future<bool> handleLikeComment(String profileId, String commentId, bool isLiked) async {
-    logger.t("handleLikeComment");
+    AppUtilities.logger.t("handleLikeComment");
     try {
         await commentReference.get()
             .then((querySnapshot) async {
@@ -95,26 +94,26 @@ class CommentFirestore implements CommentRepository {
 
       return true;
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
       return false;
     }
   }
 
   @override
   Future<bool> remove(PostComment comment) async {
-    logger.d("Removing comment ${comment.id}");
+    AppUtilities.logger.d("Removing comment ${comment.id}");
 
     try {
       if(await PostFirestore().removeComment(comment.postId, comment.id)) {
         await commentReference.doc(comment.id).delete();
-        logger.d("Comment ${comment.id} removed");
+        AppUtilities.logger.d("Comment ${comment.id} removed");
       }
 
       await ProfileFirestore().removeComment(comment.ownerId, comment.id);
       return true;
 
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
       return false;
     }
   }

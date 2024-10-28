@@ -17,7 +17,7 @@ import 'create_post/post_widgets.dart';
 import 'post_upload_controller.dart';
 
 class PostUploadDescriptionPage extends StatelessWidget {
-  const PostUploadDescriptionPage({Key? key}) : super(key: key);
+  const PostUploadDescriptionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ class PostUploadDescriptionPage extends StatelessWidget {
               if(_.postType == PostType.image) Center(
                 child: AspectRatio(
                   aspectRatio: AppTheme.landscapeAspectRatio,
-                  child: fileImage(_.croppedImageFile.value.path)
+                  child: fileImage(_.croppedImageFile.value.path),
                 ),
               ),
               if(_.postType == PostType.video) Container(
@@ -92,16 +92,32 @@ class PostUploadDescriptionPage extends StatelessWidget {
                     ),
                   ),
                 ]),),
-              // TrimmerView(),
-              // if(_.postType == PostType.video) StatefulTrimmerView(uploadController: _),
+              ///DEPRECATED
+              /// TrimmerView(),
+              /// if(_.postType == PostType.video) StatefulTrimmerView(uploadController: _),
               AppTheme.heightSpace10,
               ListTile(
                 leading: CircleAvatar(
                   radius: 15,
                   backgroundImage: CachedNetworkImageProvider(_.userController.profile.photoUrl)
                 ),
-                title: SizedBox(
+                title: Container(
                   width: 250.0,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppTheme.padding10,
+                    horizontal: AppTheme.padding20,
+                  ),
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [
+                            const Color(0x36FFFFFF).withOpacity(0.1),
+                            const Color(0x0FFFFFFF).withOpacity(0.1)
+                          ],
+                          begin: FractionalOffset.topLeft,
+                          end: FractionalOffset.bottomRight
+                      ),
+                      borderRadius: BorderRadius.circular(25)
+                  ),
                   child: HashTagTextField(
                     decoratedStyle: const TextStyle(color: AppColor.dodgetBlue),
                     keyboardType: TextInputType.multiline,
@@ -110,7 +126,7 @@ class PostUploadDescriptionPage extends StatelessWidget {
                     hintText: AppTranslationConstants.writeCaption.tr,
                     border: InputBorder.none,
                     ),
-                    minLines: 3,
+                    minLines: 2,
                     maxLines: 10,
                     /// Called when detection (word starts with #, or # and @) is being typed
                     onDetectionTyped: (text) {
