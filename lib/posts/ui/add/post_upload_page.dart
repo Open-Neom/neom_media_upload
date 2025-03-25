@@ -7,8 +7,10 @@ import 'package:neom_commons/core/utils/constants/app_assets.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/enums/app_file_from.dart';
+import 'package:neom_commons/core/utils/enums/user_role.dart';
 import 'package:neom_commons/core/utils/enums/verification_level.dart';
 import '../../../camera/neom_camera_handler.dart';
+import '../widgets/custom_media_grid.dart';
 import 'post_upload_controller.dart';
 
 class PostUploadPage extends StatelessWidget {
@@ -21,7 +23,8 @@ class PostUploadPage extends StatelessWidget {
           padding: EdgeInsets.zero,
           icon: const Icon(Icons.image_outlined),
           color: Colors.white70,
-          onPressed: ()=> Get.find<PostUploadController>().handleImage()
+          // onPressed: ()=> Get.find<PostUploadController>().handleImage()
+          onPressed: ()=> Get.to(() => CustomMediaGrid())
       ),
     ];
     return Scaffold(
@@ -36,7 +39,7 @@ class PostUploadPage extends StatelessWidget {
               decoration: AppTheme.appBoxDecoration,
               child: (_.takePhoto.value && !_.cameraControllerDisposed.value)
                   ? NeomCameraHandler(cameraController: _.cameraController,)
-                  : Center(
+                  : true?CustomMediaGrid() :Center(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -83,7 +86,7 @@ class PostUploadPage extends StatelessWidget {
                               ),
                               onPressed: () => _.handleImage(),
                             ),
-                            if(_.userController.user.isVerified) SimpleDialogOption(
+                            if(_.userController.user.userRole != UserRole.subscriber) SimpleDialogOption(
                               child: Text(
                                 AppTranslationConstants.videoFromGallery.tr
                               ),

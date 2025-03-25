@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -77,23 +78,14 @@ class PostUploadController extends GetxController implements PostUploadService {
 
 
   @override
-  Future<void> onInit() async {
+  void onInit() {
     super.onInit();
     logger.t("PostUpload Controller Init");
     profile = userController.profile;
 
     try {
       if(profile.position != null) {
-        String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
-        locationSuggestions.value.add(profileLocation);
-        _position = await GeoLocatorController().getCurrentPosition();
-
-        if(_position != null) {
-          String currentPosition = await GeoLocatorController().getAddressSimple(_position!);
-          if(!locationSuggestions.value.contains(currentPosition)) {
-            locationSuggestions.value.add(currentPosition);
-          }
-        }
+        getProfileLocation();
       }
     } catch (e) {
       logger.e(e.toString());
@@ -103,29 +95,32 @@ class PostUploadController extends GetxController implements PostUploadService {
   }
 
   @override
-  void onReady() async {
+  void onReady() {
     super.onReady();
 
     try {
-      await initializeCameraController();
-
-      List<Post> profilePosts = await PostFirestore().getProfilePosts(profile.id);
-      DateTime today = DateTime.now();
-      DateTime previousMonday = today.subtract(Duration(days: (today.weekday - 1 + 7) % 7));
-      int videosPerWeekCounter = 0;
-
-      for (var profilePost in profilePosts) {
-        if(profilePost.type == PostType.video && profilePost.createdTime > previousMonday.millisecondsSinceEpoch) {
-          videosPerWeekCounter++;
-        }
-      }
-
-      if(videosPerWeekCounter >= AppConstants.maxVideosPerWeek) maxVideosPerWeekReached.value = true;
+      // initializeCameraController();
+      ///DEPRECATED verifyVideosPerWeekLimit();
     } catch (e) {
       logger.e(e.toString());
     }
 
     update([AppPageIdConstants.upload]);
+  }
+
+  Future<void> verifyVideosPerWeekLimit() async {
+    List<Post> profilePosts = await PostFirestore().getProfilePosts(profile.id);
+    DateTime today = DateTime.now();
+    DateTime previousMonday = today.subtract(Duration(days: (today.weekday - 1 + 7) % 7));
+    int videosPerWeekCounter = 0;
+    
+    for (var profilePost in profilePosts) {
+      if(profilePost.type == PostType.video && profilePost.createdTime > previousMonday.millisecondsSinceEpoch) {
+        videosPerWeekCounter++;
+      }
+    }
+    
+    if(videosPerWeekCounter >= AppConstants.maxVideosPerWeek) maxVideosPerWeekReached.value = true;
   }
 
   @override
@@ -134,6 +129,19 @@ class PostUploadController extends GetxController implements PostUploadService {
     cameraController?.dispose();
     cameraControllerDisposed.value = true;
     // if(!trimmer.isDisposed) trimmer.dispose();
+  }
+
+  Future<void> getProfileLocation() async {
+    String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
+    locationSuggestions.value.add(profileLocation);
+    _position = await GeoLocatorController().getCurrentPosition();
+
+    if(_position != null) {
+      String currentPosition = await GeoLocatorController().getAddressSimple(_position!);
+      if(!locationSuggestions.value.contains(currentPosition)) {
+        locationSuggestions.value.add(currentPosition);
+      }
+    }
   }
 
   Future<void> initializeCameraController() async {
@@ -160,15 +168,14 @@ class PostUploadController extends GetxController implements PostUploadService {
       if(imageFile == null) {
         switch (appFileFrom) {
           case AppFileFrom.gallery:
-            mediaFile.value = (await ImagePicker().pickImage(source: ImageSource.gallery,
-                imageQuality: AppConstants.imageQuality)) ?? XFile('');
-            update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
+            mediaFile.value = (await ImagePicker().pickMedia() ?? XFile(''));
+          update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
+          //   pickMediaFromDevice();
+
             break;
           case AppFileFrom.camera:
-            if(cameraController != null) {
+            if(cameraController?.value.isInitialized ?? false) {
               takePhoto.value = true;
-              ///VERIFY IF NEEDED
-              // if(!cameraController!.value.isInitialized) await initializeCameraController();
               if(context != null) Navigator.pop(context);
 
               ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
@@ -178,6 +185,10 @@ class PostUploadController extends GetxController implements PostUploadService {
               //   mirrorFrontCameraPhoto(File(imageFile.value.path));
               // }
               break;
+            } else {
+              await initializeCameraController();
+              takePhoto.value = true;
+              if(context != null) Navigator.pop(context);
             }
         }
       } else {
@@ -271,8 +282,9 @@ class PostUploadController extends GetxController implements PostUploadService {
             mediaFile.value = (await ImagePicker().pickVideo(source: ImageSource.gallery))  ?? XFile('');
             break;
           case AppFileFrom.camera:
-          // file = (await ImagePicker().pickVideo(source: ImageSource.camera))!;
-          // break;
+            ///NOT NEEDED YET
+            /// file = (await ImagePicker().pickVideo(source: ImageSource.camera))!;
+            /// break;
         }
       } else {
         mediaFile.value = videoFile;
@@ -298,7 +310,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.video;
-        _thumbnailFile = await VideoCompress.getFileThumbnail(
+        File? __thumbnailFile = await VideoCompress.getFileThumbnail(
           mediaFile.value.path,
           quality: AppConstants.videoQuality,
         );
@@ -562,5 +574,42 @@ class PostUploadController extends GetxController implements PostUploadService {
   //   mirroredImgFile.writeAsBytesSync(img.encodeJpg(mirroredImage));
   //   imageFile.value = XFile(mirroredImgFile.path);
   // }
+
+  Future<void> pickMediaFromDevice() async {
+    // Abre el selector permitiendo escoger archivos multimedia (imágenes y videos)
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.media,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.first;
+      if (file.path != null) {
+        // Asigna el archivo seleccionado a mediaFile
+        mediaFile.value = XFile(file.path!);
+
+        // Determina si el archivo es imagen o video según su extensión
+        String ext = file.extension?.toLowerCase() ?? "";
+        if (['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv'].contains(ext)) {
+          postType = PostType.video;
+          // Por ejemplo, navega al editor de video
+          Get.to(() => StatefulVideoEditor(file: File(file.path!)));
+        } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].contains(ext)) {
+          postType = PostType.image;
+          // Aquí podrías comprimir o recortar la imagen según corresponda
+          mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);
+          // Por ejemplo, navega a la pantalla de descripción de post
+          Get.toNamed(AppRouteConstants.postUploadDescription);
+        } else {
+          AppUtilities.logger.w("Tipo de archivo no soportado: $ext");
+        }
+        update([
+          AppPageIdConstants.upload,
+          AppPageIdConstants.onBoardingAddImage,
+          AppPageIdConstants.createBand,
+        ]);
+      }
+    }
+  }
 
 }

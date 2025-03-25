@@ -3,5 +3,7 @@ dependency_overrides:
     path: ../neom_commons
   neom_timeline:
     path: ../neom_timeline
-  uuid: 4.4.0
-  rxdart: 0.28.0
+#  video_thumbnail:
+#    path: ../video_thumbnail
+#  uuid: ^4.5.1
+#  rxdart: 0.28.0

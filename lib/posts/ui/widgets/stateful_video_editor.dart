@@ -81,64 +81,73 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
 
 
   void processVideo() async {
-    AppUtilities.logger.d('Processing video from path ${_controller.file.path}');
+    AppUtilities.logger.i('Processing video from path ${_controller.file.path}');
     _exportingProgress.value = 0;
     _isExporting.value = true;
     await _controller.video.pause();
 
-    VideoFFmpegVideoEditorConfig config = VideoFFmpegVideoEditorConfig(_controller,);
+    // VideoFFmpegVideoEditorConfig config = VideoFFmpegVideoEditorConfig(_controller,);
+
     // FFmpegVideoEditorExecute execute = await config.getExecuteConfig();
     // await config.getExecuteConfig().then((value) {
-    //
-    //
     // });
 
-    File editedFile = File('');
-    await ExportService.runFFmpegCommand(
-      await config.getExecuteConfig(),
-      onProgress: (stats) {
-        _exportingProgress.value = config.getFFmpegProgress(stats.getTime().ceil());
-      },
-      onError: (e, s) => AppUtilities.showSnackBar(message: "Error on export video :("),
-      onCompleted: (file) {
-        _isExporting.value = false;
-        if (!mounted) return;
-        editedFile = file;
+    // File editedFile = File('');
+    AppUtilities.logger.e('Implementation Needed forrun FFMpeg');
 
-        if(editedFile.path.isNotEmpty) {
-          editedVideo = XFile(editedFile.path);
-          AppUtilities.logger.i('Video recorded to ${editedVideo.path}');
-          hadChanges = false;
-          uploadController?.setProcessedVideo(editedVideo);
-        }
-      },
+    final outputPath = '${Directory.systemTemp.path}/output_video.mp4';
+    final trimmedPath = await ExportService().trimVideo(
+      videoFile: _controller.file,
+      startValue: startTrim.toDouble(),
+      endValue: endTrim.toDouble(),
+      outputPath: outputPath,
     );
 
-      // format: VideoExportFormat.gif,
-      // commandBuilder: (config, videoPath, outputPath) {
-      //   final List<String> filters = config.getExportFilters();
-      //   filters.add('hflip'); // add horizontal flip
+    if (trimmedPath != null) {
+      editedVideo = XFile(trimmedPath);
+      AppUtilities.logger.i('Video exportado a ${editedVideo.path}');
+      hadChanges = false;
+      uploadController?.setProcessedVideo(editedVideo);
+    } else {
+      AppUtilities.showSnackBar(message: "Error al exportar el video :(");
+    }
 
-      //   return '-i $videoPath ${config.filtersCmd(filters)} -preset ultrafast $outputPath';
-      // },
-
+    _isExporting.value = false;
 
     // await ExportService.runFFmpegCommand(
-    //   await config.getExecuteConfig(),
-    //   onProgress: (stats) {
-    //     _exportingProgress.value = config.getFFmpegProgress(stats.getTime());
+    //   command,
+    //   onProgress: (progress) {
+    //     _exportingProgress.value = progress;
     //   },
-    //   onError: (e, s) => _showErrorSnackBar("Error on export video :("),
+    //   onError: (e, s) => AppUtilities.showSnackBar(message: "Error on export video :("),
     //   onCompleted: (file) {
     //     _isExporting.value = false;
     //     if (!mounted) return;
     //
-    //     showDialog(
-    //       context: context,
-    //       builder: (_) => VideoResultPopup(video: file),
-    //     );
+    //     editedVideo = XFile(file.path);
+    //     AppUtilities.logger.i('Video exportado a ${editedVideo.path}');
+    //     hadChanges = false;
+    //     uploadController?.setProcessedVideo(editedVideo);
     //   },
     // );
+
+    // await ExportService.runFFmpegCommand(
+    //   command,
+    //   onProgress: (progress) {
+    //     _exportingProgress.value = progress;
+    //   },
+    //   onError: (e, s) => AppUtilities.showSnackBar(message: "Error on export video :("),
+    //   onCompleted: (file) {
+    //     _isExporting.value = false;
+    //     if (!mounted) return;
+    //
+    //     editedVideo = XFile(file.path);
+    //     AppUtilities.logger.i('Video exportado a ${editedVideo.path}');
+    //     hadChanges = false;
+    //     uploadController?.setProcessedVideo(editedVideo);
+    //   },
+    // );
+
   }
 
   @override
@@ -149,7 +158,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: AppColor.getMain(),
-            title: Text(AppFlavour.appInUse.name.capitalize),
+            title: Text(AppConstants.appTitle.tr),
             content:  Text(AppTranslationConstants.wantToCloseEditor.tr),
             actions: <Widget>[
               TextButton(
