@@ -175,7 +175,7 @@ class PostCommentsController extends GetxController implements PostCommentsServi
 
   @override
   Future<void> handleImage(AppFileFrom appFileFrom) async {
-    await postUploadController.handleImage(appFileFrom: appFileFrom, uploadImageType: UploadImageType.profile);
+    await postUploadController.handleImage(appFileFrom: appFileFrom, imageType: UploadImageType.profile);
     update([AppPageIdConstants.postComments]);
   }
 

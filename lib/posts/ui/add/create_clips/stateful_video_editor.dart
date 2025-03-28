@@ -1,12 +1,14 @@
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_editor/video_editor.dart';
+import 'package:path_provider/path_provider.dart';
 
-import '../../../neom_posts.dart';
+import '../../../../neom_posts.dart';
 import 'video_crop_page.dart';
 import 'video_export_service.dart';
 
@@ -25,24 +27,47 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
   final double height = 60;
 
   late final VideoEditorController _controller;
-  XFile editedVideo = XFile('');
+  File editedVideo = File('');
   int startTrim = 0;
   int endTrim = 0;
-  bool hadChanges = false;
-
+  double aspectRatio = 1;
+  bool hasCropChanges = false;
+  bool hasTrimChanges = false;
+  bool hadCropChanges = false;
+  bool hadTrimChanges = false;
+  int maxDurationInSeconds = 0;
   PostUploadController? uploadController;
 
+  int totalSteps = 0;
+  int completedSteps = 0;
 
   @override
   void initState() {
     super.initState();
 
     final userController = Get.find<UserController>();
-    int maxDurationInSeconds = userController.user.userRole == UserRole.subscriber
-        ? AppConstants.verifiedMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
+    maxDurationInSeconds = userController.user.userRole == UserRole.subscriber
+        ? AppConstants.userMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
 
+    if(userController.user.isVerified) {
+      maxDurationInSeconds = AppConstants.verifiedMaxVideoDurationInSeconds;
+    }
+
+    editedVideo = widget.file;
+
+    initializeVideoEditorController(editedVideo);
+
+    if (Get.isRegistered<PostUploadController>()) {
+      uploadController = Get.find<PostUploadController>();
+    } else {
+      uploadController = PostUploadController();
+      Get.put(uploadController);
+    }
+  }
+
+  void initializeVideoEditorController(File file) {
     _controller = VideoEditorController.file(
-        widget.file,
+        file,
         minDuration: const Duration(seconds: 1),
         maxDuration: Duration(seconds: maxDurationInSeconds),
         trimStyle: TrimSliderStyle(
@@ -51,23 +76,18 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
           iconColor: AppColor.white
         ),
     );
-    _controller.initialize(aspectRatio: 9 / 16)
+    _controller.initialize()
         .then((_) {
           _controller.video.play();
-          setState(() {
-
-          });
+          Size videoSize = _controller.video.value.size;
+          aspectRatio = videoSize.width / videoSize.height;
+          startTrim = _controller.startTrim.inMilliseconds;
+          endTrim = _controller.endTrim.inMilliseconds;
+          setState(() {});
         }).catchError((error) {
           // handle minumum duration bigger than video duration error
       Navigator.pop(context);
     }, test: (e) => e is VideoMinDurationError);
-
-    if (Get.isRegistered<PostUploadController>()) {
-      uploadController = Get.find<PostUploadController>();
-    } else {
-      uploadController = PostUploadController();
-      Get.put(uploadController);
-    }
   }
 
   @override
@@ -79,75 +99,129 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
     super.dispose();
   }
 
-
   void processVideo() async {
     AppUtilities.logger.i('Processing video from path ${_controller.file.path}');
-    _exportingProgress.value = 0;
+    File processedVideo = _controller.file;
+
+    if(hasCropChanges && hadTrimChanges) {
+      hasTrimChanges = true;
+    } else if(hasTrimChanges && hadCropChanges) {
+      hasCropChanges = true;
+    } else {
+      processedVideo = File(editedVideo.path);
+    }
+
+
     _isExporting.value = true;
+
+    _exportingProgress.value = 0;
+    totalSteps = (hasTrimChanges ? 3 : 0) + (hasCropChanges ? 3 : 0);
+    completedSteps = 0;
+
     await _controller.video.pause();
 
-    // VideoFFmpegVideoEditorConfig config = VideoFFmpegVideoEditorConfig(_controller,);
+    String editedClipName = '${uploadController?.profile.name.split(' ').first.toLowerCase()}_gigclip_${DateTime.now().millisecondsSinceEpoch}';
 
-    // FFmpegVideoEditorExecute execute = await config.getExecuteConfig();
-    // await config.getExecuteConfig().then((value) {
-    // });
+    if(hasTrimChanges) {
+      increaseProgressPercentage();
 
-    // File editedFile = File('');
-    AppUtilities.logger.e('Implementation Needed forrun FFMpeg');
+      String trimmedVideoPath = await VideoExportService().trimVideo(
+        videoFile: processedVideo,
+        startValue: startTrim.toDouble(),
+        endValue: endTrim.toDouble(),
+        videoName: '${editedClipName}_trimmed',
+      );
 
-    final outputPath = '${Directory.systemTemp.path}/output_video.mp4';
-    final trimmedPath = await ExportService().trimVideo(
-      videoFile: _controller.file,
-      startValue: startTrim.toDouble(),
-      endValue: endTrim.toDouble(),
-      outputPath: outputPath,
-    );
+      increaseProgressPercentage();
+      AppUtilities.logger.d("Ruta retornada por trimVideo: '$trimmedVideoPath'");
+      AppUtilities.logger.d("Existe archivo?: ${File(trimmedVideoPath).existsSync()}");
 
-    if (trimmedPath != null) {
-      editedVideo = XFile(trimmedPath);
-      AppUtilities.logger.i('Video exportado a ${editedVideo.path}');
-      hadChanges = false;
-      uploadController?.setProcessedVideo(editedVideo);
+      if(trimmedVideoPath.isNotEmpty && File(trimmedVideoPath).existsSync()) {
+        processedVideo = File(trimmedVideoPath);
+        AppUtilities.logger.i('Video recortado y exportado a ${processedVideo.path}');
+        hasTrimChanges = false;
+        hadTrimChanges = true;
+      } else {
+        AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
+        AppUtilities.showSnackBar(message: "Error al exportar el video :(");
+        _isExporting.value = false;
+        return;
+      }
+
+      increaseProgressPercentage();
+    }
+
+    if(hasCropChanges) {
+      increaseProgressPercentage();
+
+      final croppedController = VideoEditorController.file(
+        processedVideo,
+        maxDuration: Duration(seconds: maxDurationInSeconds),
+      );
+
+      await croppedController.initialize();
+
+      // Copia configuración de crop original al nuevo controller
+      croppedController.updateCrop(_controller.minCrop, _controller.maxCrop);
+      croppedController.preferredCropAspectRatio = _controller.preferredCropAspectRatio;
+
+      VideoFFmpegVideoEditorConfig config = VideoFFmpegVideoEditorConfig(croppedController,
+        name: '${editedClipName}_cropped', format: VideoExportFormat.mp4,
+      );
+
+      final FFmpegVideoEditorExecute executeConfig = await config.getExecuteConfig();
+
+      increaseProgressPercentage();
+      bool success = await executeFFmpegCommand(executeConfig);
+
+      croppedController.dispose();
+
+      if(success && executeConfig.outputPath.isNotEmpty && File(executeConfig.outputPath).existsSync()) {
+        AppUtilities.logger.i("Tamaño de video ajustado y exportado correctamente en: ${executeConfig.outputPath}");
+        editedVideo = File(executeConfig.outputPath);
+        hasCropChanges = false;
+        hadCropChanges = true;
+      } else {
+        AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
+        AppUtilities.showSnackBar(message: "Error al exportar el video :(");
+        _isExporting.value = false;
+        return;
+      }
+      increaseProgressPercentage();
     } else {
-      AppUtilities.showSnackBar(message: "Error al exportar el video :(");
+      editedVideo = File(processedVideo.path);
     }
 
     _isExporting.value = false;
 
-    // await ExportService.runFFmpegCommand(
-    //   command,
-    //   onProgress: (progress) {
-    //     _exportingProgress.value = progress;
-    //   },
-    //   onError: (e, s) => AppUtilities.showSnackBar(message: "Error on export video :("),
-    //   onCompleted: (file) {
-    //     _isExporting.value = false;
-    //     if (!mounted) return;
-    //
-    //     editedVideo = XFile(file.path);
-    //     AppUtilities.logger.i('Video exportado a ${editedVideo.path}');
-    //     hadChanges = false;
-    //     uploadController?.setProcessedVideo(editedVideo);
-    //   },
-    // );
+    if (await editedVideo.exists() && (await editedVideo.length()) > 0) {
+      uploadController?.setProcessedVideo(XFile(editedVideo.path));
+    } else {
+      AppUtilities.logger.e("⛔ Archivo exportado es inválido o vacío.");
+      AppUtilities.showSnackBar(message: "Hubo un error en la exportación.");
+    }
+  }
 
-    // await ExportService.runFFmpegCommand(
-    //   command,
-    //   onProgress: (progress) {
-    //     _exportingProgress.value = progress;
-    //   },
-    //   onError: (e, s) => AppUtilities.showSnackBar(message: "Error on export video :("),
-    //   onCompleted: (file) {
-    //     _isExporting.value = false;
-    //     if (!mounted) return;
-    //
-    //     editedVideo = XFile(file.path);
-    //     AppUtilities.logger.i('Video exportado a ${editedVideo.path}');
-    //     hadChanges = false;
-    //     uploadController?.setProcessedVideo(editedVideo);
-    //   },
-    // );
+  void increaseProgressPercentage() {
+    completedSteps++;
+    _exportingProgress.value = completedSteps / totalSteps;
+  }
 
+  Future<bool> executeFFmpegCommand(FFmpegVideoEditorExecute executeConfig) async {
+    final session = await FFmpegKit.execute(executeConfig.command);
+
+    final returnCode = await session.getReturnCode();
+    if (returnCode != null && returnCode.isValueSuccess()) {
+      AppUtilities.logger.i('✅ Éxito! Video exportado en ${executeConfig.outputPath}');
+      return true;
+    } else {
+      final logs = await session.getAllLogs();
+      for (var log in logs) {
+        debugPrint(log.getMessage());
+      }
+      AppUtilities.logger.e('⛔️ Error al exportar video.');
+      return false;
+    }
   }
 
   @override
@@ -241,10 +315,29 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
                   child: AlertDialog(
                     title: ValueListenableBuilder(
                       valueListenable: _exportingProgress,
-                      builder: (_, double value, __) => Text(
-                        '${AppTranslationConstants.processingVideo.tr} ${(value * 100).ceil()}%',
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      builder: (_, double value, __)  {
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0.0, end: value),
+                          duration: const Duration(seconds: 1),
+                          builder: (context, animatedValue, child) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                LinearProgressIndicator(
+                                  value: animatedValue,
+                                  backgroundColor: Colors.white30,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  '${AppTranslationConstants.processingVideo.tr} ${(animatedValue * 100).ceil()}%',
+                                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
                     ),
                     backgroundColor: AppColor.bondiBlue,
                   ),
@@ -271,10 +364,10 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
         children: [
         IconButton(
           onPressed: () {
-            hadChanges = true;
+            hasCropChanges = true;
             Navigator.push(context,
               MaterialPageRoute<void>(
-                builder: (context) => CropPage(controller: _controller),
+                builder: (context) => VideoCropPage(controller: _controller),
               ),
             );
           },
@@ -283,10 +376,10 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
         ),
           IconButton(
             onPressed: () async {
-              if(hadChanges) {
+              if(hasTrimChanges || hasCropChanges) {
                 processVideo();
               } else {
-                uploadController?.setProcessedVideo(editedVideo);
+                uploadController?.setProcessedVideo(XFile(editedVideo.path));
               }
 
             },
@@ -311,12 +404,12 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
 
           if(startTrim != _controller.startTrim.inMilliseconds) {
             startTrim = _controller.startTrim.inMilliseconds;
-            hadChanges = true;
+            hasTrimChanges = true;
           }
 
           if(endTrim != _controller.endTrim.inMilliseconds) {
             endTrim = _controller.endTrim.inMilliseconds;
-            hadChanges = true;
+            hasTrimChanges = true;
           }
 
           return Container(

@@ -50,19 +50,36 @@ class PostUploadDescriptionPage extends StatelessWidget {
           height: AppTheme.fullHeight(context),
           child: Column(
             children: <Widget>[
+              ListTile(
+                  leading: CircleAvatar(
+                      radius: 15,
+                      backgroundImage: CachedNetworkImageProvider(_.userController.profile.photoUrl)
+                  ),
+                  title: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppTheme.padding10,
+                    ),
+                    child: Text(_.profile.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  )
+              ),
+              buildPostDescriptionWidget(_),
+              AppTheme.heightSpace10,
               if(_.postType == PostType.image) Center(
                 child: AspectRatio(
                   aspectRatio: AppTheme.landscapeAspectRatio,
                   child: fileImage(_.croppedImageFile.value.path),
                 ),
-              ),
-              if(_.postType == PostType.video) Container(
+              ) else if(_.postType == PostType.video && _.videoPlayerController != null) Container(
                 color: AppColor.appBlack,
-                height: AppTheme.fullWidth(context)/(_.videoPlayerController.value.aspectRatio > 1 ? _.videoPlayerController.value.aspectRatio : 1),
-                width: AppTheme.fullWidth(context)*(_.videoPlayerController.value.aspectRatio <= 1 ? _.videoPlayerController.value.aspectRatio : 1),
+                height: AppTheme.fullWidth(context)/(_.videoPlayerController!.value.aspectRatio > 1 ? _.videoPlayerController!.value.aspectRatio : 1),
+                width: AppTheme.fullWidth(context)*(_.videoPlayerController!.value.aspectRatio <= 1 ? _.videoPlayerController!.value.aspectRatio : 1),
                 child: Stack(
                 children: [
-                  VideoPlayer(_.videoPlayerController),
+                  VideoPlayer(_.videoPlayerController!),
                   Center(
                     child: Container(
                       decoration: BoxDecoration(
@@ -81,93 +98,84 @@ class PostUploadDescriptionPage extends StatelessWidget {
                         iconSize: 30,
                         color: Colors.white70.withOpacity(0.5),
                         onPressed: () => _.playPauseVideo(),
-                        // onPressed: () {
-                        //   Navigator.of(context).push(
-                        //     MaterialPageRoute(builder: (context) {
-                        //       return TrimmerView(File(_.mediaFile.value.path));
-                        //     }),
-                        //   );
-                        // },
                       ),
                     ),
                   ),
-                ]),),
-              ///DEPRECATED
-              /// TrimmerView(),
-              /// if(_.postType == PostType.video) StatefulTrimmerView(uploadController: _),
+                ]),
+              ),
               AppTheme.heightSpace10,
-              ListTile(
-                leading: CircleAvatar(
-                  radius: 15,
-                  backgroundImage: CachedNetworkImageProvider(_.userController.profile.photoUrl)
-                ),
-                title: Container(
-                  width: 250.0,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppTheme.padding10,
-                    horizontal: AppTheme.padding20,
-                  ),
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [
-                            const Color(0x36FFFFFF).withOpacity(0.1),
-                            const Color(0x0FFFFFFF).withOpacity(0.1)
-                          ],
-                          begin: FractionalOffset.topLeft,
-                          end: FractionalOffset.bottomRight
-                      ),
-                      borderRadius: BorderRadius.circular(25)
-                  ),
-                  child: HashTagTextField(
-                    decoratedStyle: const TextStyle(color: AppColor.dodgetBlue),
-                    keyboardType: TextInputType.multiline,
-                    controller: _.captionController,
-                    decoration: InputDecoration(
-                    hintText: AppTranslationConstants.writeCaption.tr,
-                    border: InputBorder.none,
-                    ),
-                    minLines: 2,
-                    maxLines: 10,
-                    /// Called when detection (word starts with #, or # and @) is being typed
-                    onDetectionTyped: (text) {
-                      AppUtilities.logger.t(text);
-                    },
-                    /// Called when detection is fully typed
-                    onDetectionFinished: () {
-                      AppUtilities.logger.t("Type Detection Finished");
-                    },
-                  ),
-                )
-              ),
-              const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Icon(Icons.pin_drop,size: 20.0,),
-                  SizedBox(
-                    width: 250.0,
-                    child: TextField(
-                      controller: _.locationController,
-                      decoration: InputDecoration(
-                        hintText: AppTranslationConstants.wherePhotoTaken.tr,
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (text) => _.updatePage()
-                    ),
-                  ),
-                  _.locationController.text.isNotEmpty ?
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => _.clearUserLocation(),
-                  ) : const SizedBox.shrink()
-                ],
-              ),
-              const Divider(),
+              buildLocationWidget(_, context),
+              AppTheme.heightSpace20,
               buildLocationSuggestions(context, _)
             ],
           ),
         ),
       ),),
+    );
+  }
+
+  Row buildLocationWidget(PostUploadController _, BuildContext context) {
+    return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                AppTheme.widthSpace10,
+                const Icon(Icons.pin_drop,size: 20.0,),
+                AppTheme.widthSpace10,
+                Expanded(child: TextFormField(
+                  controller: _.locationController,
+                  onTap:() => _.getLocation(context) ,
+                  decoration: InputDecoration(
+                    filled: false,
+                    labelText: AppTranslationConstants.wherePhotoTaken.tr,
+                    // border: OutlineInputBorder(
+                    //   borderRadius: BorderRadius.circular(10),
+                    // ),
+                  ),
+                ),),
+                _.locationController.text.isNotEmpty ?
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => _.clearUserLocation(),
+                ) : const SizedBox.shrink()
+              ],
+            );
+  }
+
+  Widget buildPostDescriptionWidget(PostUploadController _) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.padding10,
+      ),
+      // decoration: BoxDecoration(
+      //     gradient: LinearGradient(
+      //         colors: [
+      //           const Color(0x36FFFFFF).withOpacity(0.1),
+      //           const Color(0x0FFFFFFF).withOpacity(0.1)
+      //         ],
+      //         begin: FractionalOffset.topLeft,
+      //         end: FractionalOffset.bottomRight
+      //     ),
+      //     borderRadius: BorderRadius.circular(25)
+      // ),
+      child: HashTagTextField(
+        decoratedStyle: const TextStyle(color: AppColor.dodgetBlue),
+        keyboardType: TextInputType.multiline,
+        controller: _.captionController,
+        decoration: InputDecoration(
+          hintText: AppTranslationConstants.writeCaption.tr,
+          border: InputBorder.none,
+        ),
+        minLines: 2,
+        maxLines: 10,
+        /// Called when detection (word starts with #, or # and @) is being typed
+        onDetectionTyped: (text) {
+          AppUtilities.logger.t(text);
+        },
+        /// Called when detection is fully typed
+        onDetectionFinished: () {
+          AppUtilities.logger.t("Type Detection Finished");
+        },
+      ),
     );
   }
 }

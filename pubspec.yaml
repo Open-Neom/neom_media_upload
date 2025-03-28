@@ -30,8 +30,7 @@ dependencies:
 #  flutter_ffmpeg: ^0.4.2
   file_picker: ^9.2.1
   photo_manager: ^3.6.4
-
-
+  ffmpeg_kit_flutter: ^6.0.3-LTS
 
 dev_dependencies:
   flutter_test:

@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
 import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
 import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_assets.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/enums/app_file_from.dart';
-import 'package:neom_commons/core/utils/enums/user_role.dart';
-import 'package:neom_commons/core/utils/enums/verification_level.dart';
-import '../../../camera/neom_camera_handler.dart';
-import '../widgets/custom_media_grid.dart';
+import '../widgets/post_media_grid.dart';
 import 'post_upload_controller.dart';
 
 class PostUploadPage extends StatelessWidget {
@@ -18,98 +15,30 @@ class PostUploadPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> actionWidgets = [
-      IconButton(
-          padding: EdgeInsets.zero,
-          icon: const Icon(Icons.image_outlined),
-          color: Colors.white70,
-          // onPressed: ()=> Get.find<PostUploadController>().handleImage()
-          onPressed: ()=> Get.to(() => CustomMediaGrid())
-      ),
-    ];
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBarChild(title: AppTranslationConstants.createPost.tr, actionWidgets: actionWidgets, color: AppColor.getMain(),),
-      backgroundColor: AppColor.main50,
-      body: GetBuilder<PostUploadController>(
+    return GetBuilder<PostUploadController>(
         id: AppPageIdConstants.upload,
         init: PostUploadController(),
-        builder: (_) {
-          return Obx(()=> Container(
-              decoration: AppTheme.appBoxDecoration,
-              child: (_.takePhoto.value && !_.cameraControllerDisposed.value)
-                  ? NeomCameraHandler(cameraController: _.cameraController,)
-                  : true?CustomMediaGrid() :Center(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                GestureDetector(
-                  child: Column(children: [
-                    Image.asset(AppAssets.uploadVector, width: AppTheme.fullWidth(context)*0.66, fit: BoxFit.fitWidth,),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: Text(
-                        AppTranslationConstants.tapToUploadImage.tr,
-                          style: const TextStyle(
-                            fontSize: 20.0,
-                          ),
-                        ),
-                      ),
-                    Container(
-                      width: AppTheme.fullWidth(context)*0.5,
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: Text(
-                        AppTranslationConstants.allowedContentReminderMsg.tr,
-                        style: const TextStyle(
-                          fontSize: 12.0,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],),
-                  onTap: ()=>
-                    _.profile.verificationLevel != VerificationLevel.none ?
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return SimpleDialog(
-                          backgroundColor: AppColor.getMain(),
-                          title: Text(AppTranslationConstants.createPost.tr),
-                          children: <Widget>[
-                            SimpleDialogOption(
-                              child: Text(AppTranslationConstants.takePhoto.tr),
-                              onPressed: () => _.handleImage(appFileFrom: AppFileFrom.camera, context: context),
-                            ),
-                            SimpleDialogOption(
-                              child: Text(
-                                  AppTranslationConstants.photoFromGallery.tr
-                              ),
-                              onPressed: () => _.handleImage(),
-                            ),
-                            if(_.userController.user.userRole != UserRole.subscriber) SimpleDialogOption(
-                              child: Text(
-                                AppTranslationConstants.videoFromGallery.tr
-                              ),
-                              onPressed: () => _.handleVideo(),
-                            ),
-                            SimpleDialogOption(
-                              child: Text(
-                                  AppTranslationConstants.cancel.tr
-                              ),
-                              onPressed: () => Navigator.pop(context)
-                            ),
-                          ],
-                        );
-                      }
-                    ) : _.handleImage(),
-                  ),
-                ],
-                ),
-              ),
-           ),
-          );
-        }
+    builder: (_) => Scaffold(
+      // extendBodyBehindAppBar: true,
+      appBar: AppBarChild(
+        leadingWidget: IconButton(icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: AppTranslationConstants.newPost.tr, centerTitle: true,
+        actionWidgets: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () => Get.toNamed(AppRouteConstants.camera),
+          ),
+        ],
+        color: AppColor.getMain(),
       ),
-    );
+      backgroundColor: AppColor.main50,
+      body: Obx(()=>_.isLoading.value ? AppCircularProgressIndicator():Container(
+          decoration: AppTheme.appBoxDecoration,
+          child: PostMediaGrid(postUploadController: _)
+      ),),
+    ),);
   }
+
 }

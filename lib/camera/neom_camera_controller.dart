@@ -3,28 +3,23 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:neom_commons/core/data/implementations/user_controller.dart';
+import 'package:neom_commons/core/domain/model/app_profile.dart';
+import 'package:neom_commons/core/utils/app_utilities.dart';
+import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_player/video_player.dart';
 
 import '../neom_posts.dart';
+import '../posts/ui/add/post_upload_controller.dart';
 
-class NeomCameraHandler extends StatefulWidget {
+class NeomCameraController extends GetxController {
 
-  final CameraController? cameraController;
-
-  ///CamerasDesceription still experimental to verify if needed to change from back to frontal
-  final List<CameraDescription>? cameras;
-
-  const NeomCameraHandler({this.cameraController, this.cameras, super.key});
-
-  @override
-  State<NeomCameraHandler> createState() {
-    return _NeomCameraHandlerState();
-  }
-}
-
-class _NeomCameraHandlerState extends State<NeomCameraHandler>
-    with WidgetsBindingObserver, TickerProviderStateMixin {
+  var logger = AppUtilities.logger;
+  final userController = Get.find<UserController>();
+  PostUploadController uploadController = Get.find<PostUploadController>();
+  AppProfile profile = AppProfile();
 
   CameraController? controller;
   XFile? imageFile;
@@ -32,11 +27,13 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
   VideoPlayerController? videoController;
   VoidCallback? videoPlayerListener;
 
-  bool enableAudio = true;
+  RxBool enableAudio = true.obs;
   int flashModeIndex = 0;
   Icon flashIcon = const Icon(Icons.flash_off);
-  bool isRecording = false;
-  bool isDisposed = false;
+  RxBool isRecording = false.obs;
+  RxBool disposed = false.obs;
+  RxBool isLoading = true.obs;
+  bool mounted = false;
 
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
@@ -47,140 +44,78 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
   int _pointers = 0;
   List<CameraDescription> cameras = [];
 
-  late PostUploadController uploadController;
-
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
+  void onInit() {
+    super.onInit();
+    logger.t("PostUpload Controller Init");
+    profile = userController.profile;
 
-    controller = widget.cameraController;
+    try {
+      initializeCameraController();
 
-    if (controller == null && !controller!.value.isInitialized) {
-      _initializeCameraController(controller!.description);
+      onSetFlashModeButtonPressed(FlashMode.off);
+
+      if (Get.isRegistered<PostUploadController>()) {
+        uploadController = Get.find<PostUploadController>();
+      } else {
+        uploadController = PostUploadController();
+        Get.put(uploadController);
+      }
+    } catch (e) {
+      logger.e(e.toString());
     }
 
-    onSetFlashModeButtonPressed(FlashMode.off);
+  }
 
-    if (Get.isRegistered<PostUploadController>()) {
-      uploadController = Get.find<PostUploadController>();
-    } else {
-      uploadController = PostUploadController();
-      Get.put(uploadController);
+  @override
+  void onReady() {
+    super.onReady();
+
+    try {
+      // initializeCameraController();
+      ///DEPRECATED verifyVideosPerWeekLimit();
+    } catch (e) {
+      logger.e(e.toString());
     }
   }
 
   @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
+  void onClose() {
+    super.onClose();
+    controller?.dispose();
   }
 
-  // #docregion AppLifecycle
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final CameraController? cameraController = controller;
-
-    // App state changed before we got the chance to initialize.
-    if (cameraController == null || !cameraController.value.isInitialized) {
-      return;
+  Future<void> initializeCameraController() async {
+    try {
+      cameras = await availableCameras();
+      final rearCamera = cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
+      controller = CameraController(rearCamera, ResolutionPreset.high);
+      await controller?.initialize();
+      isLoading.value = false;
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
     }
 
-    if (state == AppLifecycleState.inactive) {
-      cameraController.dispose();
-      setState(() {
-        isDisposed = true;
-      });
-    } else if (state == AppLifecycleState.resumed) {
-      _initializeCameraController(cameraController.description);
-    }
-  }
-  // #enddocregion AppLifecycle
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: AppTheme.fullHeight(context),
-      child: Stack(
-      alignment: Alignment.center,
-      children: [
-        (!isDisposed) ? SizedBox(
-          width: AppTheme.fullWidth(context),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(50.0),
-              bottomRight: Radius.circular(50.0),
-            ),
-            child: _cameraPreviewWidget(),),
-        ) : const CircularProgressIndicator(),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 30.0),
-            child: _modeControlRowWidget(),
-          )
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 30.0),
-            child: GestureDetector(
-              onTap: () {
-                if(controller != null && controller!.value.isInitialized && !controller!.value.isRecordingVideo) {
-                  onTakePictureButtonPressed();
-                }
-              },
-              onLongPress: () {
-                if((uploadController.userController.user.isVerified) && controller != null
-                    && controller!.value.isInitialized && !controller!.value.isRecordingVideo) {
-                  onVideoRecordButtonPressed();
-                }
-              },
-              onLongPressEnd: (details) {
-                if((uploadController.userController.user.isVerified) && controller != null
-                    && controller!.value.isInitialized && controller!.value.isRecordingVideo) {
-                  onStopButtonPressed();
-                }
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: isRecording ? 90 : 80,
-                height: isRecording ? 90 : 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isRecording ? AppColor.red : AppColor.lightGrey,
-                ),
-                child: isRecording ? const Icon(Icons.stop, color: Colors.white, size: 45,) : null,
-              ),
-            ),
-          ),
-        ),
-        // Align(
-        //   alignment: Alignment.bottomCenter,
-        //   child: _thumbnailWidget(),
-        // ),
-    ],),
-    );
   }
 
   /// Display the preview from the camera (or a message if the preview is not available).
-  Widget _cameraPreviewWidget() {
+  Widget cameraPreviewWidget() {
     return Listener(
-      onPointerDown: (_) => _pointers++,
-      onPointerUp: (_) => _pointers--,
-      child: CameraPreview(
-        controller!,
-        child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onScaleStart: _handleScaleStart,
-                onScaleUpdate: _handleScaleUpdate,
-                onTapDown: (TapDownDetails details) =>
-                    onViewFinderTap(details, constraints),
-              );
-            }),
-      )
+        onPointerDown: (_) => _pointers++,
+        onPointerUp: (_) => _pointers--,
+        child: CameraPreview(
+          controller!,
+          child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onScaleStart: _handleScaleStart,
+                  onScaleUpdate: _handleScaleUpdate,
+                  onTapDown: (TapDownDetails details) =>
+                      onViewFinderTap(details, constraints),
+                );
+              }),
+        )
     );
   }
 
@@ -200,49 +135,8 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
     await controller!.setZoomLevel(_currentScale);
   }
 
-  // /// Display the thumbnail of the captured image or video.
-  // Widget _thumbnailWidget() {
-  //   final VideoPlayerController? localVideoController = videoController;
-  //
-  //   return Align(
-  //       alignment: Alignment.centerRight,
-  //       child: Row(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: <Widget>[
-  //           if (localVideoController == null && imageFile == null)
-  //             SizedBox.shrink()
-  //           else
-  //             SizedBox(
-  //               width: 64.0,
-  //               height: 64.0,
-  //               child: (localVideoController == null)
-  //                   ? (
-  //                   // The captured image on the web contains a network-accessible URL
-  //                   // pointing to a location within the browser. It may be displayed
-  //                   // either with Image.network or Image.memory after loading the image
-  //                   // bytes to memory.
-  //                   kIsWeb
-  //                       ? Image.network(imageFile!.path)
-  //                       : Image.file(File(imageFile!.path)))
-  //                   : Container(
-  //                 decoration: BoxDecoration(
-  //                     border: Border.all(color: Colors.pink)),
-  //                 child: Center(
-  //                   child: AspectRatio(
-  //                       aspectRatio:
-  //                       localVideoController.value.aspectRatio,
-  //                       child: VideoPlayer(localVideoController)),
-  //                 ),
-  //               ),
-  //             ),
-  //         ],
-  //       ),
-  //
-  //   );
-  // }
-
   /// Display a bar with buttons to change the flash and exposure modes
-  Widget _modeControlRowWidget() {
+  Widget modeControlRowWidget() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
@@ -253,8 +147,8 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
           onPressed: controller != null ? onFlashModeButtonPressed : null,
         ),
         if (uploadController.userController.user.isVerified) IconButton(
-          icon: Icon(enableAudio ? Icons.volume_up : Icons.volume_mute),
-          color: enableAudio ? AppColor.mystic : AppColor.yellow,
+          icon: Icon(enableAudio.value ? Icons.volume_up : Icons.volume_mute),
+          color: enableAudio.value ? AppColor.mystic : AppColor.yellow,
           onPressed: controller != null ? onAudioModeButtonPressed : null,
         ),
       ],
@@ -294,7 +188,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
     // If the controller is updated then update the UI.
     cameraController.addListener(() {
       if (mounted) {
-        setState(() {});
+        update();
       }
       if (cameraController.value.hasError) {
         AppUtilities.showSnackBar(message: 'Camera error ${cameraController.value.errorDescription}');
@@ -338,20 +232,16 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
     }
 
     if (mounted) {
-      setState(() {
-        isDisposed = false;
-      });
+      disposed.value = false;
     }
   }
 
   void onTakePictureButtonPressed() {
     takePicture().then((XFile? file) {
       if (mounted) {
-        setState(() {
-          imageFile = file;
-          videoController?.dispose();
-          videoController = null;
-        });
+        imageFile = file;
+        videoController?.dispose();
+        videoController = null;
       }
 
       if (file != null) {
@@ -397,45 +287,41 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
 
 
   void onAudioModeButtonPressed() {
-    enableAudio = !enableAudio;
+    enableAudio.value = !enableAudio.value;
 
     if (controller != null) {
-      _initializeCameraController(controller!.description, isAudioEnabled: enableAudio);
+      _initializeCameraController(controller!.description, isAudioEnabled: enableAudio.value);
     }
 
     if (mounted) {
-      setState(() {});
+      update();
     }
   }
 
   void onSetFlashModeButtonPressed(FlashMode mode) {
     setFlashMode(mode).then((_) {
       if (mounted) {
-        setState(() {});
+        update();
       }
     });
   }
 
   void onVideoRecordButtonPressed() {
-    setState(() {
-      isRecording = true;
-    });
+    isRecording.value = true;
 
     startVideoRecording().then((_) {
       if (mounted) {
-        setState(() {});
+        update();
       }
     });
   }
 
   void onStopButtonPressed() {
-    setState(() {
-      isRecording = false;
-    });
+    isRecording.value = false;
 
     stopVideoRecording().then((XFile? file) {
       if (mounted) {
-        setState(() {});
+        update();
       }
 
       if (file != null) {
@@ -460,14 +346,14 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
     }
 
     if (mounted) {
-      setState(() {});
+      update();
     }
   }
 
   void onPauseButtonPressed() {
     pauseVideoRecording().then((_) {
       if (mounted) {
-        setState(() {});
+        update();
       }
       AppUtilities.showSnackBar(message: 'Video recording paused');
     });
@@ -476,7 +362,7 @@ class _NeomCameraHandlerState extends State<NeomCameraHandler>
   void onResumeButtonPressed() {
     resumeVideoRecording().then((_) {
       if (mounted) {
-        setState(() {});
+        update();
       }
       AppUtilities.showSnackBar(message: 'Video recording resumed');
     });

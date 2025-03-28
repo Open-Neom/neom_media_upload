@@ -1,17 +1,23 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:image_picker/image_picker.dart';
 
-class CustomMediaGrid extends StatefulWidget {
-  const CustomMediaGrid({Key? key}) : super(key: key);
+import '../../../neom_posts.dart';
+
+class PostMediaGrid extends StatefulWidget {
+
+  PostUploadController postUploadController;
+
+  PostMediaGrid({required this.postUploadController, Key? key}) : super(key: key);
 
   @override
-  State<CustomMediaGrid> createState() => _CustomMediaGridState();
+  State<PostMediaGrid> createState() => _PostMediaGridState();
 }
 
-class _CustomMediaGridState extends State<CustomMediaGrid> {
+class _PostMediaGridState extends State<PostMediaGrid> {
   final ScrollController _scrollController = ScrollController();
 
   /// Lista de álbumes (directorios)
@@ -29,9 +35,12 @@ class _CustomMediaGridState extends State<CustomMediaGrid> {
   int _currentPage = 0;
   final int _pageSize = 50;
 
+  late PostUploadController uploadController;
+
   @override
   void initState() {
     super.initState();
+    uploadController = widget.postUploadController;
     _scrollController.addListener(_onScroll);
     _loadAlbums();
   }
@@ -95,59 +104,21 @@ class _CustomMediaGridState extends State<CustomMediaGrid> {
       size: _pageSize,
     );
 
+    // Filtra videos con duración cero
+    final validAssets = newAssets.where((asset) {
+      return asset.type != AssetType.video || asset.duration > 0;
+    }).toList();
+
     // Si se devuelven menos de _pageSize, ya no hay más
     if (newAssets.length < _pageSize) {
       _isLastPage = true;
     }
 
     setState(() {
-      _mediaList.addAll(newAssets);
+      _mediaList.addAll(validAssets);
       _currentPage++;
       _isLoading = false;
     });
-  }
-
-  /// Bottom sheet para tomar foto o grabar video
-  Future<void> _pickFromCamera() async {
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Tomar foto'),
-                onTap: () => Navigator.pop(context, 'photo'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.videocam),
-                title: const Text('Grabar video'),
-                onTap: () => Navigator.pop(context, 'video'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (choice == 'photo') {
-      final XFile? photo = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-      );
-      if (photo != null) {
-        debugPrint('Foto tomada: ${photo.path}');
-        // Maneja la foto (subirla, editarla, etc.)
-      }
-    } else if (choice == 'video') {
-      final XFile? video = await ImagePicker().pickVideo(
-        source: ImageSource.camera,
-      );
-      if (video != null) {
-        debugPrint('Video grabado: ${video.path}');
-        // Maneja el video (reproducirlo, subirlo, etc.)
-      }
-    }
   }
 
   /// Muestra ícono de "play" y duración si es un video
@@ -183,28 +154,7 @@ class _CustomMediaGridState extends State<CustomMediaGrid> {
   Widget build(BuildContext context) {
     final itemCount = _mediaList.length;
 
-    return Scaffold(
-      // --- APP BAR PERSONALIZADO ---
-      backgroundColor: AppColor.main50,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Nueva Publicación'),
-        centerTitle: true,
-        actions: [
-          // Ícono de cámara para foto/video
-          IconButton(
-            icon: const Icon(Icons.camera_alt),
-            onPressed: _pickFromCamera,
-          ),
-        ],
-        backgroundColor: AppColor.getMain(),
-      ),
-
-      // --- CONTENIDO ---
-      body: Column(
+    return Column(
         children: [
           // Barra superior para elegir álbum (directorio)
           if (_albums.isNotEmpty)
@@ -258,7 +208,7 @@ class _CustomMediaGridState extends State<CustomMediaGrid> {
                         onTap: () async {
                           final file = await asset.file;
                           if (file != null) {
-                            debugPrint('Archivo seleccionado: ${file.path}');
+                            uploadController.handleMedia(XFile(file.path));
                             // Aquí podrías abrir un editor, reproducir video, etc.
                           }
                         },
@@ -280,7 +230,6 @@ class _CustomMediaGridState extends State<CustomMediaGrid> {
             ),
           ),
         ],
-      ),
     );
   }
 }

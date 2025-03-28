@@ -14,9 +14,11 @@ import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
 import 'package:neom_commons/core/data/firestore/post_firestore.dart';
 import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
 import 'package:neom_commons/core/data/implementations/geolocator_controller.dart';
+import 'package:neom_commons/core/data/implementations/maps_controller.dart';
 import 'package:neom_commons/core/data/implementations/user_controller.dart';
 import 'package:neom_commons/core/domain/model/app_profile.dart';
 import 'package:neom_commons/core/domain/model/hashtag.dart';
+import 'package:neom_commons/core/domain/model/place.dart';
 import 'package:neom_commons/core/domain/model/post.dart';
 import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_constants.dart';
@@ -31,20 +33,24 @@ import 'package:neom_timeline/neom_timeline.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
+import 'package:neom_maps_services/places.dart';
 
+import '../../../camera/neom_camera_controller.dart';
 import '../../domain/use_cases/post_upload_service.dart';
-import '../widgets/stateful_video_editor.dart';
+import 'create_clips/stateful_video_editor.dart';
 
 class PostUploadController extends GetxController implements PostUploadService {
 
   var logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
+  final mapsController = Get.put(MapsController());
+
   AppProfile profile = AppProfile();
   Post _post = Post();
   Position? _position;
 
   final RxBool isButtonDisabled = false.obs;
-  final RxBool isLoading = false.obs;
+  final RxBool isLoading = true.obs;
   final RxBool isUploading = false.obs;
   final RxBool cropImage = true.obs;
   final Rx<XFile> mediaFile = XFile("").obs;
@@ -53,13 +59,10 @@ class PostUploadController extends GetxController implements PostUploadService {
   final RxList<String> locationSuggestions = <String>[].obs;
   final RxString caption = "".obs;
   final RxBool takePhoto = false.obs;
-  final RxBool cameraControllerDisposed = false.obs;
 
   TextEditingController locationController = TextEditingController();
   TextEditingController captionController = TextEditingController();
-  VideoPlayerController videoPlayerController = VideoPlayerController.networkUrl(Uri());
-  CameraController? cameraController;
-  List<CameraDescription> cameras = [];
+  VideoPlayerController? videoPlayerController;
 
   final _mediaId = const Uuid().v4();
   File _file = File("");
@@ -74,8 +77,9 @@ class PostUploadController extends GetxController implements PostUploadService {
   final RxDouble trimmedEndValue = 0.0.obs;
   final RxBool isPlaying = false.obs;
   final RxBool maxVideosPerWeekReached = false.obs;
+  double aspectRatio = 1;
 
-
+  UploadImageType uploadImageType = UploadImageType.post;
 
   @override
   void onInit() {
@@ -84,14 +88,12 @@ class PostUploadController extends GetxController implements PostUploadService {
     profile = userController.profile;
 
     try {
-      if(profile.position != null) {
-        getProfileLocation();
-      }
+
     } catch (e) {
       logger.e(e.toString());
     }
 
-    clearMedia();
+    // clearMedia();
   }
 
   @override
@@ -99,13 +101,14 @@ class PostUploadController extends GetxController implements PostUploadService {
     super.onReady();
 
     try {
-      // initializeCameraController();
-      ///DEPRECATED verifyVideosPerWeekLimit();
+      verifyVideosPerWeekLimit();
+      if(profile.position != null) getLocationSuggestions();
+      isLoading.value = false;
     } catch (e) {
       logger.e(e.toString());
     }
 
-    update([AppPageIdConstants.upload]);
+    // update([AppPageIdConstants.upload]);
   }
 
   Future<void> verifyVideosPerWeekLimit() async {
@@ -126,14 +129,13 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   void onClose() {
     super.onClose();
-    cameraController?.dispose();
-    cameraControllerDisposed.value = true;
     // if(!trimmer.isDisposed) trimmer.dispose();
   }
 
-  Future<void> getProfileLocation() async {
-    String profileLocation = await GeoLocatorController().getAddressSimple(profile.position!);
-    locationSuggestions.value.add(profileLocation);
+  Future<void> getLocationSuggestions() async {
+    locationSuggestions.value = await GeoLocatorController().getNearbySimpleAddresses(profile.position!);
+
+    // locationSuggestions.value.add(profileLocation);
     _position = await GeoLocatorController().getCurrentPosition();
 
     if(_position != null) {
@@ -144,37 +146,49 @@ class PostUploadController extends GetxController implements PostUploadService {
     }
   }
 
-  Future<void> initializeCameraController() async {
-    try {
-      cameras = await availableCameras();
-      final rearCamera = cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
-      cameraController = CameraController(rearCamera, ResolutionPreset.high);
-      await cameraController?.initialize();
-    } catch (e) {
-      AppUtilities.logger.e(e.toString());
+  Future<void> handleMedia(XFile file) async {
+    if (file.path.isEmpty) {
+      AppUtilities.logger.d('No se seleccionó ningún archivo.');
+      return;
     }
 
+    // Obtener la extensión del archivo para determinar si es imagen o video
+    String fileExtension = file.path.split('.').last.toLowerCase();
+    List<String> imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+    List<String> videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv'];
+
+    if (imageExtensions.contains(fileExtension)) {
+      AppUtilities.logger.d('Archivo seleccionado es una imagen: ${file.path}');
+      await handleImage(imageFile: file);
+    } else if (videoExtensions.contains(fileExtension)) {
+      AppUtilities.logger.d('Archivo seleccionado es un video: ${file.path}');
+      await handleVideo(videoFile: file);
+    } else {
+      AppUtilities.logger.w('Formato de archivo no soportado: ${file.path}');
+    }
   }
-  
+
   @override
   Future<void> handleImage({AppFileFrom appFileFrom = AppFileFrom.gallery,
-    UploadImageType uploadImageType = UploadImageType.post, double ratioX = 1,
-    double ratioY = 1, XFile? imageFile, bool crop = true, BuildContext? context}) async {
+    UploadImageType imageType = UploadImageType.post, XFile? imageFile,
+    double ratioX = 1, double ratioY = 1, bool crop = true, BuildContext? context}) async {
 
     try {
       if(mediaFile.value.path.isNotEmpty) clearMedia();
       cropImage.value = crop;
+      uploadImageType = imageType;
 
       if(imageFile == null) {
         switch (appFileFrom) {
           case AppFileFrom.gallery:
-            mediaFile.value = (await ImagePicker().pickMedia() ?? XFile(''));
+            mediaFile.value = (await ImagePicker().pickImage(source: ImageSource.gallery)) ?? XFile('');
           update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
           //   pickMediaFromDevice();
 
             break;
           case AppFileFrom.camera:
-            if(cameraController?.value.isInitialized ?? false) {
+            NeomCameraController neomCameraController = Get.put(NeomCameraController());
+            if(neomCameraController.controller?.value.isInitialized ?? false) {
               takePhoto.value = true;
               if(context != null) Navigator.pop(context);
 
@@ -186,7 +200,7 @@ class PostUploadController extends GetxController implements PostUploadService {
               // }
               break;
             } else {
-              await initializeCameraController();
+              await neomCameraController.initializeCameraController();
               takePhoto.value = true;
               if(context != null) Navigator.pop(context);
             }
@@ -195,9 +209,10 @@ class PostUploadController extends GetxController implements PostUploadService {
         mediaFile.value = imageFile;
       }
 
+
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.image;
-        mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);        
+        mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);
 
         if(cropImage.value) {
           croppedImageFile.value = await AppUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
@@ -214,28 +229,28 @@ class PostUploadController extends GetxController implements PostUploadService {
             Get.toNamed(AppRouteConstants.postUploadDescription);
             break;
           case UploadImageType.thumbnail:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.event:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.profile:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.cover:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.comment:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.message:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.itemlist:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
           case UploadImageType.releaseItem:
-            // TODO: Handle this case.
+          // TODO: Handle this case.
             break;
         }
       }
@@ -298,8 +313,9 @@ class PostUploadController extends GetxController implements PostUploadService {
       logger.e(e.toString());
     }
 
-    update([AppPageIdConstants.upload]);
+    // update([AppPageIdConstants.upload]);
   }
+
 
   Future<void> setProcessedVideo(XFile videoFile) async {
     AppUtilities.logger.d("setProcessedVideo");
@@ -310,17 +326,15 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.video;
-        File? __thumbnailFile = await VideoCompress.getFileThumbnail(
-          mediaFile.value.path,
-          quality: AppConstants.videoQuality,
-        );
+        // _thumbnailFile = await VideoCompress.getFileThumbnail(
+        //   mediaFile.value.path,
+        //   quality: AppConstants.videoQuality,
+        // );
 
-        videoPlayerController = VideoPlayerController.file(File(videoFile.path));
-
-        await videoPlayerController.initialize();
-        videoPlayerController.play();
+        await initializeVideoPlayerController(File(videoFile.path));
+        videoPlayerController?.play();
         isPlaying.value = true;
-        videoPlayerController.setLooping(true);
+        videoPlayerController?.setLooping(true);
 
         Get.toNamed(AppRouteConstants.postUploadDescription);
       }
@@ -329,9 +343,20 @@ class PostUploadController extends GetxController implements PostUploadService {
       logger.e(e.toString());
     }
 
-    update([AppPageIdConstants.upload]);
+    // update([AppPageIdConstants.upload]);
   }
 
+  Future<void> initializeVideoPlayerController(File file) async {
+    AppUtilities.logger.d("initializeVideoPlayerController");
+
+    videoPlayerController = VideoPlayerController.file(file);
+    await videoPlayerController?.initialize();
+
+    if(videoPlayerController?.value.isInitialized ?? false) {
+      final videoSize = videoPlayerController!.value.size;
+      aspectRatio = videoSize.width / videoSize.height;
+    }
+  }
 
 
   Future<void> validateMediaSize() async {
@@ -369,8 +394,8 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   Future<void> playPauseVideo() async {
     logger.d("playPauseVideo");
-    videoPlayerController.value.isPlaying ? await videoPlayerController.pause() : videoPlayerController.play();
-    logger.t("isPlaying ${videoPlayerController.value.isPlaying}");
+    (videoPlayerController?.value.isPlaying ?? false) ? await videoPlayerController?.pause() : videoPlayerController?.play();
+    logger.t("isPlaying ${videoPlayerController?.value.isPlaying}");
 
     isPlaying.value = !isPlaying.value;
     logger.d("isPlaying: $isPlaying");
@@ -401,7 +426,7 @@ class PostUploadController extends GetxController implements PostUploadService {
     croppedImageFile.value = File("");
     trimmedMediaFile.value = File("");
     postType = PostType.pending;
-    if(videoPlayerController.value.isInitialized) disposeVideoPlayer();
+    if(videoPlayerController?.value.isInitialized ?? false) disposeVideoPlayer();
     // if(!trimmer.isDisposed) trimmer.dispose();
     update([AppPageIdConstants.upload, AppPageIdConstants.postComments,
       AppPageIdConstants.timeline, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.event]);
@@ -409,9 +434,9 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   @override
   void disposeVideoPlayer() {
-    if(videoPlayerController.value.isPlaying) videoPlayerController.pause();
+    if(videoPlayerController?.value.isPlaying ?? false) videoPlayerController?.pause();
     videoPlayerController = VideoPlayerController.networkUrl(Uri());
-    videoPlayerController.dispose();
+    videoPlayerController?.dispose();
   }
 
   @override
@@ -419,7 +444,7 @@ class PostUploadController extends GetxController implements PostUploadService {
     isUploading.value = true;
     isButtonDisabled.value = true;
 
-    update([AppPageIdConstants.upload]);
+    // update([AppPageIdConstants.upload]);
 
     try {
       if (postType == PostType.image) {
@@ -483,6 +508,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         createdTime: DateTime.now().millisecondsSinceEpoch,
         verificationLevel: profile.verificationLevel,
         lastInteraction: DateTime.now().millisecondsSinceEpoch,
+        aspectRatio: aspectRatio,
       );
 
       _post.id = await PostFirestore().insert(_post);
@@ -610,6 +636,28 @@ class PostUploadController extends GetxController implements PostUploadService {
         ]);
       }
     }
+  }
+
+  Future<void> setTakePhoto({bool take = true}) async {
+    NeomCameraController neomCameraController = Get.put(NeomCameraController());
+    await neomCameraController.initializeCameraController();
+    takePhoto.value = take;
+  }
+
+  @override
+  Future<void> getLocation(context) async {
+    AppUtilities.logger.d("getEventPlace for: ${locationController.text}");
+
+    try {
+      Prediction prediction = await mapsController.placeAutoComplete(context, locationController.text);
+      Place place = await mapsController.predictionToGooglePlace(prediction);
+      locationController.text = place.name;
+      FocusScope.of(context).requestFocus(FocusNode()); //remove focus
+    } catch (e) {
+      AppUtilities.logger.d(e.toString());
+    }
+
+    update([AppPageIdConstants.upload]);
   }
 
 }
