@@ -3,11 +3,6 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
-import 'package:neom_commons/core/domain/model/app_profile.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_player/video_player.dart';
 

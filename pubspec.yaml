@@ -23,15 +23,16 @@ dependencies:
   video_editor: ^3.0.0
   fraction: ^5.0.4
 #  video_trimmer: ^4.0.2
-  video_trimmer:
-    git:
-      url: https://github.com/samuel-kings/video_trimmer_fork.git
+#  video_trimmer:
+#    git:
+#      url: https://github.com/samuel-kings/video_trimmer_fork.git
+#  video_trimmer: ^4.0.2
 #  ffmpeg_kit_flutter_min: ^6.0.3
 #  flutter_ffmpeg: ^0.4.2
-  file_picker: ^9.2.1
   photo_manager: ^3.6.4
-  ffmpeg_kit_flutter: ^6.0.3-LTS
-
+#  ffmpeg_kit_flutter: ^6.0.3-LTS
+  video_trimmer_2: ^0.1.1
+  ffmpeg_kit_flutter_new: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

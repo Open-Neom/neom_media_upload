@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -29,11 +28,11 @@ import 'package:neom_commons/core/utils/enums/app_file_from.dart';
 import 'package:neom_commons/core/utils/enums/post_type.dart';
 import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
 import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
+import 'package:neom_maps_services/places.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
-import 'package:neom_maps_services/places.dart';
 
 import '../../../camera/neom_camera_controller.dart';
 import '../../domain/use_cases/post_upload_service.dart';
@@ -66,7 +65,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   final _mediaId = const Uuid().v4();
   File _file = File("");
-  File _thumbnailFile = File("");
+  final File _thumbnailFile = File("");
   String mediaUrl = "";
   String thumbnailUrl = "";
 
@@ -126,11 +125,6 @@ class PostUploadController extends GetxController implements PostUploadService {
     if(videosPerWeekCounter >= AppConstants.maxVideosPerWeek) maxVideosPerWeekReached.value = true;
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    // if(!trimmer.isDisposed) trimmer.dispose();
-  }
 
   Future<void> getLocationSuggestions() async {
     locationSuggestions.value = await GeoLocatorController().getNearbySimpleAddresses(profile.position!);

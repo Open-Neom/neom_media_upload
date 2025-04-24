@@ -38,7 +38,6 @@ class BlogEditorController extends GetxController implements BlogEditorService {
   final RxInt wordQty = 0.obs;
   final Rx<Post> blogEntry = Post().obs;
   final RxBool isLiked = false.obs;
-  ///DEPRECATED final RxMap<String, Post> blogEntries = <String, Post>{}.obs;
 
   TextEditingController entryTitleController = TextEditingController();
   String lastEntryTitle = "";

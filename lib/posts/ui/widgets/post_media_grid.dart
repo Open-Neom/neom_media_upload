@@ -11,7 +11,7 @@ class PostMediaGrid extends StatefulWidget {
 
   PostUploadController postUploadController;
 
-  PostMediaGrid({required this.postUploadController, Key? key}) : super(key: key);
+  PostMediaGrid({required this.postUploadController, super.key});
 
   @override
   State<PostMediaGrid> createState() => _PostMediaGridState();
@@ -27,7 +27,7 @@ class _PostMediaGridState extends State<PostMediaGrid> {
   AssetPathEntity? _selectedAlbum;
 
   /// Lista de archivos cargados (fotos y videos)
-  List<AssetEntity> _mediaList = [];
+  final List<AssetEntity> _mediaList = [];
 
   /// Variables de paginación
   bool _isLastPage = false;

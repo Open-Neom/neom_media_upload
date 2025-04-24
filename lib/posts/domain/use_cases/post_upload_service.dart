@@ -25,4 +25,6 @@ abstract class PostUploadService {
   void getBackToUploadImage(BuildContext context);
   void updatePage();
 
+  Future<void> getLocation(context);
+
 }

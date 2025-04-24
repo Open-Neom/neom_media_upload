@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_editor/video_editor.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../../neom_posts.dart';
 import 'video_crop_page.dart';
@@ -125,7 +124,8 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
     if(hasTrimChanges) {
       increaseProgressPercentage();
 
-      String trimmedVideoPath = await VideoExportService().trimVideo(
+
+      String trimmedVideoPath = await VideoExportService().trimMyVideo(
         videoFile: processedVideo,
         startValue: startTrim.toDouble(),
         endValue: endTrim.toDouble(),

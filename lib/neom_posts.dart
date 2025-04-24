@@ -1,4 +1,4 @@
-library neom_timeline;
+library;
 
 //BLOG
 export 'blog/blog_routes.dart';
