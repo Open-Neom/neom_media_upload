@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/core/app_flavour.dart';
 import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
 import 'package:neom_commons/core/ui/widgets/handled_cached_network_image.dart';
 import 'package:neom_commons/core/ui/widgets/read_more_container.dart';
@@ -39,7 +40,8 @@ class PostDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if(_.showInfo) ListTile(
-                    leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(_.post.profileImgUrl),),
+                    leading: CircleAvatar(
+                      backgroundImage: CachedNetworkImageProvider(_.post.profileImgUrl.isNotEmpty ? _.post.profileImgUrl : AppFlavour.getAppLogoUrl(),),),
                     title: GestureDetector(
                       child: Text(CoreUtilities.capitalizeFirstLetter(_.post.profileName),
                         style: const TextStyle(fontSize: 15,
@@ -64,10 +66,10 @@ class PostDetailsPage extends StatelessWidget {
                     // onTap: () => _.showPostInfo(_.showInfo ? false : true),
                     onDoubleTap: () => Navigator.pop(context),
                   ),
-                    _.showInfo ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  _.showInfo ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: <Widget>[

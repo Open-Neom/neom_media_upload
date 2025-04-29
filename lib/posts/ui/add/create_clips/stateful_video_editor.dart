@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+// import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:easy_video_editor/easy_video_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_editor/video_editor.dart';
-
+import 'package:path_provider/path_provider.dart';
 import '../../../../neom_posts.dart';
 import 'video_crop_page.dart';
-import 'video_export_service.dart';
 
 class StatefulVideoEditor extends StatefulWidget {
   const StatefulVideoEditor({super.key, required this.file});
@@ -26,6 +26,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
   final double height = 60;
 
   late final VideoEditorController _controller;
+  File originalVideo = File('');
   File editedVideo = File('');
   int startTrim = 0;
   int endTrim = 0;
@@ -52,6 +53,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
       maxDurationInSeconds = AppConstants.verifiedMaxVideoDurationInSeconds;
     }
 
+    originalVideo = widget.file;
     editedVideo = widget.file;
 
     initializeVideoEditorController(editedVideo);
@@ -98,130 +100,80 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
     super.dispose();
   }
 
-  void processVideo() async {
+  Future<void> processVideo() async {
     AppUtilities.logger.i('Processing video from path ${_controller.file.path}');
-    File processedVideo = _controller.file;
 
-    if(hasCropChanges && hadTrimChanges) {
-      hasTrimChanges = true;
-    } else if(hasTrimChanges && hadCropChanges) {
-      hasCropChanges = true;
-    } else {
-      processedVideo = File(editedVideo.path);
-    }
-
-
-    _isExporting.value = true;
-
-    _exportingProgress.value = 0;
-    totalSteps = (hasTrimChanges ? 3 : 0) + (hasCropChanges ? 3 : 0);
-    completedSteps = 0;
-
-    await _controller.video.pause();
-
+    File? processedVideo = _controller.file;
     String editedClipName = '${uploadController?.profile.name.split(' ').first.toLowerCase()}_gigclip_${DateTime.now().millisecondsSinceEpoch}';
 
-    if(hasTrimChanges) {
-      increaseProgressPercentage();
+    try {
+      await _controller.video.pause();
 
-
-      String trimmedVideoPath = await VideoExportService().trimMyVideo(
-        videoFile: processedVideo,
-        startValue: startTrim.toDouble(),
-        endValue: endTrim.toDouble(),
-        videoName: '${editedClipName}_trimmed',
-      );
-
-      increaseProgressPercentage();
-      AppUtilities.logger.d("Ruta retornada por trimVideo: '$trimmedVideoPath'");
-      AppUtilities.logger.d("Existe archivo?: ${File(trimmedVideoPath).existsSync()}");
-
-      if(trimmedVideoPath.isNotEmpty && File(trimmedVideoPath).existsSync()) {
-        processedVideo = File(trimmedVideoPath);
-        AppUtilities.logger.i('Video recortado y exportado a ${processedVideo.path}');
-        hasTrimChanges = false;
-        hadTrimChanges = true;
+      if(hasCropChanges && hadTrimChanges) {
+        hasTrimChanges = true;
+      } else if(hasTrimChanges && hadCropChanges) {
+        hasCropChanges = true;
       } else {
-        AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
-        AppUtilities.showSnackBar(message: "Error al exportar el video :(");
-        _isExporting.value = false;
-        return;
+        processedVideo = File(editedVideo.path);
       }
 
-      increaseProgressPercentage();
-    }
+      _isExporting.value = true;
+      _exportingProgress.value = 0;
+      totalSteps = (hasTrimChanges ? 3 : 0) + (hasCropChanges ? 3 : 0);
+      completedSteps = 0;
 
-    if(hasCropChanges) {
-      increaseProgressPercentage();
+      final fixedRatio = getAspectRatioEnum(aspectRatio);
 
-      final croppedController = VideoEditorController.file(
-        processedVideo,
-        maxDuration: Duration(seconds: maxDurationInSeconds),
-      );
-
-      await croppedController.initialize();
-
-      // Copia configuración de crop original al nuevo controller
-      croppedController.updateCrop(_controller.minCrop, _controller.maxCrop);
-      croppedController.preferredCropAspectRatio = _controller.preferredCropAspectRatio;
-
-      VideoFFmpegVideoEditorConfig config = VideoFFmpegVideoEditorConfig(croppedController,
-        name: '${editedClipName}_cropped', format: VideoExportFormat.mp4,
-      );
-
-      final FFmpegVideoEditorExecute executeConfig = await config.getExecuteConfig();
-
-      increaseProgressPercentage();
-      bool success = await executeFFmpegCommand(executeConfig);
-
-      croppedController.dispose();
-
-      if(success && executeConfig.outputPath.isNotEmpty && File(executeConfig.outputPath).existsSync()) {
-        AppUtilities.logger.i("Tamaño de video ajustado y exportado correctamente en: ${executeConfig.outputPath}");
-        editedVideo = File(executeConfig.outputPath);
-        hasCropChanges = false;
-        hadCropChanges = true;
-      } else {
-        AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
-        AppUtilities.showSnackBar(message: "Error al exportar el video :(");
-        _isExporting.value = false;
-        return;
+      if (hasTrimChanges && hasCropChanges) {
+        increaseProgressPercentage();
+        processedVideo = await trimAndCropVideoViaBuilder(
+            originalVideo.path, editedClipName, startTrim, endTrim, fixedRatio
+        );
+        increaseProgressPercentage();
+      } else if (hasTrimChanges) {
+        increaseProgressPercentage();
+        final Directory tempDir = await getTemporaryDirectory();
+        String processedVideoPath = await VideoEditorBuilder(videoPath: originalVideo.path)
+            .trim(startTimeMs: startTrim, endTimeMs: endTrim)
+            .export(outputPath: '${tempDir.path}/${editedClipName}_trimmed.mp4') ?? '';
+        processedVideo = File(processedVideoPath);
+        increaseProgressPercentage();
+      } else if (hasCropChanges) {
+        increaseProgressPercentage();
+        processedVideo = await cropVideoViaBuilder(
+            processedVideo.path, editedClipName, fixedRatio
+        );
+        increaseProgressPercentage();
       }
-      increaseProgressPercentage();
-    } else {
-      editedVideo = File(processedVideo.path);
-    }
 
-    _isExporting.value = false;
+      // if(hasTrimChanges) {
+      //   increaseProgressPercentage();
+      //   processedVideo = await trimVideo(originalVideo.path, editedClipName);
+      //   increaseProgressPercentage();
+      // }
+      //
+      // if(hasCropChanges && (processedVideo?.path.isNotEmpty ?? false)) {
+      //   increaseProgressPercentage();
+      //   processedVideo = await cropVideoViaBuilder(processedVideo?.path ?? '', editedClipName);
+      //   increaseProgressPercentage();
+      // }
+      editedVideo = File(processedVideo?.path ?? '');
+      _isExporting.value = false;
 
-    if (await editedVideo.exists() && (await editedVideo.length()) > 0) {
-      uploadController?.setProcessedVideo(XFile(editedVideo.path));
-    } else {
-      AppUtilities.logger.e("⛔ Archivo exportado es inválido o vacío.");
-      AppUtilities.showSnackBar(message: "Hubo un error en la exportación.");
+      if (editedVideo.path.isNotEmpty) {
+        uploadController?.setProcessedVideo(XFile(editedVideo.path));
+      } else {
+        AppUtilities.logger.e("⛔ Archivo exportado es inválido o vacío.");
+        AppUtilities.showSnackBar(message: "Hubo un error en la exportación.");
+      }
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
     }
   }
 
   void increaseProgressPercentage() {
     completedSteps++;
     _exportingProgress.value = completedSteps / totalSteps;
-  }
-
-  Future<bool> executeFFmpegCommand(FFmpegVideoEditorExecute executeConfig) async {
-    final session = await FFmpegKit.execute(executeConfig.command);
-
-    final returnCode = await session.getReturnCode();
-    if (returnCode != null && returnCode.isValueSuccess()) {
-      AppUtilities.logger.i('✅ Éxito! Video exportado en ${executeConfig.outputPath}');
-      return true;
-    } else {
-      final logs = await session.getAllLogs();
-      for (var log in logs) {
-        debugPrint(log.getMessage());
-      }
-      AppUtilities.logger.e('⛔️ Error al exportar video.');
-      return false;
-    }
   }
 
   @override
@@ -379,7 +331,12 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
               if(hasTrimChanges || hasCropChanges) {
                 processVideo();
               } else {
-                uploadController?.setProcessedVideo(XFile(editedVideo.path));
+                if(editedVideo.existsSync()) {
+                  uploadController?.setProcessedVideo(XFile(editedVideo.path));
+                } else {
+                  uploadController?.setProcessedVideo(XFile(originalVideo.path));
+                }
+
               }
 
             },
@@ -448,4 +405,154 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
       )
     ];
   }
+
+  VideoAspectRatio getAspectRatioEnum(double aspectRatio) {
+    if ((aspectRatio - (16 / 9)).abs() < 0.1) {
+      return VideoAspectRatio.ratio16x9;
+    } else if ((aspectRatio - (4 / 3)).abs() < 0.1) {
+      return VideoAspectRatio.ratio4x3;
+    } else if ((aspectRatio - 1.0).abs() < 0.1) {
+      return VideoAspectRatio.ratio1x1;
+    } else if ((aspectRatio - (9 / 16)).abs() < 0.1) {
+      return VideoAspectRatio.ratio9x16;
+    } else if ((aspectRatio - (3 / 4)).abs() < 0.1) {
+      return VideoAspectRatio.ratio3x4;
+    } else {
+      // Valor predeterminado en caso de no coincidir exactamente
+      return VideoAspectRatio.ratio16x9;
+    }
+  }
+
+  Future<File?> trimVideo(String videoPath, String videoName) async {
+    String trimmedVideoPath = '';
+    VideoAspectRatio videoAspectRatio =  getAspectRatioEnum(aspectRatio);
+    final editor = VideoEditorBuilder(videoPath: videoPath)
+        .trim(startTimeMs: startTrim, endTimeMs: endTrim)
+        .crop(aspectRatio: videoAspectRatio);
+
+    final Directory tempDir = await getTemporaryDirectory();
+
+    trimmedVideoPath = await editor.export(
+      outputPath: '${tempDir.path}/${videoName}_trimmed.mp4',
+      onProgress: (progress) {
+        // Progress ranges from 0.0 to 1.0 (0% to 100%)
+        AppUtilities.logger.d('Export progress: ${(progress * 100).toStringAsFixed(1)}%');
+        // Update UI with progress information
+        // e.g., setState(() => exportProgress = progress);
+      },
+    ) ?? '';
+
+    AppUtilities.logger.d("Ruta retornada por trimVideo: '$trimmedVideoPath'");
+    AppUtilities.logger.d("¿Existe archivo?: ${File(trimmedVideoPath).existsSync()}");
+
+    if(trimmedVideoPath.isNotEmpty && File(trimmedVideoPath).existsSync()) {
+      AppUtilities.logger.i('Video recortado y exportado a ${videoPath}');
+      hasTrimChanges = false;
+      hadTrimChanges = true;
+      return File(trimmedVideoPath);
+    } else {
+      AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
+      AppUtilities.showSnackBar(message: "Error al exportar el video :(");
+      _isExporting.value = false;
+      return null;
+    }
+  }
+
+  /// Recorta el video según el aspect ratio fijo
+  Future<File?> cropVideoViaBuilder(
+      String videoPath,
+      String videoName,
+      VideoAspectRatio fixedRatio,
+      ) async {
+    final tempDir = await getTemporaryDirectory();
+    final outputPath = '${tempDir.path}/${videoName}_cropped.mp4';
+
+    final builder = VideoEditorBuilder(videoPath: videoPath)
+    // Sólo crop, sin volver a ffmpeg_kit
+        .crop(aspectRatio: fixedRatio);
+
+    final resultPath = await builder.export(
+      outputPath: outputPath,
+      // opcional: onProgress para barra de progreso
+      onProgress: (p) => debugPrint('Crop progress ${(p * 100).ceil()}%'),
+    );
+
+    if (resultPath?.isNotEmpty == true && File(resultPath!).existsSync()) {
+      return File(resultPath);
+    } else {
+      debugPrint('🚨 Error al exportar crop, path vacío o no existe');
+      return null;
+    }
+  }
+  /// Hace trim _y_ crop de una vez, si lo necesitas
+  Future<File?> trimAndCropVideoViaBuilder(
+      String videoPath,
+      String videoName,
+      int startMs,
+      int endMs,
+      VideoAspectRatio fixedRatio,
+      ) async {
+    final tempDir = await getTemporaryDirectory();
+    final outputPath = '${tempDir.path}/${videoName}_trimmed_cropped.mp4';
+
+    final builder = VideoEditorBuilder(videoPath: videoPath)
+        .trim(startTimeMs: startMs, endTimeMs: endMs)
+        .crop(aspectRatio: fixedRatio);
+
+    final resultPath = await builder.export(
+      outputPath: outputPath,
+      onProgress: (p) => debugPrint('Trim+Crop progress ${(p * 100).ceil()}%'),
+    );
+
+    if (resultPath?.isNotEmpty == true && File(resultPath!).existsSync()) {
+      return File(resultPath);
+    } else {
+      debugPrint('🚨 Error al exportar trim+crop');
+      return null;
+    }
+  }
+
+  // Future<File?> cropVideo(String videoPath, String videoName) async {
+  //   final croppedController = VideoEditorController.file(
+  //     File(videoPath),
+  //     maxDuration: Duration(seconds: maxDurationInSeconds),
+  //   );
+  //
+  //   await croppedController.initialize();
+  //
+  //   // Copia configuración de crop original al nuevo controller
+  //   croppedController.updateCrop(_controller.minCrop, _controller.maxCrop);
+  //   croppedController.preferredCropAspectRatio = _controller.preferredCropAspectRatio;
+  //
+  //   VideoFFmpegVideoEditorConfig config = VideoFFmpegVideoEditorConfig(
+  //     croppedController,
+  //     name: '${videoName}_cropped',
+  //     format: VideoExportFormat.mp4,
+  //   );
+  //
+  //   final FFmpegVideoEditorExecute executeConfig = await config.getExecuteConfig();
+  //   // Run FFmpeg command to actually produce the file
+  //   final session = await FFmpegKit.execute(executeConfig.command);
+  //   final returnCode = await session.getReturnCode();
+  //   croppedController.dispose();
+  //
+  //   if(ReturnCode.isSuccess(returnCode) && executeConfig.outputPath.isNotEmpty) {
+  //     final outputFile = File(executeConfig.outputPath);
+  //     if (await outputFile.exists()) {
+  //       AppUtilities.logger.i('Crop succeeded: ${outputFile.path}');
+  //       hasCropChanges = false;
+  //       hadCropChanges = true;
+  //       return outputFile;
+  //     } else {
+  //       AppUtilities.logger.e('Cropped file not found after ffmpeg execution: ${outputFile.path}');
+  //     }
+  //   } else {
+  //     AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
+  //     AppUtilities.showSnackBar(message: "Error al exportar el video :(");
+  //     _isExporting.value = false;
+  //     return null;
+  //   }
+  //
+  // }
+
 }

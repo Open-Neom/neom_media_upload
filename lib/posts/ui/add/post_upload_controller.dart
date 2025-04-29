@@ -39,8 +39,7 @@ import '../../domain/use_cases/post_upload_service.dart';
 import 'create_clips/stateful_video_editor.dart';
 
 class PostUploadController extends GetxController implements PostUploadService {
-
-  var logger = AppUtilities.logger;
+  
   final userController = Get.find<UserController>();
   final mapsController = Get.put(MapsController());
 
@@ -65,7 +64,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   final _mediaId = const Uuid().v4();
   File _file = File("");
-  final File _thumbnailFile = File("");
+  File _thumbnailFile = File("");
   String mediaUrl = "";
   String thumbnailUrl = "";
 
@@ -83,13 +82,13 @@ class PostUploadController extends GetxController implements PostUploadService {
   @override
   void onInit() {
     super.onInit();
-    logger.t("PostUpload Controller Init");
+    AppUtilities.logger.t("PostUpload Controller Init");
     profile = userController.profile;
 
     try {
 
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     // clearMedia();
@@ -104,7 +103,7 @@ class PostUploadController extends GetxController implements PostUploadService {
       if(profile.position != null) getLocationSuggestions();
       isLoading.value = false;
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     // update([AppPageIdConstants.upload]);
@@ -246,10 +245,14 @@ class PostUploadController extends GetxController implements PostUploadService {
           case UploadImageType.releaseItem:
           // TODO: Handle this case.
             break;
+          case UploadImageType.sponsor:
+            break;
+          case UploadImageType.ad:
+            break;
         }
       }
     }  catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
@@ -257,16 +260,16 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   @override
   Future<String> handleUploadImage(UploadImageType uploadImageType) async {
-    logger.d("handleUploadImage ${uploadImageType.name}");
+    AppUtilities.logger.d("handleUploadImage ${uploadImageType.name}");
     String imageUrl = "";
 
     try {
       imageUrl = await AppUploadFirestore().uploadImage(_mediaId,
           croppedImageFile.value.path.isNotEmpty
               ? croppedImageFile.value : File(mediaFile.value.path), uploadImageType);
-      logger.d("File uploaded to $imageUrl");
+      AppUtilities.logger.d("File uploaded to $imageUrl");
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     return imageUrl;
@@ -301,10 +304,12 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.video;
-        Get.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
+        //TODO: Handle this case whem TRIM & CROP WORKS.
+        //Get.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
+        setProcessedVideo(XFile(mediaFile.value.path)); //REMOVE WHEN StatefulVideoEditor is active
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     // update([AppPageIdConstants.upload]);
@@ -320,10 +325,10 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.video;
-        // _thumbnailFile = await VideoCompress.getFileThumbnail(
-        //   mediaFile.value.path,
-        //   quality: AppConstants.videoQuality,
-        // );
+        _thumbnailFile = await VideoCompress.getFileThumbnail(
+          mediaFile.value.path,
+          quality: AppConstants.videoQuality,
+        );
 
         await initializeVideoPlayerController(File(videoFile.path));
         videoPlayerController?.play();
@@ -334,7 +339,7 @@ class PostUploadController extends GetxController implements PostUploadService {
       }
 
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
     // update([AppPageIdConstants.upload]);
@@ -343,12 +348,16 @@ class PostUploadController extends GetxController implements PostUploadService {
   Future<void> initializeVideoPlayerController(File file) async {
     AppUtilities.logger.d("initializeVideoPlayerController");
 
-    videoPlayerController = VideoPlayerController.file(file);
-    await videoPlayerController?.initialize();
+    try {
+      videoPlayerController = VideoPlayerController.file(file);
+      await videoPlayerController?.initialize();
 
-    if(videoPlayerController?.value.isInitialized ?? false) {
-      final videoSize = videoPlayerController!.value.size;
-      aspectRatio = videoSize.width / videoSize.height;
+      if(videoPlayerController?.value.isInitialized ?? false) {
+        final videoSize = videoPlayerController!.value.size;
+        aspectRatio = videoSize.width / videoSize.height;
+      }
+    } catch (e) {
+      AppUtilities.logger.e(e.toString());
     }
   }
 
@@ -387,12 +396,12 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   @override
   Future<void> playPauseVideo() async {
-    logger.d("playPauseVideo");
+    AppUtilities.logger.d("playPauseVideo");
     (videoPlayerController?.value.isPlaying ?? false) ? await videoPlayerController?.pause() : videoPlayerController?.play();
-    logger.t("isPlaying ${videoPlayerController?.value.isPlaying}");
+    AppUtilities.logger.t("isPlaying ${videoPlayerController?.value.isPlaying}");
 
     isPlaying.value = !isPlaying.value;
-    logger.d("isPlaying: $isPlaying");
+    AppUtilities.logger.d("isPlaying: $isPlaying");
     update([AppPageIdConstants.upload]);
   }
 
@@ -444,7 +453,7 @@ class PostUploadController extends GetxController implements PostUploadService {
       if (postType == PostType.image) {
         mediaUrl = await AppUploadFirestore().uploadImage(_mediaId,  croppedImageFile.value.path.isNotEmpty
             ? croppedImageFile.value : File(mediaFile.value.path), UploadImageType.post);
-        logger.d("File uploaded to $mediaUrl");
+        AppUtilities.logger.d("File uploaded to $mediaUrl");
       } else if (postType == PostType.video) {
         disposeVideoPlayer();
 
@@ -453,7 +462,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         _file = File(mediaFile.value.path);
         thumbnailUrl = await AppUploadFirestore().uploadImage(_mediaId, _thumbnailFile, UploadImageType.thumbnail);
         mediaUrl = await AppUploadFirestore().uploadVideo(_mediaId, _file);
-        logger.d("Video File uploaded to $mediaUrl & thumbnailURL to $thumbnailUrl");
+        AppUtilities.logger.d("Video File uploaded to $mediaUrl & thumbnailURL to $thumbnailUrl");
       } else {
         postType = PostType.caption;
       }
@@ -465,7 +474,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         AppUtilities.showSnackBar(message: AppTranslationConstants.postUploadErrorMsg.tr);
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
       Get.offAllNamed(AppRouteConstants.home);
       AppUtilities.showSnackBar(message: AppTranslationConstants.postUploadErrorMsg.tr);
     }
@@ -473,7 +482,7 @@ class PostUploadController extends GetxController implements PostUploadService {
 
   @override
   Future<void> handlePostUpload() async {
-    logger.t("handlePostUpload");
+    AppUtilities.logger.t("handlePostUpload");
 
     try {
       if (_position?.latitude == 0 && profile.position?.latitude != 0.0) {
@@ -545,7 +554,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         Get.offAllNamed(AppRouteConstants.home);
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppUtilities.logger.e(e.toString());
     }
 
   }
