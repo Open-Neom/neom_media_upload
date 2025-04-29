@@ -622,7 +622,8 @@ class PostUploadController extends GetxController implements PostUploadService {
         if (['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv'].contains(ext)) {
           postType = PostType.video;
           // Por ejemplo, navega al editor de video
-          Get.to(() => StatefulVideoEditor(file: File(file.path!)));
+          // Get.to(() => StatefulVideoEditor(file: File(file.path!)));
+          Get.toNamed(AppRouteConstants.postUploadDescription);
         } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].contains(ext)) {
           postType = PostType.image;
           // Aquí podrías comprimir o recortar la imagen según corresponda
