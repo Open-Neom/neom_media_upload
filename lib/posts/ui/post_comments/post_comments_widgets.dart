@@ -50,7 +50,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                   children: [
                     SizedBox(
                       height: 250, width: 250,
-                      child: customCachedNetworkHeroImage(comment.mediaUrl),
+                      child: customCachedNetworkImage(comment.mediaUrl),
                     ),
                   AppTheme.heightSpace5,
                 ],),
@@ -120,7 +120,7 @@ Widget usernameSectionWithoutAvatar(BuildContext context, String profileId, Post
                     ,
                   ),
                   AppTheme.widthSpace5,
-                  Text(AppUtilities.getTimeAgo(comment.createdTime, showShort: false),
+                  Text(TimelineUtilities.getTimeAgo(comment.createdTime, showShort: false),
                       style: const TextStyle(fontSize: 12, color: AppColor.white)
                   ),                  
                 ],

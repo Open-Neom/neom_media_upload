@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../../../neom_posts.dart';
+import '../upload/post_upload_controller.dart';
 
 class PostMediaGrid extends StatefulWidget {
 

@@ -23,18 +23,17 @@ dependencies:
   photo_manager: ^3.6.4
   fraction: ^5.0.4
 
+  #Post with only text
+  auto_size_text_field: ^2.2.4
+
   video_editor: ^3.0.0
-#  easy_video_editor: ^0.0.7
+  easy_video_editor: ^0.1.2
 
-#  video_trimmer: ^4.0.2
-#  video_trimmer:
-#    git:
-#      url: https://github.com/samuel-kings/video_trimmer_fork.git
-#  ffmpeg_kit_flutter_min: ^6.0.3
-#  flutter_ffmpeg: ^0.4.2
-
-#  ffmpeg_kit_flutter: ^6.0.3
-#  ffmpeg_kit_min_gpl: ^6.0.3+1-LTS
+  file_picker: ^10.1.2
+  image_picker: ^1.1.2
+  image_cropper: ^9.1.0
+  flutter_image_compress: ^2.4.0
+  video_compress: ^3.1.4
 
 dev_dependencies:
   flutter_test:

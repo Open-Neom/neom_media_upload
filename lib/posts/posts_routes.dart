@@ -2,13 +2,13 @@ import 'package:get/get.dart';
 
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import '../camera/neom_camera_page.dart';
-import 'ui/add/create_post_text/text_post_page.dart';
-import 'ui/add/post_upload_description_page.dart';
-import 'ui/add/post_upload_page.dart';
 import 'ui/details/post_details_full_screen_page.dart';
 import 'ui/likes_list_page.dart';
 import 'ui/post_comments/post_comments_page.dart';
 import 'ui/post_details_page.dart';
+import 'ui/upload/create_post_text/text_post_page.dart';
+import 'ui/upload/post_upload_description_page.dart';
+import 'ui/upload/post_upload_page.dart';
 
 class PostsRoutes {
 

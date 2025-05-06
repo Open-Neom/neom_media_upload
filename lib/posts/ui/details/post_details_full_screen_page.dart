@@ -25,7 +25,7 @@ class PostDetailsFullScreenPage extends StatelessWidget {
                 InteractiveViewer(
                   child: GestureDetector(
                     child: Center(
-                        child: customCachedNetworkHeroImage(_.post.mediaUrl)
+                        child: customCachedNetworkImage(_.post.mediaUrl)
                     ),
                     onDoubleTap: () => Navigator.pop(context),
                   ),

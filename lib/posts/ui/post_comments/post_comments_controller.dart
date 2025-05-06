@@ -10,8 +10,8 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import '../../../blog/ui/blog_editor_controller.dart';
 import '../../data/firestore/comment_firestore.dart';
 import '../../domain/use_cases/post_comments_service.dart';
-import '../add/post_upload_controller.dart';
 import '../post_details_controller.dart';
+import '../upload/post_upload_controller.dart';
 
 
 class PostCommentsController extends GetxController implements PostCommentsService {

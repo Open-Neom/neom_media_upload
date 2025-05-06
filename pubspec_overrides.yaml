@@ -3,10 +3,3 @@ dependency_overrides:
     path: ../neom_commons
   neom_timeline:
     path: ../neom_timeline
-#  ffmpeg_kit_flutter:
-#    git:
-#      url: https://github.com/i-jared/ffmpeg_kit_flutter.git
-#  video_thumbnail:
-#    path: ../video_thumbnail
-#  uuid: ^4.5.1
-#  rxdart: 0.28.0

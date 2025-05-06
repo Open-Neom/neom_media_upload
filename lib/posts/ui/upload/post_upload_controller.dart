@@ -36,6 +36,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../camera/neom_camera_controller.dart';
 import '../../domain/use_cases/post_upload_service.dart';
+import '../../utils/upload_utilities.dart';
 import 'create_clips/stateful_video_editor.dart';
 
 class PostUploadController extends GetxController implements PostUploadService {
@@ -205,10 +206,10 @@ class PostUploadController extends GetxController implements PostUploadService {
 
       if(mediaFile.value.path.isNotEmpty) {
         postType = PostType.image;
-        mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);
+        mediaFile.value = await UploadUtilities.compressImageFile(mediaFile.value);
 
         if(cropImage.value) {
-          croppedImageFile.value = await AppUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
+          croppedImageFile.value = await UploadUtilities.cropImage(mediaFile.value, ratioX: ratioX, ratioY: ratioY);
           if(croppedImageFile.value.path.isEmpty) {
             clearMedia();
             if(context != null) Navigator.pop(context);
@@ -622,12 +623,11 @@ class PostUploadController extends GetxController implements PostUploadService {
         if (['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv'].contains(ext)) {
           postType = PostType.video;
           // Por ejemplo, navega al editor de video
-          // Get.to(() => StatefulVideoEditor(file: File(file.path!)));
-          Get.toNamed(AppRouteConstants.postUploadDescription);
+          Get.to(() => StatefulVideoEditor(file: File(file.path!)));
         } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].contains(ext)) {
           postType = PostType.image;
           // Aquí podrías comprimir o recortar la imagen según corresponda
-          mediaFile.value = await AppUtilities.compressImageFile(mediaFile.value);
+          mediaFile.value = await UploadUtilities.compressImageFile(mediaFile.value);
           // Por ejemplo, navega a la pantalla de descripción de post
           Get.toNamed(AppRouteConstants.postUploadDescription);
         } else {

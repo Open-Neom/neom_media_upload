@@ -9,11 +9,11 @@ import 'package:neom_commons/core/ui/widgets/read_more_container.dart';
 
 import 'package:neom_commons/core/utils/app_color.dart';
 import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
 import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
 import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'package:neom_commons/core/utils/core_utilities.dart';
+import 'package:neom_timeline/neom_timeline.dart';
 import '../../neom_posts.dart';
 import 'post_details_controller.dart';
 
@@ -155,7 +155,7 @@ class PostDetailsPage extends StatelessWidget {
                                       },
                                     ),
                                     AppTheme.widthSpace5,
-                                    Text(AppUtilities.getTimeAgo(_.post.comments.first.createdTime, showShort: false),
+                                    Text(TimelineUtilities.getTimeAgo(_.post.comments.first.createdTime, showShort: false),
                                       style: const TextStyle(fontSize: 13, color: Colors.white), locale: Get.locale,
                                     ),
                                   ],

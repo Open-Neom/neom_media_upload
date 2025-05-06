@@ -6,8 +6,7 @@ import 'package:get/get.dart';
 import 'package:neom_commons/neom_commons.dart';
 import 'package:video_player/video_player.dart';
 
-import '../neom_posts.dart';
-import '../posts/ui/add/post_upload_controller.dart';
+import '../posts/ui/upload/post_upload_controller.dart';
 
 class NeomCameraController extends GetxController {
 
