@@ -216,7 +216,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
       await Get.find<TimelineController>().getTimeline();
 
-      FirebaseMessagingCalls.sendGlobalPushNotification(
+      FirebaseMessagingCalls.sendPublicPushNotification(
         fromProfile: profile.value,
         notificationType: PushNotificationType.blog,
         referenceId: blogEntry.value.ownerId,

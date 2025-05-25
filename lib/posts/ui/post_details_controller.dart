@@ -115,7 +115,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
                 imgUrl: post.mediaUrl
             );
 
-            FirebaseMessagingCalls.sendGlobalPushNotification(
+            FirebaseMessagingCalls.sendPublicPushNotification(
                 fromProfile: profile,
                 toProfile: await ProfileFirestore().retrieve(post.ownerId),
                 notificationType: PushNotificationType.like,

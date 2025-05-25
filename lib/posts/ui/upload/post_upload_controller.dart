@@ -100,7 +100,7 @@ class PostUploadController extends GetxController implements PostUploadService {
     super.onReady();
 
     try {
-      verifyVideosPerWeekLimit();
+      //verifyVideosPerWeekLimit();
       if(profile.position != null) getLocationSuggestions();
       isLoading.value = false;
     } catch (e) {
@@ -111,6 +111,8 @@ class PostUploadController extends GetxController implements PostUploadService {
   }
 
   Future<void> verifyVideosPerWeekLimit() async {
+    AppUtilities.logger.d("verifyVideosPerWeekLimit");
+
     List<Post> profilePosts = await PostFirestore().getProfilePosts(profile.id);
     DateTime today = DateTime.now();
     DateTime previousMonday = today.subtract(Duration(days: (today.weekday - 1 + 7) % 7));
@@ -534,7 +536,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         }
 
         // await Get.find<TimelineController>().getTimeline();
-        FirebaseMessagingCalls.sendGlobalPushNotification(
+        FirebaseMessagingCalls.sendPublicPushNotification(
           fromProfile: profile,
           notificationType: PushNotificationType.post,
           referenceId: _post.id,
