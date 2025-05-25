@@ -20,8 +20,8 @@ dependencies:
       url: git@github.com:Cyberneom/neom_timeline.git
 
   camera: ^0.11.1
-  photo_manager: ^3.6.4
-  fraction: ^5.0.4
+  photo_manager: ^3.7.1
+  fraction: ^5.0.5
 
   #Post with only text
   auto_size_text_field: ^2.2.4
@@ -29,7 +29,7 @@ dependencies:
   video_editor: ^3.0.0
   easy_video_editor: ^0.1.2
 
-  file_picker: ^10.1.2
+  file_picker: ^10.1.9
   image_picker: ^1.1.2
   image_cropper: ^9.1.0
   flutter_image_compress: ^2.4.0

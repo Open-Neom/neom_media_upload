@@ -447,7 +447,7 @@ class _StatefulVideoEditorState extends State<StatefulVideoEditor> {
     AppUtilities.logger.d("¿Existe archivo?: ${File(trimmedVideoPath).existsSync()}");
 
     if(trimmedVideoPath.isNotEmpty && File(trimmedVideoPath).existsSync()) {
-      AppUtilities.logger.i('Video recortado y exportado a ${videoPath}');
+      AppUtilities.logger.i('Video recortado y exportado a $videoPath');
       hasTrimChanges = false;
       hadTrimChanges = true;
       return File(trimmedVideoPath);
