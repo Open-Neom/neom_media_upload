@@ -178,7 +178,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         switch (appFileFrom) {
           case AppFileFrom.gallery:
             mediaFile.value = (await ImagePicker().pickImage(source: ImageSource.gallery)) ?? XFile('');
-          update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
+          update([AppPageIdConstants.upload, AppPageIdConstants.onBoarding, AppPageIdConstants.createBand]);
           //   pickMediaFromDevice();
 
             break;
@@ -258,7 +258,7 @@ class PostUploadController extends GetxController implements PostUploadService {
       AppUtilities.logger.e(e.toString());
     }
 
-    update([AppPageIdConstants.upload, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.createBand]);
+    update([AppPageIdConstants.upload, AppPageIdConstants.onBoarding, AppPageIdConstants.createBand]);
   }
 
   @override
@@ -435,7 +435,7 @@ class PostUploadController extends GetxController implements PostUploadService {
     if(videoPlayerController?.value.isInitialized ?? false) disposeVideoPlayer();
     // if(!trimmer.isDisposed) trimmer.dispose();
     update([AppPageIdConstants.upload, AppPageIdConstants.postComments,
-      AppPageIdConstants.timeline, AppPageIdConstants.onBoardingAddImage, AppPageIdConstants.event]);
+      AppPageIdConstants.timeline, AppPageIdConstants.onBoarding, AppPageIdConstants.event]);
   }
 
   @override
@@ -637,7 +637,7 @@ class PostUploadController extends GetxController implements PostUploadService {
         }
         update([
           AppPageIdConstants.upload,
-          AppPageIdConstants.onBoardingAddImage,
+          AppPageIdConstants.onBoarding,
           AppPageIdConstants.createBand,
         ]);
       }
