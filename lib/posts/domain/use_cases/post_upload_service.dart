@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:neom_commons/core/utils/enums/app_file_from.dart';
-import 'package:neom_commons/core/utils/enums/upload_image_type.dart';
+import 'package:neom_core/core/utils/enums/app_file_from.dart';
+import 'package:neom_core/core/utils/enums/upload_image_type.dart';
 
 abstract class PostUploadService {
 

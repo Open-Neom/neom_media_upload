@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/neom_commons.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/custom_image.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/domain/model/post_comment.dart';
+import 'package:neom_core/core/utils/enums/app_file_from.dart';
+import 'package:neom_core/core/utils/enums/app_media_type.dart';
 
 import '../post_comments/post_comments_controller.dart';
 import '../post_comments/post_comments_widgets.dart';

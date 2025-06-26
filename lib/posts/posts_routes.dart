@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import '../camera/neom_camera_page.dart';
+import 'package:neom_core/core/utils/constants/app_route_constants.dart';
+import '../camera/app_camera_page.dart';
 import 'ui/details/post_details_full_screen_page.dart';
 import 'ui/likes_list_page.dart';
 import 'ui/post_comments/post_comments_page.dart';
@@ -49,7 +49,7 @@ class PostsRoutes {
     ),
     GetPage(
       name: AppRouteConstants.camera,
-      page: () => const NeomCameraPage(),
+      page: () => const AppCameraPage(),
       transition: Transition.downToUp,
     ),
   ];

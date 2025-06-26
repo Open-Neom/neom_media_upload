@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/data/firestore/post_firestore.dart';
-import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
-import 'package:neom_commons/core/domain/model/app_profile.dart';
-import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_core/core/app_config.dart';
+import 'package:neom_core/core/data/firestore/post_firestore.dart';
+import 'package:neom_core/core/data/firestore/profile_firestore.dart';
+import 'package:neom_core/core/data/implementations/user_controller.dart';
+import 'package:neom_core/core/domain/model/app_profile.dart';
+import 'package:neom_core/core/domain/model/post.dart';
+import 'package:neom_core/core/utils/constants/app_route_constants.dart';
 
 import '../domain/use_cases/blog_entry_service.dart';
 
@@ -33,7 +33,7 @@ class BlogController extends GetxController implements BlogEntryService {
   @override
   void onInit() async {
     super.onInit();
-    AppUtilities.logger.d("onInit");
+    AppConfig.logger.d("onInit");
     try {
       profile = userController.profile;
 
@@ -52,7 +52,7 @@ class BlogController extends GetxController implements BlogEntryService {
         blogOwnerId = profile.id;
       }
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
   }
@@ -63,7 +63,7 @@ class BlogController extends GetxController implements BlogEntryService {
     try {
       await getBlogEntries();
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     isLoading.value = false;
@@ -85,12 +85,12 @@ class BlogController extends GetxController implements BlogEntryService {
 
   @override
   Future<void> gotoNewBlogEntry() async {
-    AppUtilities.logger.d("Start ${newBlogEntryNameController.text} and ${newBlogEntryTextController.text}");
+    AppConfig.logger.d("Start ${newBlogEntryNameController.text} and ${newBlogEntryTextController.text}");
 
     try {
       Get.toNamed(AppRouteConstants.blogEditor);
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     update([AppPageIdConstants.blog]);
@@ -99,7 +99,7 @@ class BlogController extends GetxController implements BlogEntryService {
   @override
   Future<void> updateBlogEntry(String itemlistId, Post postBlogEntry) async {
 
-    AppUtilities.logger.d("Updating to $postBlogEntry");
+    AppConfig.logger.d("Updating to $postBlogEntry");
 
     try {
       isLoading.value = true;
@@ -117,7 +117,7 @@ class BlogController extends GetxController implements BlogEntryService {
 
       }
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
 
@@ -128,7 +128,7 @@ class BlogController extends GetxController implements BlogEntryService {
 
   @override
   Future<void> getBlogEntries() async {
-    AppUtilities.logger.d("Getting Blog Entries Published and Drafts");
+    AppConfig.logger.d("Getting Blog Entries Published and Drafts");
     try {
 
       blogEntries.value = await PostFirestore().getBlogEntries(profileId: blogOwnerId);
@@ -141,11 +141,11 @@ class BlogController extends GetxController implements BlogEntryService {
         blogEntries.removeWhere((key, entry) => entry.isDraft);
       }
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
 
-    AppUtilities.logger.d("Blog Entries loaded");
+    AppConfig.logger.d("Blog Entries loaded");
     update([AppPageIdConstants.blog]);
   }
 

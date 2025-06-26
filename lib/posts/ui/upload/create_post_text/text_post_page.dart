@@ -2,13 +2,13 @@ import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/commons/ui/splash_page.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
 
-import 'package:neom_commons/core/ui/static/splash_page.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import '../create_post/post_widgets.dart';
 import '../post_upload_controller.dart';
 
@@ -55,7 +55,7 @@ class TextPostPage extends StatelessWidget {
                   title: Text(_.userController.profile.name)
                 ),
                 AppTheme.heightSpace10,
-              _.caption.contains(AppConstants.http) ?
+              _.caption.contains(CoreConstants.http) ?
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppTheme.padding10),
                   child: TextField(

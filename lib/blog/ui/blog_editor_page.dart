@@ -1,12 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
 
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
 import 'blog_editor_controller.dart';
 
 class BlogEditorPage extends StatelessWidget {
@@ -17,7 +17,6 @@ class BlogEditorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var brightness = MediaQuery.of(context).platformBrightness;
     bool isDarkMode = brightness == Brightness.dark;
-    isDarkMode = false; //TODO Improve color design
     Color blogColor = isDarkMode ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.4);
     return GetBuilder<BlogEditorController>(
         id: AppPageIdConstants.blogEditor,
@@ -141,11 +140,11 @@ class BlogEditorPage extends StatelessWidget {
                             InkWell(
                               onTap: () async {
                                 if (!_.isButtonDisabled.value && _.entryTextController.text.isNotEmpty
-                                    && _.wordQty >= AppConstants.blogMinWords) {
+                                    && _.wordQty >= CoreConstants.blogMinWords) {
                                   await _.publishBlogEntry();
                                 } else {
                                   Get.snackbar("¡Que siga esa inspiración!",
-                                      "Intenta agregar al menos ${AppConstants.blogMinWords - _.wordQty.value} palabras más ;)",
+                                      "Intenta agregar al menos ${CoreConstants.blogMinWords - _.wordQty.value} palabras más ;)",
                                       snackPosition: SnackPosition.bottom
                                   );
                                 }

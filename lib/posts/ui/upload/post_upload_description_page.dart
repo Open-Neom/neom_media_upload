@@ -3,14 +3,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hashtagable_v3/hashtagable.dart';
-import 'package:neom_commons/core/ui/static/splash_page.dart';
-import 'package:neom_commons/core/ui/widgets/custom_image.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/enums/post_type.dart';
+import 'package:neom_commons/commons/ui/splash_page.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/custom_image.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/app_config.dart';
+import 'package:neom_core/core/utils/enums/post_type.dart';
 import 'package:video_player/video_player.dart';
 
 import 'create_post/post_widgets.dart';
@@ -169,11 +169,11 @@ class PostUploadDescriptionPage extends StatelessWidget {
         maxLines: 10,
         /// Called when detection (word starts with #, or # and @) is being typed
         onDetectionTyped: (text) {
-          AppUtilities.logger.t(text);
+          AppConfig.logger.t(text);
         },
         /// Called when detection is fully typed
         onDetectionFinished: () {
-          AppUtilities.logger.t("Type Detection Finished");
+          AppConfig.logger.t("Type Detection Finished");
         },
       ),
     );

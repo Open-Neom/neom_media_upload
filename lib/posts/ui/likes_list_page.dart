@@ -1,14 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/app_flavour.dart';
-import 'package:neom_commons/core/data/implementations/mate_controller.dart';
-import 'package:neom_commons/core/domain/model/app_profile.dart';
-import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/core_utilities.dart';
+import 'package:neom_commons/commons/app_flavour.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/appbar_child.dart';
+import 'package:neom_commons/commons/utils/app_utilities.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/data/implementations/mate_controller.dart';
+import 'package:neom_core/core/domain/model/app_profile.dart';
+
+
 
 class LikesListPage extends StatelessWidget {
   const LikesListPage({super.key});
@@ -39,7 +41,7 @@ class LikesListPage extends StatelessWidget {
                 leading: Hero(
                 tag: mate.photoUrl,
                 child: FutureBuilder<CachedNetworkImageProvider>(
-                future: CoreUtilities.handleCachedImageProvider(mate.photoUrl),
+                future: AppUtilities.handleCachedImageProvider(mate.photoUrl),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return CircleAvatar(

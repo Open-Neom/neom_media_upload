@@ -1,14 +1,13 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
-
-import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/app_circular_progress_indicator.dart';
+import 'package:neom_commons/commons/ui/widgets/appbar_child.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
 import 'blog_controller.dart';
 import 'widgets/blog_widgets.dart';
 
@@ -20,29 +19,6 @@ class BlogPage extends StatelessWidget {
     return WillPopScope(
       onWillPop: () async {
         return true;
-        ///DEPRECATED
-        // return (await showDialog(
-        //   context: context,
-        //   builder: (context) => AlertDialog(
-        //     backgroundColor: AppColor.getMain(),
-        //     title: const Text(AppConstants.appTitle),
-        //     content:  Text(AppTranslationConstants.wantToCloseApp.tr),
-        //     actions: <Widget>[
-        //       TextButton(
-        //         child: Text(AppTranslationConstants.no.tr,
-        //           style: const TextStyle(color: AppColor.white),
-        //         ),
-        //         onPressed: () => Navigator.of(context).pop(false),
-        //       ),
-        //       TextButton(
-        //         child: Text(AppTranslationConstants.yes.tr,
-        //           style: const TextStyle(color: AppColor.white),
-        //         ),
-        //         onPressed: () => Navigator.of(context).pop(true),
-        //       )
-        //     ],
-        //   ),
-        // )) ?? false;
       },
       child: GetBuilder<BlogController>(
         id: AppPageIdConstants.blog,
@@ -55,15 +31,15 @@ class BlogPage extends StatelessWidget {
             child: _.isLoading.value ? const AppCircularProgressIndicator()
                 : DefaultTabController(
                 initialIndex: _.tabIndex,
-                length: AppConstants.blogTabs.length,
+                length: CoreConstants.blogTabs.length,
                 child: SingleChildScrollView(
                   child: _.profile.id == _.blogOwnerId ?
                   Column(
                     children: <Widget>[
                       TabBar(
                         tabs: [
-                          Tab(text: "${AppConstants.blogTabs.elementAt(0).tr} (${_.blogEntries.length})"),
-                          Tab(text: "${AppConstants.blogTabs.elementAt(1).tr} (${_.draftEntries.length})")
+                          Tab(text: "${CoreConstants.blogTabs.elementAt(0).tr} (${_.blogEntries.length})"),
+                          Tab(text: "${CoreConstants.blogTabs.elementAt(1).tr} (${_.draftEntries.length})")
                         ],
                         indicatorColor: Colors.white,
                         labelStyle: const TextStyle(

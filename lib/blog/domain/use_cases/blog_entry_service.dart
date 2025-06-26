@@ -1,4 +1,5 @@
-import 'package:neom_commons/core/domain/model/post.dart';
+
+import 'package:neom_core/core/domain/model/post.dart';
 
 abstract class BlogEntryService {
 

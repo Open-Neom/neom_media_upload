@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../upload/post_upload_controller.dart';

@@ -99,7 +99,7 @@
 //   }
 //
 //   void processVideo() async {
-//     AppUtilities.logger.i('Processing video from path ${_controller.file.path}');
+//     AppConfig.logger.i('Processing video from path ${_controller.file.path}');
 //     File processedVideo = _controller.file;
 //
 //     if(hasCropChanges && hadTrimChanges) {
@@ -133,16 +133,16 @@
 //       );
 //
 //       increaseProgressPercentage();
-//       AppUtilities.logger.d("Ruta retornada por trimVideo: '$trimmedVideoPath'");
-//       AppUtilities.logger.d("Existe archivo?: ${File(trimmedVideoPath).existsSync()}");
+//       AppConfig.logger.d("Ruta retornada por trimVideo: '$trimmedVideoPath'");
+//       AppConfig.logger.d("Existe archivo?: ${File(trimmedVideoPath).existsSync()}");
 //
 //       if(trimmedVideoPath.isNotEmpty && File(trimmedVideoPath).existsSync()) {
 //         processedVideo = File(trimmedVideoPath);
-//         AppUtilities.logger.i('Video recortado y exportado a ${processedVideo.path}');
+//         AppConfig.logger.i('Video recortado y exportado a ${processedVideo.path}');
 //         hasTrimChanges = false;
 //         hadTrimChanges = true;
 //       } else {
-//         AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
+//         AppConfig.logger.e("⛔ Error al exportar video (Trim)");
 //         AppUtilities.showSnackBar(message: "Error al exportar el video :(");
 //         _isExporting.value = false;
 //         return;
@@ -177,12 +177,12 @@
 //       croppedController.dispose();
 //
 //       if(success && executeConfig.outputPath.isNotEmpty && File(executeConfig.outputPath).existsSync()) {
-//         AppUtilities.logger.i("Tamaño de video ajustado y exportado correctamente en: ${executeConfig.outputPath}");
+//         AppConfig.logger.i("Tamaño de video ajustado y exportado correctamente en: ${executeConfig.outputPath}");
 //         editedVideo = File(executeConfig.outputPath);
 //         hasCropChanges = false;
 //         hadCropChanges = true;
 //       } else {
-//         AppUtilities.logger.e("⛔ Error al exportar video (Trim)");
+//         AppConfig.logger.e("⛔ Error al exportar video (Trim)");
 //         AppUtilities.showSnackBar(message: "Error al exportar el video :(");
 //         _isExporting.value = false;
 //         return;
@@ -197,7 +197,7 @@
 //     if (await editedVideo.exists() && (await editedVideo.length()) > 0) {
 //       uploadController?.setProcessedVideo(XFile(editedVideo.path));
 //     } else {
-//       AppUtilities.logger.e("⛔ Archivo exportado es inválido o vacío.");
+//       AppConfig.logger.e("⛔ Archivo exportado es inválido o vacío.");
 //       AppUtilities.showSnackBar(message: "Hubo un error en la exportación.");
 //     }
 //   }
@@ -212,14 +212,14 @@
 //
 //     final returnCode = await session.getReturnCode();
 //     if (returnCode != null && returnCode.isValueSuccess()) {
-//       AppUtilities.logger.i('✅ Éxito! Video exportado en ${executeConfig.outputPath}');
+//       AppConfig.logger.i('✅ Éxito! Video exportado en ${executeConfig.outputPath}');
 //       return true;
 //     } else {
 //       final logs = await session.getAllLogs();
 //       for (var log in logs) {
 //         debugPrint(log.getMessage());
 //       }
-//       AppUtilities.logger.e('⛔️ Error al exportar video.');
+//       AppConfig.logger.e('⛔️ Error al exportar video.');
 //       return false;
 //     }
 //   }

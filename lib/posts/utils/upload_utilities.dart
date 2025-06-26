@@ -3,14 +3,18 @@ import 'dart:io';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+
+
+import 'package:neom_core/core/app_config.dart';
+
+
 
 class UploadUtilities {
 
   static Future<File> cropImage(XFile mediaFile, {double ratioX = 1, double ratioY = 1}) async {
-    AppUtilities.logger.d("Initializing Image Cropper");
+    AppConfig.logger.d("Initializing Image Cropper");
 
     File croppedImageFile = File("");
     try {
@@ -61,9 +65,9 @@ class UploadUtilities {
 
 
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
-    AppUtilities.logger.d("Cropped Image in file ${croppedImageFile.path}");
+    AppConfig.logger.d("Cropped Image in file ${croppedImageFile.path}");
 
     return croppedImageFile;
   }
@@ -91,14 +95,14 @@ class UploadUtilities {
 
         if(result != null) {
           compressedImageFile = result;
-          AppUtilities.logger.d("Image compressed successfully");
+          AppConfig.logger.d("Image compressed successfully");
         } else {
           compressedImageFile = imageFile;
-          AppUtilities.logger.w("Image was not compressed and return as before");
+          AppConfig.logger.w("Image was not compressed and return as before");
         }
       }
     } catch(e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
 

@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:neom_commons/core/domain/model/post_comment.dart';
-import 'package:neom_commons/core/utils/enums/app_file_from.dart';
+import 'package:neom_core/core/domain/model/post_comment.dart';
+import 'package:neom_core/core/utils/enums/app_file_from.dart';
 
 abstract class PostCommentsService {
 

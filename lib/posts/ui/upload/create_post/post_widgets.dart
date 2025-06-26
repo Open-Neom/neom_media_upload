@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:neom_commons/core/utils/app_theme.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
 import '../post_upload_controller.dart';
 
 Widget buildLocationSuggestions(BuildContext context, PostUploadController _) {

@@ -5,8 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/ui/widgets/read_more_container.dart';
-import 'package:neom_commons/neom_commons.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/custom_image.dart';
+import 'package:neom_commons/commons/ui/widgets/read_more_container.dart';
+import 'package:neom_commons/commons/utils/app_alerts.dart';
+import 'package:neom_commons/commons/utils/app_utilities.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_commons/commons/utils/external_utilities.dart';
+import 'package:neom_core/core/data/implementations/report_controller.dart';
+import 'package:neom_core/core/domain/model/menu_three_dots.dart';
+import 'package:neom_core/core/domain/model/post_comment.dart';
+import 'package:neom_core/core/utils/constants/app_route_constants.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
+import 'package:neom_core/core/utils/enums/reference_type.dart';
+import 'package:neom_core/core/utils/enums/user_role.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 import 'post_comments_controller.dart';
 
@@ -62,7 +75,7 @@ Widget othersComment(BuildContext context, PostCommentsController _, PostComment
                       child: (comment.text.contains("http") || comment.text.contains("https"))
                           ? Linkify(
                         onOpen: (link)  {
-                          CoreUtilities.launchURL(link.url);
+                          ExternalUtilities.launchURL(link.url);
                         },
                         text: comment.text,
                         maxLines: 20,
@@ -193,7 +206,7 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
                     break;
                   case AppTranslationConstants.reportComment:
                     ReportController reportController = Get.put(ReportController());
-                    reportController.showSendReportAlert(context, comment.id, referenceType: ReferenceType.comment);
+                    AppAlerts.showSendReportAlert(reportController, context, comment.id, referenceType: ReferenceType.comment);
                     break;
                   case AppTranslationConstants.blockProfile:
                     PostCommentsController postCommentsController = Get.find<PostCommentsController>();
@@ -212,8 +225,8 @@ Widget _buildCommentBottomNavMenu(BuildContext context, bool isSelf, PostComment
 
 Widget shortFeedNewsCardItem(BuildContext context, PostCommentsController _) {
   String caption = _.post.caption;
-  if(caption.contains(AppConstants.titleTextDivider)) {
-    caption = caption.split(AppConstants.titleTextDivider)[1];
+  if(caption.contains(CoreConstants.titleTextDivider)) {
+    caption = caption.split(CoreConstants.titleTextDivider)[1];
   }
 
   return Container(

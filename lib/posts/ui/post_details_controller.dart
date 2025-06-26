@@ -1,16 +1,17 @@
 import 'package:get/get.dart';
-import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
-import 'package:neom_commons/core/data/firestore/activity_feed_firestore.dart';
-import 'package:neom_commons/core/data/firestore/post_firestore.dart';
-import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
-import 'package:neom_commons/core/domain/model/activity_feed.dart';
-import 'package:neom_commons/core/domain/model/app_profile.dart';
-import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/enums/activity_feed_type.dart';
-import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/app_config.dart';
+import 'package:neom_core/core/data/api_services/push_notification/firebase_messaging_calls.dart';
+import 'package:neom_core/core/data/firestore/activity_feed_firestore.dart';
+import 'package:neom_core/core/data/firestore/post_firestore.dart';
+import 'package:neom_core/core/data/firestore/profile_firestore.dart';
+import 'package:neom_core/core/data/implementations/user_controller.dart';
+import 'package:neom_core/core/domain/model/activity_feed.dart';
+import 'package:neom_core/core/domain/model/app_profile.dart';
+import 'package:neom_core/core/domain/model/post.dart';
+import 'package:neom_core/core/utils/enums/activity_feed_type.dart';
+import 'package:neom_core/core/utils/enums/push_notification_type.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 
 import '../data/firestore/comment_firestore.dart';
@@ -32,7 +33,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
   @override
   void onInit() async {
     super.onInit();
-    AppUtilities.logger.i("PostDetails Controller Init");
+    AppConfig.logger.i("PostDetails Controller Init");
     profile = userController.profile;
     try {
 
@@ -51,7 +52,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       }
 
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
   }
 
@@ -73,7 +74,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
       post = await PostFirestore().retrieve(postId);
       post.comments = await CommentFirestore().retrieveComments(postId: postId);
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     isLoading.value = false;
@@ -111,14 +112,18 @@ class PostDetailsController extends GetxController implements PostDetailsService
                 toProfileId: post.ownerId,
                 fromProfile: profile,
                 notificationType: PushNotificationType.like,
+                title: AppTranslationConstants.likedYourPost,
+                message: '',
                 referenceId: post.id,
                 imgUrl: post.mediaUrl
             );
 
+            AppProfile postOwner = await ProfileFirestore().retrieve(post.ownerId);
             FirebaseMessagingCalls.sendPublicPushNotification(
                 fromProfile: profile,
-                toProfile: await ProfileFirestore().retrieve(post.ownerId),
+                toProfileId: postOwner.id,
                 notificationType: PushNotificationType.like,
+                title: "${AppTranslationConstants.hasReactedToThePostOf.tr} ${postOwner.name}",
                 referenceId: post.id,
                 imgUrl: post.mediaUrl
             );
@@ -132,7 +137,7 @@ class PostDetailsController extends GetxController implements PostDetailsService
 
       Get.find<TimelineController>().handleLikeOnPost(post);
     } catch (e) {
-      AppUtilities. logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     update([AppPageIdConstants.postDetails, AppPageIdConstants.blogEntry]);

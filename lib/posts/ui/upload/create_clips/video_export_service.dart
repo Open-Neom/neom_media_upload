@@ -54,21 +54,21 @@
 //         outputFormat: FileFormat.mp4,
 //         onSave: (path) {
 //           if (path != null) {
-//             AppUtilities.logger.d("✅ Video guardado en: $path");
+//             AppConfig.logger.d("✅ Video guardado en: $path");
 //             completer.complete(path);
 //           } else {
-//             AppUtilities.logger.e("⛔️ La ruta de guardado retornada es nula.");
+//             AppConfig.logger.e("⛔️ La ruta de guardado retornada es nula.");
 //             completer.complete('');
 //           }
 //
 //           // if(path != null) outputPath = path;
-//           // AppUtilities.logger.d("Video guardado en: $outputPath");
+//           // AppConfig.logger.d("Video guardado en: $outputPath");
 //         },
 //       );
 //
 //       return completer.future;
 //     } catch (e) {
-//       AppUtilities.logger.e("Error recortando el video: $e");
+//       AppConfig.logger.e("Error recortando el video: $e");
 //       return '';
 //     }
 //   }

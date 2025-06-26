@@ -3,21 +3,22 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:hashtagable_v3/functions.dart';
-import 'package:neom_commons/core/data/api_services/push_notification/firebase_messaging_calls.dart';
-import 'package:neom_commons/core/data/firestore/hashtag_firestore.dart';
-import 'package:neom_commons/core/data/firestore/post_firestore.dart';
-import 'package:neom_commons/core/data/firestore/profile_firestore.dart';
-import 'package:neom_commons/core/data/implementations/geolocator_controller.dart';
-import 'package:neom_commons/core/data/implementations/user_controller.dart';
-import 'package:neom_commons/core/domain/model/app_profile.dart';
-import 'package:neom_commons/core/domain/model/hashtag.dart';
-import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/utils/app_utilities.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'package:neom_commons/core/utils/enums/post_type.dart';
-import 'package:neom_commons/core/utils/enums/push_notification_type.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_core/core/app_config.dart';
+import 'package:neom_core/core/data/api_services/push_notification/firebase_messaging_calls.dart';
+import 'package:neom_core/core/data/firestore/hashtag_firestore.dart';
+import 'package:neom_core/core/data/firestore/post_firestore.dart';
+import 'package:neom_core/core/data/firestore/profile_firestore.dart';
+import 'package:neom_core/core/data/implementations/geolocator_controller.dart';
+import 'package:neom_core/core/data/implementations/user_controller.dart';
+import 'package:neom_core/core/domain/model/app_profile.dart';
+import 'package:neom_core/core/domain/model/hashtag.dart';
+import 'package:neom_core/core/domain/model/post.dart';
+import 'package:neom_core/core/utils/constants/app_route_constants.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
+import 'package:neom_core/core/utils/enums/post_type.dart';
+import 'package:neom_core/core/utils/enums/push_notification_type.dart';
 import 'package:neom_timeline/neom_timeline.dart';
 
 import '../../posts/ui/post_details_controller.dart';
@@ -26,8 +27,7 @@ import 'blog_controller.dart';
 
 
 class BlogEditorController extends GetxController implements BlogEditorService {
-
-  final logger = AppUtilities.logger;
+  
   final userController = Get.find<UserController>();
   final blogController = Get.find<BlogController>();
   final postDetailController = Get.put(PostDetailsController());
@@ -48,7 +48,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
   @override
   void onInit() async {
     super.onInit();
-    logger.d("Blog Entry Editor Controller");
+    AppConfig.logger.d("Blog Entry Editor Controller");
 
     try {
 
@@ -58,7 +58,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       }
 
       if(blogEntry.value.caption.isNotEmpty) {
-        List<String> blogEntryCaptionSplitted = blogEntry.value.caption.split(AppConstants.titleTextDivider);
+        List<String> blogEntryCaptionSplitted = blogEntry.value.caption.split(CoreConstants.titleTextDivider);
         if(blogEntryCaptionSplitted.isNotEmpty) {
           if(blogEntryCaptionSplitted.length > 1) {
             entryTitleController.text = blogEntryCaptionSplitted[0];
@@ -76,14 +76,14 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       }
 
     } catch (e) {
-      logger.e(e);
+      AppConfig.logger.e(e);
     }
   }
 
   @override
   void onReady() async {
     super.onReady();
-    logger.d("Create Blog Entry Controller Ready");
+    AppConfig.logger.d("Create Blog Entry Controller Ready");
     try {
       postDetailController.profile = profile.value;
       postDetailController.post = blogEntry.value;
@@ -91,7 +91,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       isLoading.value = false;
     } catch (e) {
 
-      logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     update([AppPageIdConstants.blogEditor]);
@@ -121,7 +121,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       wordQty.value = entryTextSplitted.length;
     }
 
-    logger.d("Blog entry has $wordQty words");
+    AppConfig.logger.d("Blog entry has $wordQty words");
 
 
     update([AppPageIdConstants.blogEditor]);
@@ -129,11 +129,11 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
   @override
   Future<void> saveBlogEntryDraft() async {
-    logger.d("Saving Blog Entry Draft");
+    AppConfig.logger.d("Saving Blog Entry Draft");
 
     try {
 
-      String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
+      String blogEntryCaption = entryTitleController.text + CoreConstants.titleTextDivider + entryTextController.text;
       blogEntry.value = Post(
         id: blogEntry.value.id,
         caption: blogEntryCaption,
@@ -163,16 +163,16 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       }
 
       blogController.draftEntries[blogEntry.value.id] = blogEntry.value;
-      logger.d("blogEntry ${blogEntry.value.id} was successfully updated");
+      AppConfig.logger.d("blogEntry ${blogEntry.value.id} was successfully updated");
     } catch (e) {
-      logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     update([AppPageIdConstants.blog, AppPageIdConstants.blogEditor]);
   }
 
   Future<void> publishBlogEntry() async {
-    logger.d("PUblishing Blog Entry");
+    AppConfig.logger.d("PUblishing Blog Entry");
 
     isButtonDisabled.value = true;
     isLoading.value = true;
@@ -183,7 +183,7 @@ class BlogEditorController extends GetxController implements BlogEditorService {
         postHashtags.add(element.substring(1));
       });
 
-      String blogEntryCaption = entryTitleController.text + AppConstants.titleTextDivider + entryTextController.text;
+      String blogEntryCaption = entryTitleController.text + CoreConstants.titleTextDivider + entryTextController.text;
       blogEntry.value = Post(
         id: blogEntry.value.id,
         caption: blogEntryCaption,
@@ -219,11 +219,13 @@ class BlogEditorController extends GetxController implements BlogEditorService {
       FirebaseMessagingCalls.sendPublicPushNotification(
         fromProfile: profile.value,
         notificationType: PushNotificationType.blog,
+        title: AppTranslationConstants.hasPostedInBlog,
+        toProfileId: '',
         referenceId: blogEntry.value.ownerId,
       );
 
     } catch (e) {
-      logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
     isButtonDisabled.value = false;
@@ -234,14 +236,14 @@ class BlogEditorController extends GetxController implements BlogEditorService {
 
   @override
   Future<void> handleLikePost() async {
-    logger.i("isLiked is $isLiked and # de likes: ${blogEntry.value.likedProfiles}");
+    AppConfig.logger.i("isLiked is $isLiked and # de likes: ${blogEntry.value.likedProfiles}");
     try {
       await postDetailController.handleLikePost(blogEntry.value);
       isLiked.value = postDetailController.isLikedPost(blogEntry.value);
     } catch (e) {
-      logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
-    logger.i("isLiked is $isLiked and # de likes: ${blogEntry.value.likedProfiles}");
+    AppConfig.logger.i("isLiked is $isLiked and # de likes: ${blogEntry.value.likedProfiles}");
     update([AppPageIdConstants.blogEntry, AppPageIdConstants.blogEditor, AppPageIdConstants.blog]);
   }
 

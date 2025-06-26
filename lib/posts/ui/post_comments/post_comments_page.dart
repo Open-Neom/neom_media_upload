@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/app_circular_progress_indicator.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
 
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
 import '../widgets/posts_widgets.dart';
 import 'post_comments_controller.dart';
 import 'post_comments_widgets.dart';
@@ -24,7 +24,7 @@ class PostCommentsPage extends StatelessWidget {
           backgroundColor: AppColor.main50,
           ///DEPRECATED
           /// appBar: AppBarChild(title: AppTranslationConstants.comments.tr),
-          body: _.isLoading ? const AppCircularProgressIndicator() : Container(
+          body: _.isLoading.value ? const AppCircularProgressIndicator() : Container(
             decoration: AppTheme.appBoxDecoration,
             height: AppTheme.fullHeight(context),
             padding: const EdgeInsets.all(AppTheme.padding10),

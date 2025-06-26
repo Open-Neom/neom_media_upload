@@ -1,22 +1,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
-import 'package:neom_commons/neom_commons.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/app_circular_progress_indicator.dart';
+import 'package:neom_commons/commons/ui/widgets/appbar_child.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
 
-import 'neom_camera_controller.dart';
+import 'app_camera_controller.dart';
 
-class NeomCameraPage extends StatelessWidget {
+class AppCameraPage extends StatelessWidget {
 
-  const NeomCameraPage({super.key});
+  const AppCameraPage({super.key});
 
 
   @override
   Widget build(BuildContext context) {
 
-    return GetBuilder<NeomCameraController>(
+    return GetBuilder<AppCameraController>(
       id: AppPageIdConstants.camera,
-      init: NeomCameraController(),
+      init: AppCameraController(),
       builder: (_) => Scaffold(
       appBar: AppBarChild(
         leadingWidget: IconButton(icon: const Icon(Icons.close),
@@ -27,7 +31,7 @@ class NeomCameraPage extends StatelessWidget {
       backgroundColor: AppColor.main50,
       body: SizedBox(
         // height: AppTheme.fullHeight(context),
-        child: Obx(()=> _.isLoading.value ? AppCircularProgressIndicator():Stack(
+        child: Obx(()=> _.isLoading.value ? AppCircularProgressIndicator() : Stack(
         alignment: Alignment.center,
         children: [
           (!_.isDisposed) ? SizedBox(

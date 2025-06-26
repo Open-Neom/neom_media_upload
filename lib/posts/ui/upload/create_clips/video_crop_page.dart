@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fraction/fraction.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/ui/widgets/appbar_child.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/appbar_child.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
 import 'package:video_editor/video_editor.dart';
 
 class VideoCropPage extends StatelessWidget {

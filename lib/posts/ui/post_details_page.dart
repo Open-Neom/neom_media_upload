@@ -2,18 +2,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/core/app_flavour.dart';
-import 'package:neom_commons/core/ui/widgets/app_circular_progress_indicator.dart';
-import 'package:neom_commons/core/ui/widgets/handled_cached_network_image.dart';
-import 'package:neom_commons/core/ui/widgets/read_more_container.dart';
-
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_page_id_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/core_utilities.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/ui/widgets/app_circular_progress_indicator.dart';
+import 'package:neom_commons/commons/ui/widgets/handled_cached_network_image.dart';
+import 'package:neom_commons/commons/ui/widgets/read_more_container.dart';
+import 'package:neom_commons/commons/utils/app_utilities.dart';
+import 'package:neom_commons/commons/utils/constants/app_page_id_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_commons/commons/utils/external_utilities.dart';
+import 'package:neom_core/core/app_properties.dart';
+import 'package:neom_core/core/utils/constants/app_route_constants.dart';
 import 'package:neom_timeline/neom_timeline.dart';
+
 import '../../neom_posts.dart';
 import 'post_details_controller.dart';
 
@@ -41,9 +42,9 @@ class PostDetailsPage extends StatelessWidget {
                 children: [
                   if(_.showInfo) ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: CachedNetworkImageProvider(_.post.profileImgUrl.isNotEmpty ? _.post.profileImgUrl : AppFlavour.getAppLogoUrl(),),),
+                      backgroundImage: CachedNetworkImageProvider(_.post.profileImgUrl.isNotEmpty ? _.post.profileImgUrl : AppProperties.getAppLogoUrl(),),),
                     title: GestureDetector(
-                      child: Text(CoreUtilities.capitalizeFirstLetter(_.post.profileName),
+                      child: Text(AppUtilities.capitalizeFirstLetter(_.post.profileName),
                         style: const TextStyle(fontSize: 15,
                             color: Colors.white,
                             fontWeight: FontWeight.bold
@@ -113,8 +114,8 @@ class PostDetailsPage extends StatelessWidget {
                                       color: AppColor.white
                                   ),
                                   onTap: () {
-                                    CoreUtilities().shareAppWithPost(_.post);
-                                    },
+                                    ExternalUtilities.shareAppWithPost(_.post);
+                                  },
                                 ),
                               ]
                             ),

@@ -3,14 +3,19 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neom_commons/neom_commons.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/utils/app_utilities.dart';
+import 'package:neom_core/core/app_config.dart';
+import 'package:neom_core/core/data/implementations/user_controller.dart';
+import 'package:neom_core/core/domain/model/app_profile.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
+import 'package:neom_core/core/utils/enums/user_role.dart';
 import 'package:video_player/video_player.dart';
 
 import '../posts/ui/upload/post_upload_controller.dart';
 
-class NeomCameraController extends GetxController {
+class AppCameraController extends GetxController {
 
-  var logger = AppUtilities.logger;
   final userController = Get.find<UserController>();
   PostUploadController uploadController = Get.find<PostUploadController>();
   AppProfile profile = AppProfile();
@@ -41,7 +46,7 @@ class NeomCameraController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    logger.t("PostUpload Controller Init");
+    AppConfig.logger.t("PostUpload Controller Init");
     profile = userController.profile;
 
     try {
@@ -56,7 +61,7 @@ class NeomCameraController extends GetxController {
         Get.put(uploadController);
       }
     } catch (e) {
-      logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
   }
@@ -66,10 +71,10 @@ class NeomCameraController extends GetxController {
     super.onReady();
 
     try {
-      // initializeCameraController();
-      ///DEPRECATED verifyVideosPerWeekLimit();
+      ///DEPRECATED
+      ///verifyVideosPerWeekLimit();
     } catch (e) {
-      logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
   }
 
@@ -87,7 +92,7 @@ class NeomCameraController extends GetxController {
       await controller?.initialize();
       isLoading.value = false;
     } catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
     }
 
   }
@@ -220,7 +225,7 @@ class NeomCameraController extends GetxController {
           AppUtilities.showSnackBar(message: 'Audio access is restricted.');
           break;
         default:
-          AppUtilities.logger.e(e.toString());
+          AppConfig.logger.e(e.toString());
           break;
       }
     }
@@ -239,7 +244,7 @@ class NeomCameraController extends GetxController {
       }
 
       if (file != null) {
-        AppUtilities.logger.i('Picture saved to ${file.path}');
+        AppConfig.logger.i('Picture saved to ${file.path}');
         uploadController.handleImage(imageFile: file);
       }
     });
@@ -319,7 +324,7 @@ class NeomCameraController extends GetxController {
       }
 
       if (file != null) {
-        AppUtilities.logger.i('Video recorded to ${file.path}');
+        AppConfig.logger.i('Video recorded to ${file.path}');
         uploadController.handleVideo(videoFile: file);
       }
     });
@@ -379,7 +384,7 @@ class NeomCameraController extends GetxController {
       await cameraController.startVideoRecording();
 
       int maxDurationInSeconds = uploadController.userController.user.userRole == UserRole.subscriber
-          ? AppConstants.verifiedMaxVideoDurationInSeconds : AppConstants.adminMaxVideoDurationInSeconds;
+          ? CoreConstants.verifiedMaxVideoDurationInSeconds : CoreConstants.adminMaxVideoDurationInSeconds;
       Duration duration = Duration(seconds: maxDurationInSeconds);
       Timer(duration, () async {
         if (cameraController.value.isRecordingVideo) {
@@ -388,7 +393,7 @@ class NeomCameraController extends GetxController {
       });
 
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       return;
     }
   }
@@ -403,7 +408,7 @@ class NeomCameraController extends GetxController {
     try {
       return cameraController.stopVideoRecording();
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       return null;
     }
   }
@@ -418,7 +423,7 @@ class NeomCameraController extends GetxController {
     try {
       await cameraController.pauseVideoRecording();
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       rethrow;
     }
   }
@@ -433,7 +438,7 @@ class NeomCameraController extends GetxController {
     try {
       await cameraController.resumeVideoRecording();
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       rethrow;
     }
   }
@@ -446,7 +451,7 @@ class NeomCameraController extends GetxController {
     try {
       await controller!.setFlashMode(mode);
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       rethrow;
     }
   }
@@ -459,7 +464,7 @@ class NeomCameraController extends GetxController {
     try {
       await controller!.setExposureMode(mode);
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       rethrow;
     }
   }
@@ -480,7 +485,7 @@ class NeomCameraController extends GetxController {
       final XFile file = await cameraController.takePicture();
       return file;
     } on CameraException catch (e) {
-      AppUtilities.logger.e(e.toString());
+      AppConfig.logger.e(e.toString());
       return null;
     }
   }

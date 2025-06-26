@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/commons/ui/theme/app_theme.dart';
+import 'package:neom_commons/commons/utils/constants/app_constants.dart';
+import 'package:neom_commons/commons/utils/constants/app_translation_constants.dart';
+import 'package:neom_commons/commons/utils/external_utilities.dart';
+import 'package:neom_core/core/domain/model/post.dart';
+import 'package:neom_core/core/utils/constants/app_route_constants.dart';
+import 'package:neom_core/core/utils/constants/core_constants.dart';
 
-import 'package:neom_commons/core/domain/model/post.dart';
-import 'package:neom_commons/core/utils/app_color.dart';
-import 'package:neom_commons/core/utils/app_theme.dart';
-import 'package:neom_commons/core/utils/constants/app_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_route_constants.dart';
-import 'package:neom_commons/core/utils/constants/app_translation_constants.dart';
-import 'package:neom_commons/core/utils/core_utilities.dart';
 import '../blog_editor_controller.dart';
 
 Widget buildBlogEntryList(Iterable<Post> blogEntries) {
@@ -16,7 +17,7 @@ Widget buildBlogEntryList(Iterable<Post> blogEntries) {
     itemCount: blogEntries.length,
     itemBuilder: (context, index) {
       Post blogEntry = blogEntries.elementAt(index);
-      List<String> blogEntryCaptionSplitted = blogEntry.caption.split(AppConstants.titleTextDivider);
+      List<String> blogEntryCaptionSplitted = blogEntry.caption.split(CoreConstants.titleTextDivider);
       String title = "";
       String entry = "";
 
@@ -121,7 +122,7 @@ Widget blogLikeCommentShare(BlogEditorController _) {
                         color: AppColor.white
                     ),
                     onPressed: () {
-                      CoreUtilities().shareAppWithPost(_.blogEntry.value);
+                      ExternalUtilities.shareAppWithPost(_.blogEntry.value);
                     },
                   ),
                 ]
