@@ -1,23 +1,22 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:neom_commons/commons/ui/theme/app_color.dart';
+import 'package:neom_commons/ui/theme/app_color.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../upload/post_upload_controller.dart';
+import '../media_upload_controller.dart';
 
-class PostMediaGrid extends StatefulWidget {
+class MediaUploadGrid extends StatefulWidget {
 
-  PostUploadController postUploadController;
+  final MediaUploadController mediaUploadController;
 
-  PostMediaGrid({required this.postUploadController, super.key});
+  const MediaUploadGrid({required this.mediaUploadController, super.key});
 
   @override
-  State<PostMediaGrid> createState() => _PostMediaGridState();
+  State<MediaUploadGrid> createState() => _MediaUploadGridState();
 }
 
-class _PostMediaGridState extends State<PostMediaGrid> {
+class _MediaUploadGridState extends State<MediaUploadGrid> {
   final ScrollController _scrollController = ScrollController();
 
   /// Lista de álbumes (directorios)
@@ -35,12 +34,12 @@ class _PostMediaGridState extends State<PostMediaGrid> {
   int _currentPage = 0;
   final int _pageSize = 50;
 
-  late PostUploadController uploadController;
+  late MediaUploadController mediaUploadController;
 
   @override
   void initState() {
     super.initState();
-    uploadController = widget.postUploadController;
+    mediaUploadController = widget.mediaUploadController;
     _scrollController.addListener(_onScroll);
     _loadAlbums();
   }
@@ -208,8 +207,7 @@ class _PostMediaGridState extends State<PostMediaGrid> {
                         onTap: () async {
                           final file = await asset.file;
                           if (file != null) {
-                            uploadController.handleMedia(XFile(file.path));
-                            // Aquí podrías abrir un editor, reproducir video, etc.
+                            mediaUploadController.handleMedia(file);
                           }
                         },
                         child: Stack(
