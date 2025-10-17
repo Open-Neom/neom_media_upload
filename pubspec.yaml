@@ -1,11 +1,11 @@
 name: neom_media_upload
 description: Media upload for Open Neom.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/Open-Neom/neom_media_upload
 publish_to: 'none'
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.8.0 <4.0.0"
   flutter: ">=3.19.0"
 
 dependencies:

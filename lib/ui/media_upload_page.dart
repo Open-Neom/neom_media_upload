@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neom_commons/app_flavour.dart';
 import 'package:neom_commons/ui/theme/app_color.dart';
 import 'package:neom_commons/ui/theme/app_theme.dart';
 import 'package:neom_commons/ui/widgets/app_circular_progress_indicator.dart';
@@ -17,9 +18,9 @@ class MediaUploadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<MediaUploadController>(
-        id: AppPageIdConstants.upload,
-        init: MediaUploadController(),
-    builder: (_) => Scaffold(
+      id: AppPageIdConstants.upload,
+      init: MediaUploadController(),
+      builder: (controller) => Scaffold(
       appBar: AppBarChild(
         leadingWidget: IconButton(icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -33,11 +34,11 @@ class MediaUploadPage extends StatelessWidget {
         ],
         color: AppColor.getMain(),
       ),
-      backgroundColor: AppColor.main50,
-      body: Obx(()=>_.isLoading.value ? AppCircularProgressIndicator()
+      backgroundColor: AppFlavour.getBackgroundColor(),
+      body: Obx(()=> controller.isLoading.value ? AppCircularProgressIndicator()
           : Container(
           decoration: AppTheme.appBoxDecoration,
-          child: MediaUploadGrid(mediaUploadController: _)
+          child: MediaUploadGrid(mediaUploadController: controller)
       ),),
     ),);
   }

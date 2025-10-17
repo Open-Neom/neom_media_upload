@@ -4,7 +4,7 @@ import 'package:neom_core/utils/constants/app_route_constants.dart';
 
 import 'ui/media_upload_page.dart';
 
-class PostRoutes {
+class MediaUploadRoutes {
 
   static final List<GetPage<dynamic>> routes = [
     GetPage(
