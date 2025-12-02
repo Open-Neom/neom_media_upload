@@ -1,3 +1,6 @@
+### 1.2.0 - Initial Release & Decoupling from neom_posts
+- Updating general changes and cleaning codebase
+- 
 ### 1.0.0 - Initial Release & Decoupling from neom_posts
 
 This marks the **initial official release (v1.0.0)** of `neom_media_upload` as a standalone, independent module within the Open Neom ecosystem. Previously, media upload functionalities were often embedded directly within content creation modules like `neom_posts`. This decoupling is a crucial step in formalizing the media handling layer, enhancing modularity, and strengthening Open Neom's adherence to Clean Architecture principles.
