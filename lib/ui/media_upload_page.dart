@@ -32,7 +32,6 @@ class MediaUploadPage extends StatelessWidget {
             onPressed: () => Get.toNamed(AppRouteConstants.camera),
           ),
         ],
-        color: AppColor.getMain(),
       ),
       backgroundColor: AppFlavour.getBackgroundColor(),
       body: Obx(()=> controller.isLoading.value ? AppCircularProgressIndicator()

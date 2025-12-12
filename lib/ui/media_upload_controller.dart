@@ -13,13 +13,16 @@ import 'package:neom_core/data/firestore/post_firestore.dart';
 import 'package:neom_core/domain/model/app_profile.dart';
 import 'package:neom_core/domain/use_cases/camera_service.dart';
 import 'package:neom_core/domain/use_cases/image_editor_service.dart';
+import 'package:neom_core/domain/use_cases/media_player_service.dart';
 import 'package:neom_core/domain/use_cases/media_upload_service.dart';
+import 'package:neom_core/domain/use_cases/post_upload_service.dart';
 import 'package:neom_core/domain/use_cases/user_service.dart';
 import 'package:neom_core/utils/constants/app_route_constants.dart';
 import 'package:neom_core/utils/enums/app_file_from.dart';
 import 'package:neom_core/utils/enums/app_in_use.dart';
 import 'package:neom_core/utils/enums/media_type.dart';
 import 'package:neom_core/utils/enums/media_upload_destination.dart';
+import 'package:neom_core/utils/enums/post_type.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 
@@ -79,21 +82,42 @@ class MediaUploadController extends GetxController implements MediaUploadService
   Future<void> handleMedia(File file) async {
     AppConfig.logger.t("handleMedia");
 
-
     if(file.path.isNotEmpty) {
       mediaType = MediaUploadUtilities.getMediaTypeFromExtension(file);
       AppConfig.logger.d('File is ${mediaType.name}: ${file.path}');
 
       switch(mediaType) {
         case MediaType.image:
-          await handleImage(imageFile: File(file.path));
+          Get.find<PostUploadService>().setPostType(PostType.image);
+          await handleImage(imageFile: file);
         case MediaType.video:
-          await handleVideo(videoFile: File(file.path));
+          Get.find<PostUploadService>().setPostType(PostType.video);
+          await Get.find<MediaPlayerService>().initializeVideoPlayerController(file);
+          await handleVideo(videoFile: file);
         case MediaType.audio:
         case MediaType.document:
         case MediaType.unknown:
         default:
         AppConfig.logger.d('FileType ${mediaType.name} is not supported yet');
+          break;
+      }
+
+      switch(mediaUploadDestination) {
+        case MediaUploadDestination.post:
+          takePhoto.value = false;
+          Get.toNamed(AppRouteConstants.postUploadDescription);
+          break;
+      // TODO: Handle each case.
+        case MediaUploadDestination.thumbnail:
+        case MediaUploadDestination.event:
+        case MediaUploadDestination.profile:
+        case MediaUploadDestination.cover:
+        case MediaUploadDestination.comment:
+        case MediaUploadDestination.message:
+        case MediaUploadDestination.itemlist:
+        case MediaUploadDestination.releaseItem:
+        case MediaUploadDestination.sponsor:
+        case MediaUploadDestination.ad:
           break;
       }
     } else {
@@ -121,24 +145,24 @@ class MediaUploadController extends GetxController implements MediaUploadService
       if(mediaFile.value.path.isNotEmpty) {
         mediaType = MediaType.image;
 
-        switch(mediaUploadDestination) {
-          case MediaUploadDestination.post:
-            takePhoto.value = false;
-            Get.toNamed(AppRouteConstants.postUploadDescription);
-            break;
-          // TODO: Handle each case.
-          case MediaUploadDestination.thumbnail:
-          case MediaUploadDestination.event:
-          case MediaUploadDestination.profile:
-          case MediaUploadDestination.cover:
-          case MediaUploadDestination.comment:
-          case MediaUploadDestination.message:
-          case MediaUploadDestination.itemlist:
-          case MediaUploadDestination.releaseItem:
-          case MediaUploadDestination.sponsor:
-          case MediaUploadDestination.ad:
-            break;
-        }
+        // switch(mediaUploadDestination) {
+        //   case MediaUploadDestination.post:
+        //     takePhoto.value = false;
+        //     Get.toNamed(AppRouteConstants.postUploadDescription);
+        //     break;
+        //   // TODO: Handle each case.
+        //   case MediaUploadDestination.thumbnail:
+        //   case MediaUploadDestination.event:
+        //   case MediaUploadDestination.profile:
+        //   case MediaUploadDestination.cover:
+        //   case MediaUploadDestination.comment:
+        //   case MediaUploadDestination.message:
+        //   case MediaUploadDestination.itemlist:
+        //   case MediaUploadDestination.releaseItem:
+        //   case MediaUploadDestination.sponsor:
+        //   case MediaUploadDestination.ad:
+        //     break;
+        // }
       }
     }  catch (e) {
       AppConfig.logger.e(e.toString());
@@ -147,11 +171,12 @@ class MediaUploadController extends GetxController implements MediaUploadService
   }
 
   @override
-  Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery, File? videoFile}) async {
+  Future<void> handleVideo({AppFileFrom appFileFrom = AppFileFrom.gallery,
+    MediaUploadDestination uploadDestination = MediaUploadDestination.post, File? videoFile}) async {
     AppConfig.logger.d("handleVideo");
 
     try {
-
+      mediaUploadDestination = uploadDestination;
       mediaFile.value = File((await _getVideoFile(
           appFileFrom: appFileFrom, profileId: profile.id, videoFile: videoFile))?.path ?? '');
 

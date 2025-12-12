@@ -1,6 +1,6 @@
 name: neom_media_upload
 description: Media upload for Open Neom.
-version: 1.2.0
+version: 1.2.1
 homepage: https://github.com/Open-Neom/neom_media_upload
 publish_to: 'none'
 
