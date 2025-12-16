@@ -49,7 +49,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
   String _mediaUrl = "";
   String thumbnailUrl = "";
 
-  MediaType mediaType = MediaType.image;
+  MediaType _mediaType = MediaType.image;
 
   MediaUploadDestination mediaUploadDestination = MediaUploadDestination.post;
 
@@ -82,11 +82,13 @@ class MediaUploadController extends GetxController implements MediaUploadService
   Future<void> handleMedia(File file) async {
     AppConfig.logger.t("handleMedia");
 
-    if(file.path.isNotEmpty) {
-      mediaType = MediaUploadUtilities.getMediaTypeFromExtension(file);
-      AppConfig.logger.d('File is ${mediaType.name}: ${file.path}');
+    mediaFile.value = file;
 
-      switch(mediaType) {
+    if(file.path.isNotEmpty) {
+      _mediaType = MediaUploadUtilities.getMediaTypeFromExtension(file);
+      AppConfig.logger.d('File is ${_mediaType.name}: ${file.path}');
+
+      switch(_mediaType) {
         case MediaType.image:
           Get.find<PostUploadService>().setPostType(PostType.image);
           await handleImage(imageFile: file);
@@ -98,7 +100,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
         case MediaType.document:
         case MediaType.unknown:
         default:
-        AppConfig.logger.d('FileType ${mediaType.name} is not supported yet');
+        AppConfig.logger.d('FileType ${_mediaType.name} is not supported yet');
           break;
       }
 
@@ -143,8 +145,9 @@ class MediaUploadController extends GetxController implements MediaUploadService
       }
 
       if(mediaFile.value.path.isNotEmpty) {
-        mediaType = MediaType.image;
+        _mediaType = MediaType.image;
 
+        ///
         // switch(mediaUploadDestination) {
         //   case MediaUploadDestination.post:
         //     takePhoto.value = false;
@@ -181,7 +184,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
           appFileFrom: appFileFrom, profileId: profile.id, videoFile: videoFile))?.path ?? '');
 
       if(mediaFile.value.path.isNotEmpty) {
-        mediaType = MediaType.video;
+        _mediaType = MediaType.video;
         //TODO: Handle this case whem TRIM & CROP WORKS.
         //Get.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
         setProcessedVideo(File(mediaFile.value.path)); //REMOVE WHEN StatefulVideoEditor is active
@@ -199,7 +202,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
     try {
       mediaFile.value = videoFile;
       if(mediaFile.value.path.isNotEmpty) {
-        mediaType = MediaType.video;
+        _mediaType = MediaType.video;
         thumbnailFile = await MediaUploadUtilities.getVideoThumbnail(mediaFile.value);
       }
     } catch (e) {
@@ -215,12 +218,12 @@ class MediaUploadController extends GetxController implements MediaUploadService
 
     try {
 
-      isValidSize = await MediaUploadUtilities.isValidFileSize(File(mediaFile.value.path), mediaType);
+      isValidSize = await MediaUploadUtilities.isValidFileSize(File(mediaFile.value.path), _mediaType);
 
       if(!isValidSize) {
         File compressedFile = File('');
 
-        switch(mediaType) {
+        switch(_mediaType) {
           case MediaType.image:
 
           case MediaType.video:
@@ -234,7 +237,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
             break;
         }
 
-        isValidSize = await MediaUploadUtilities.isValidFileSize(compressedFile, mediaType);
+        isValidSize = await MediaUploadUtilities.isValidFileSize(compressedFile, _mediaType);
 
         if(isValidSize) {
           AppConfig.logger.w("Media File size  is now below limit");
@@ -261,8 +264,8 @@ class MediaUploadController extends GetxController implements MediaUploadService
 
     try {
       if(isValidSize) {
-        _mediaUrl = await AppUploadFirestore().uploadMediaFile(mediaId, mediaFile.value, mediaType, uploadDestination);
-        AppConfig.logger.d("File ${mediaType.name} uploaded to $mediaUrl");
+        _mediaUrl = await AppUploadFirestore().uploadMediaFile(mediaId, mediaFile.value, _mediaType, uploadDestination);
+        AppConfig.logger.d("File ${_mediaType.name} uploaded to $mediaUrl");
       }
     } catch (e) {
       AppConfig.logger.e(e.toString());
@@ -302,9 +305,9 @@ class MediaUploadController extends GetxController implements MediaUploadService
     }
 
     if(mediaFile.value.path.isNotEmpty && type == MediaType.media) {
-      mediaType = MediaUploadUtilities.getMediaTypeFromExtension(mediaFile.value);
+      _mediaType = MediaUploadUtilities.getMediaTypeFromExtension(mediaFile.value);
 
-      switch(mediaType) {
+      switch(_mediaType) {
         case MediaType.image:
           File? compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
           if(compressedFile != null) mediaFile.value = compressedFile;
@@ -339,9 +342,9 @@ class MediaUploadController extends GetxController implements MediaUploadService
     }
 
     if(mediaFile.value.path.isNotEmpty && type == MediaType.media) {
-      mediaType = MediaUploadUtilities.getMediaTypeFromExtension(mediaFile.value);
+      _mediaType = MediaUploadUtilities.getMediaTypeFromExtension(mediaFile.value);
 
-      switch(mediaType) {
+      switch(_mediaType) {
         case MediaType.image:
           File? compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
           if(compressedFile != null) mediaFile.value = compressedFile;
@@ -368,6 +371,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
 
   @override
   void setMediaFile(File file) {
+    AppConfig.logger.d("setMediaFile: ${file.path}");
     mediaFile.value = file;
   }
 
@@ -451,7 +455,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
   @override
   void clearMedia(){
     mediaFile.value =  File("");
-    mediaType = MediaType.unknown;
+    _mediaType = MediaType.unknown;
   }
 
   @override
@@ -489,5 +493,8 @@ class MediaUploadController extends GetxController implements MediaUploadService
 
   @override
   String get mediaUrl => _mediaUrl;
+
+  @override
+  MediaType get mediaType => _mediaType;
 
 }

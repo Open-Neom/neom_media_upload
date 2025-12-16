@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:neom_commons/app_flavour.dart';
-import 'package:neom_commons/ui/theme/app_color.dart';
 import 'package:neom_commons/ui/theme/app_theme.dart';
 import 'package:neom_commons/ui/widgets/app_circular_progress_indicator.dart';
 import 'package:neom_commons/ui/widgets/appbar_child.dart';
@@ -29,7 +28,7 @@ class MediaUploadPage extends StatelessWidget {
         actionWidgets: [
           IconButton(
             icon: const Icon(Icons.camera_alt),
-            onPressed: () => Get.toNamed(AppRouteConstants.camera),
+            onPressed: () async => await Get.toNamed(AppRouteConstants.camera),
           ),
         ],
       ),
