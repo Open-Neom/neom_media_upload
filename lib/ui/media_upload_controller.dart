@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:sint/sint.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
 import 'package:neom_commons/utils/constants/app_page_id_constants.dart';
@@ -30,9 +30,9 @@ import '../utils/constants/media_upload_translation_constants.dart';
 import '../utils/mappers/file_type_mapper.dart';
 import '../utils/media_upload_utilities.dart';
 
-class MediaUploadController extends GetxController implements MediaUploadService {
+class MediaUploadController extends SintController implements MediaUploadService {
   
-  final userServiceImpl = Get.find<UserService>();
+  final userServiceImpl = Sint.find<UserService>();
   AppProfile profile = AppProfile();
 
   final RxBool isLoading = true.obs;
@@ -90,11 +90,11 @@ class MediaUploadController extends GetxController implements MediaUploadService
 
       switch(_mediaType) {
         case MediaType.image:
-          Get.find<PostUploadService>().setPostType(PostType.image);
+          Sint.find<PostUploadService>().setPostType(PostType.image);
           await handleImage(imageFile: file);
         case MediaType.video:
-          Get.find<PostUploadService>().setPostType(PostType.video);
-          await Get.find<MediaPlayerService>().initializeVideoPlayerController(file);
+          Sint.find<PostUploadService>().setPostType(PostType.video);
+          await Sint.find<MediaPlayerService>().initializeVideoPlayerController(file);
           await handleVideo(videoFile: file);
         case MediaType.audio:
         case MediaType.document:
@@ -107,7 +107,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
       switch(mediaUploadDestination) {
         case MediaUploadDestination.post:
           takePhoto.value = false;
-          Get.toNamed(AppRouteConstants.postUploadDescription);
+          Sint.toNamed(AppRouteConstants.postUploadDescription);
           break;
       // TODO: Handle each case.
         case MediaUploadDestination.thumbnail:
@@ -140,7 +140,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
           appFileFrom: appFileFrom, imageFile: imageFile, context: context, ratioX: ratioX, ratioY: ratioY))?.path ?? '');
 
       if(crop) {
-        File? croppedFile = await Get.find<ImageEditorService>().cropImage(mediaFile.value);
+        File? croppedFile = await Sint.find<ImageEditorService>().cropImage(mediaFile.value);
         mediaFile.value = croppedFile ?? mediaFile.value;
       }
 
@@ -151,7 +151,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
         // switch(mediaUploadDestination) {
         //   case MediaUploadDestination.post:
         //     takePhoto.value = false;
-        //     Get.toNamed(AppRouteConstants.postUploadDescription);
+        //     Sint.toNamed(AppRouteConstants.postUploadDescription);
         //     break;
         //   // TODO: Handle each case.
         //   case MediaUploadDestination.thumbnail:
@@ -186,7 +186,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
       if(mediaFile.value.path.isNotEmpty) {
         _mediaType = MediaType.video;
         //TODO: Handle this case whem TRIM & CROP WORKS.
-        //Get.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
+        //Sint.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
         setProcessedVideo(File(mediaFile.value.path)); //REMOVE WHEN StatefulVideoEditor is active
       }
     } catch (e) {
@@ -244,7 +244,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
           mediaFile.value = compressedFile;
         } else {
           AppConfig.logger.w("Media File size is still above limit");
-          Get.back();
+          Sint.back();
           AppUtilities.showSnackBar(message: MediaUploadTranslationConstants.mediaAboveSizeMsg);
         }
       }
@@ -311,9 +311,9 @@ class MediaUploadController extends GetxController implements MediaUploadService
         case MediaType.image:
           File? compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
           if(compressedFile != null) mediaFile.value = compressedFile;
-          Get.toNamed(AppRouteConstants.postUploadDescription);
+          Sint.toNamed(AppRouteConstants.postUploadDescription);
         case MediaType.video:
-          Get.toNamed(AppRouteConstants.videoEditor, arguments: [File(mediaFile.value.path)]);
+          Sint.toNamed(AppRouteConstants.videoEditor, arguments: [File(mediaFile.value.path)]);
         case MediaType.audio:
         case MediaType.document:
         case MediaType.unknown:
@@ -348,9 +348,9 @@ class MediaUploadController extends GetxController implements MediaUploadService
         case MediaType.image:
           File? compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
           if(compressedFile != null) mediaFile.value = compressedFile;
-          Get.toNamed(AppRouteConstants.postUploadDescription);
+          Sint.toNamed(AppRouteConstants.postUploadDescription);
         case MediaType.video:
-          Get.toNamed(AppRouteConstants.videoEditor, arguments: [File(mediaFile.value.path)]);
+          Sint.toNamed(AppRouteConstants.videoEditor, arguments: [File(mediaFile.value.path)]);
         case MediaType.audio:
         case MediaType.document:
         case MediaType.unknown:
@@ -399,7 +399,7 @@ class MediaUploadController extends GetxController implements MediaUploadService
             imageFile = File((await ImagePicker().pickImage(source: ImageSource.gallery))?.path ?? '');
             break;
           case AppFileFrom.camera:
-            AppCameraService appCameraServiceImpl = Get.find<AppCameraService>();
+            AppCameraService appCameraServiceImpl = Sint.find<AppCameraService>();
             if(appCameraServiceImpl.isInitialized()) {
               if(context != null) Navigator.pop(context);
 
