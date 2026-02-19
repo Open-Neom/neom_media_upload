@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:sint/sint.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
 import 'package:neom_commons/utils/constants/app_page_id_constants.dart';
@@ -23,6 +22,7 @@ import 'package:neom_core/utils/enums/app_in_use.dart';
 import 'package:neom_core/utils/enums/media_type.dart';
 import 'package:neom_core/utils/enums/media_upload_destination.dart';
 import 'package:neom_core/utils/enums/post_type.dart';
+import 'package:sint/sint.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 
@@ -120,6 +120,7 @@ class MediaUploadController extends SintController implements MediaUploadService
         case MediaUploadDestination.releaseItem:
         case MediaUploadDestination.sponsor:
         case MediaUploadDestination.ad:
+        case MediaUploadDestination.room:
           break;
       }
     } else {
@@ -225,7 +226,8 @@ class MediaUploadController extends SintController implements MediaUploadService
 
         switch(_mediaType) {
           case MediaType.image:
-
+            AppConfig.logger.w("ImageFile size is above maximum. Starting compression");
+            compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value) ?? File('');
           case MediaType.video:
             AppConfig.logger.w("VideoFile size is above maximum. Starting compression");
             MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.DefaultQuality);
@@ -373,6 +375,9 @@ class MediaUploadController extends SintController implements MediaUploadService
   void setMediaFile(File file) {
     AppConfig.logger.d("setMediaFile: ${file.path}");
     mediaFile.value = file;
+    // Auto-detect media type from file extension
+    _mediaType = MediaUploadUtilities.getMediaTypeFromExtension(file);
+    AppConfig.logger.d("setMediaFile mediaType detected: ${_mediaType.name}");
   }
 
   @override
