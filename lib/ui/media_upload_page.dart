@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:neom_commons/app_flavour.dart';
 import 'package:neom_commons/ui/theme/app_theme.dart';
@@ -9,36 +10,65 @@ import 'package:sint/sint.dart';
 
 import '../utils/constants/media_upload_translation_constants.dart';
 import 'media_upload_controller.dart';
+import 'media_upload_web_controller.dart';
 import 'widgets/media_upload_grid.dart';
+import 'widgets/media_upload_web_picker.dart';
 
 class MediaUploadPage extends StatelessWidget {
   const MediaUploadPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return _buildWeb(context);
+    return _buildMobile(context);
+  }
+
+  Widget _buildMobile(BuildContext context) {
     return SintBuilder<MediaUploadController>(
       id: AppPageIdConstants.upload,
       init: MediaUploadController(),
       builder: (controller) => Scaffold(
-      appBar: AppBarChild(
-        leadingWidget: IconButton(icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: MediaUploadTranslationConstants.mediaUpload.tr, centerTitle: true,
-        actionWidgets: [
-          IconButton(
-            icon: const Icon(Icons.camera_alt),
-            onPressed: () async => await Sint.toNamed(AppRouteConstants.camera),
+        appBar: AppBarChild(
+          leadingWidget: IconButton(icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
           ),
-        ],
+          title: MediaUploadTranslationConstants.mediaUpload.tr, centerTitle: true,
+          actionWidgets: [
+            IconButton(
+              icon: const Icon(Icons.camera_alt),
+              onPressed: () async => await Sint.toNamed(AppRouteConstants.camera),
+            ),
+          ],
+        ),
+        backgroundColor: AppFlavour.getBackgroundColor(),
+        body: Obx(()=> controller.isLoading.value ? AppCircularProgressIndicator()
+            : Container(
+            decoration: AppTheme.appBoxDecoration,
+            child: MediaUploadGrid(mediaUploadController: controller)
+        ),),
       ),
-      backgroundColor: AppFlavour.getBackgroundColor(),
-      body: Obx(()=> controller.isLoading.value ? AppCircularProgressIndicator()
-          : Container(
+    );
+  }
+
+  Widget _buildWeb(BuildContext context) {
+    return SintBuilder<MediaUploadWebController>(
+      id: AppPageIdConstants.upload,
+      init: MediaUploadWebController(),
+      builder: (controller) => Scaffold(
+        appBar: AppBarChild(
+          leadingWidget: IconButton(icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: MediaUploadTranslationConstants.mediaUpload.tr,
+          centerTitle: true,
+        ),
+        backgroundColor: AppFlavour.getBackgroundColor(),
+        body: Container(
           decoration: AppTheme.appBoxDecoration,
-          child: MediaUploadGrid(mediaUploadController: controller)
-      ),),
-    ),);
+          child: MediaUploadWebPicker(controller: controller),
+        ),
+      ),
+    );
   }
 
 }

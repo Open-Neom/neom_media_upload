@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:neom_core/utils/platform/core_io.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -231,7 +233,7 @@ class MediaUploadController extends SintController implements MediaUploadService
           case MediaType.video:
             AppConfig.logger.w("VideoFile size is above maximum. Starting compression");
             MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.DefaultQuality);
-            if(mediaInfo != null) compressedFile = mediaInfo.file!;
+            if(mediaInfo != null) compressedFile = File(mediaInfo.file!.path);
           case MediaType.audio:
           case MediaType.document:
           case MediaType.unknown:
@@ -501,5 +503,30 @@ class MediaUploadController extends SintController implements MediaUploadService
 
   @override
   MediaType get mediaType => _mediaType;
+
+  @override
+  Uint8List? get mediaBytes => null;
+
+  @override
+  Uint8List? getReleaseFileBytes(int index) {
+    try {
+      final files = _filePickerResult.value?.files ?? [];
+      if (index < 0 || index >= files.length) return null;
+      final path = files[index].path;
+      if (path != null) return File(path).readAsBytesSync();
+    } catch (e) {
+      AppConfig.logger.e('getReleaseFileBytes error: $e');
+    }
+    return null;
+  }
+
+  @override
+  String getReleaseFileName(int index) {
+    try {
+      final files = _filePickerResult.value?.files ?? [];
+      if (index >= 0 && index < files.length) return files[index].name;
+    } catch (_) {}
+    return '';
+  }
 
 }

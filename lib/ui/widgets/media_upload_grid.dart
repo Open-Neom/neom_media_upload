@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:neom_commons/ui/theme/app_color.dart';
+import 'package:neom_core/utils/platform/core_io.dart' as core_io;
 import 'package:photo_manager/photo_manager.dart';
 
 import '../media_upload_controller.dart';
@@ -168,7 +169,7 @@ class _MediaUploadGridState extends State<MediaUploadGrid> {
                   DropdownButton<AssetPathEntity>(
                     value: _selectedAlbum,
                     style: const TextStyle(color: Colors.white),
-                    dropdownColor: AppColor.main75,
+                    dropdownColor: AppColor.surfaceElevated,
                     onChanged: (album) {
                       if (album != null) {
                         _selectAlbum(album);
@@ -207,7 +208,7 @@ class _MediaUploadGridState extends State<MediaUploadGrid> {
                         onTap: () async {
                           final file = await asset.file;
                           if (file != null) {
-                            mediaUploadController.handleMedia(file);
+                            mediaUploadController.handleMedia(core_io.File(file.path));
                           }
                         },
                         child: Stack(

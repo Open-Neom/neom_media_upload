@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:neom_core/utils/platform/core_io.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -51,10 +51,11 @@ class MediaUploadUtilities {
 
     File thumbnailFile = File("");
     try {
-      thumbnailFile = await VideoCompress.getFileThumbnail(
+      final dartIoThumbnail = await VideoCompress.getFileThumbnail(
         videoFile.path,
         quality: CoreConstants.videoQuality,
       );
+      thumbnailFile = File(dartIoThumbnail.path);
     } catch (e) {
       AppConfig.logger.e(e.toString());
     }
