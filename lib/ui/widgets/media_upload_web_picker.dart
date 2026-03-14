@@ -19,27 +19,29 @@ class MediaUploadWebPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final hasMedia = controller.mediaFileExists();
-      final bytes = controller.mediaBytes;
-      final type = controller.mediaType;
+    return SintBuilder<MediaUploadWebController>(
+      builder: (_) {
+        final hasMedia = controller.mediaFileExists();
+        final bytes = controller.mediaBytes;
+        final type = controller.mediaType;
 
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Expanded(
-              child: hasMedia && bytes != null
-                  ? _buildPreview(type, bytes, controller)
-                  : _buildPickerArea(context),
-            ),
-            const SizedBox(height: 16),
-            if (hasMedia)
-              _buildActionBar(context),
-          ],
-        ),
-      );
-    });
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Expanded(
+                child: hasMedia && bytes != null
+                    ? _buildPreview(type, bytes, controller)
+                    : _buildPickerArea(context),
+              ),
+              const SizedBox(height: 16),
+              if (hasMedia)
+                _buildActionBar(context),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildPickerArea(BuildContext context) {
