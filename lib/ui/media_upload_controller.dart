@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
 import 'package:neom_commons/utils/constants/app_page_id_constants.dart';
 import 'package:neom_core/app_config.dart';
+import 'package:neom_core/utils/neom_error_logger.dart';
 import 'package:neom_core/data/firestore/app_upload_firestore.dart';
 import 'package:neom_core/data/firestore/post_firestore.dart';
 import 'package:neom_core/domain/model/app_profile.dart';
@@ -63,8 +64,8 @@ class MediaUploadController extends SintController implements MediaUploadService
 
     try {
 
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'onInit');
     }
 
   }
@@ -75,8 +76,8 @@ class MediaUploadController extends SintController implements MediaUploadService
 
     try {
       isLoading.value = false;
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'onReady');
     }
   }
 
@@ -170,8 +171,8 @@ class MediaUploadController extends SintController implements MediaUploadService
         //     break;
         // }
       }
-    }  catch (e) {
-      AppConfig.logger.e(e.toString());
+    }  catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'handleImage');
     }
 
   }
@@ -192,8 +193,8 @@ class MediaUploadController extends SintController implements MediaUploadService
         //Sint.to(() => StatefulVideoEditor(file: File(mediaFile.value.path,)));
         setProcessedVideo(File(mediaFile.value.path)); //REMOVE WHEN StatefulVideoEditor is active
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'handleVideo');
     }
 
   }
@@ -208,8 +209,8 @@ class MediaUploadController extends SintController implements MediaUploadService
         _mediaType = MediaType.video;
         thumbnailFile = await MediaUploadUtilities.getVideoThumbnail(mediaFile.value);
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'setProcessedVideo');
     }
 
   }
@@ -252,8 +253,8 @@ class MediaUploadController extends SintController implements MediaUploadService
           AppUtilities.showSnackBar(message: MediaUploadTranslationConstants.mediaAboveSizeMsg);
         }
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'validateMediaSize');
     }
 
     update([AppPageIdConstants.upload]);
@@ -271,8 +272,8 @@ class MediaUploadController extends SintController implements MediaUploadService
         _mediaUrl = await AppUploadFirestore().uploadMediaFile(mediaId, mediaFile.value, _mediaType, uploadDestination);
         AppConfig.logger.d("File ${_mediaType.name} uploaded to $mediaUrl");
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'uploadFile');
       AppUtilities.showSnackBar(message: MediaUploadTranslationConstants.mediaUploadErrorMsg.tr);
     }
 
@@ -423,8 +424,8 @@ class MediaUploadController extends SintController implements MediaUploadService
             }
         }
       }
-    }  catch (e) {
-      AppConfig.logger.e(e.toString());
+    }  catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'getImageFile');
     }
     return imageFile;
   }
@@ -451,8 +452,8 @@ class MediaUploadController extends SintController implements MediaUploadService
           /// break;
         }
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'getVideoFile');
     }
 
     return videoFile;
@@ -491,8 +492,8 @@ class MediaUploadController extends SintController implements MediaUploadService
       } else {
         releasePath = _filePickerResult.value?.paths.first ?? "";
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'getReleaseFilePath');
     }
 
     return releasePath;
@@ -514,8 +515,8 @@ class MediaUploadController extends SintController implements MediaUploadService
       if (index < 0 || index >= files.length) return null;
       final path = files[index].path;
       if (path != null) return File(path).readAsBytesSync();
-    } catch (e) {
-      AppConfig.logger.e('getReleaseFileBytes error: $e');
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'getReleaseFileBytes');
     }
     return null;
   }

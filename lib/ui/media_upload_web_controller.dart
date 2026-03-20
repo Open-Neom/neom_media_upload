@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
 import 'package:neom_core/app_config.dart';
+import 'package:neom_core/utils/neom_error_logger.dart';
 import 'package:neom_core/data/firestore/app_upload_firestore.dart';
 import 'package:neom_core/domain/use_cases/media_upload_service.dart';
 import 'package:neom_core/domain/use_cases/user_service.dart';
@@ -177,8 +178,8 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
       );
 
       AppConfig.logger.d('File uploaded (web): $_mediaUrl');
-    } catch (e) {
-      AppConfig.logger.e('Upload error (web): $e');
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'uploadFile');
       AppUtilities.showSnackBar(
         message: MediaUploadTranslationConstants.mediaUploadErrorMsg.tr,
       );

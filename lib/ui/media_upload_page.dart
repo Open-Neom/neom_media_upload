@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:neom_commons/app_flavour.dart';
 import 'package:neom_commons/ui/theme/app_theme.dart';
 import 'package:neom_commons/ui/widgets/app_circular_progress_indicator.dart';
-import 'package:neom_commons/ui/widgets/appbar_child.dart';
 import 'package:neom_commons/utils/constants/app_page_id_constants.dart';
 import 'package:neom_core/utils/constants/app_route_constants.dart';
 import 'package:sint/sint.dart';
@@ -28,12 +27,12 @@ class MediaUploadPage extends StatelessWidget {
       id: AppPageIdConstants.upload,
       init: MediaUploadController(),
       builder: (controller) => Scaffold(
-        appBar: AppBarChild(
-          leadingWidget: IconButton(icon: const Icon(Icons.close),
+        appBar: SintAppBar(
+          leading: IconButton(icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
           ),
           title: MediaUploadTranslationConstants.mediaUpload.tr, centerTitle: true,
-          actionWidgets: [
+          actions: [
             IconButton(
               icon: const Icon(Icons.camera_alt),
               onPressed: () async => await Sint.toNamed(AppRouteConstants.camera),
@@ -55,8 +54,8 @@ class MediaUploadPage extends StatelessWidget {
       id: AppPageIdConstants.upload,
       init: MediaUploadWebController(),
       builder: (controller) => Scaffold(
-        appBar: AppBarChild(
-          leadingWidget: IconButton(icon: const Icon(Icons.close),
+        appBar: SintAppBar(
+          leading: IconButton(icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
           ),
           title: MediaUploadTranslationConstants.mediaUpload.tr,

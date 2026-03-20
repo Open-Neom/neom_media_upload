@@ -3,6 +3,7 @@ import 'package:neom_core/utils/platform/core_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:neom_core/app_config.dart';
+import 'package:neom_core/utils/neom_error_logger.dart';
 import 'package:neom_core/utils/constants/core_constants.dart';
 import 'package:neom_core/utils/enums/media_type.dart';
 import 'package:video_compress/video_compress.dart';
@@ -39,8 +40,8 @@ class MediaUploadUtilities {
           AppConfig.logger.w("Image was not compressed and return as before");
         }
       }
-    } catch(e) {
-      AppConfig.logger.e(e.toString());
+    } catch(e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'compressImageFile');
     }
 
     return compressedFile;
@@ -56,8 +57,8 @@ class MediaUploadUtilities {
         quality: CoreConstants.videoQuality,
       );
       thumbnailFile = File(dartIoThumbnail.path);
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'getVideoThumbnail');
     }
 
     AppConfig.logger.d("Video Thumbnail created at ${thumbnailFile.path}");
@@ -84,8 +85,8 @@ class MediaUploadUtilities {
         default:
           break;
       }
-    } catch (e) {
-      AppConfig.logger.e(e.toString());
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'isValidFileSize');
     }
 
     return false;
