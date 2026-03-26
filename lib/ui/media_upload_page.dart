@@ -29,7 +29,7 @@ class MediaUploadPage extends StatelessWidget {
       builder: (controller) => Scaffold(
         appBar: SintAppBar(
           leading: IconButton(icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Sint.back(),
           ),
           title: MediaUploadTranslationConstants.mediaUpload.tr, centerTitle: true,
           actions: [
@@ -56,7 +56,7 @@ class MediaUploadPage extends StatelessWidget {
       builder: (controller) => Scaffold(
         appBar: SintAppBar(
           leading: IconButton(icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Sint.back(),
           ),
           title: MediaUploadTranslationConstants.mediaUpload.tr,
           centerTitle: true,

@@ -45,44 +45,71 @@ class MediaUploadWebPicker extends StatelessWidget {
   }
 
   Widget _buildPickerArea(BuildContext context) {
-    return GestureDetector(
-      onTap: () => controller.pickMedia(),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: AppColor.surfaceElevated.withValues(alpha: 0.5),
-            width: 2,
-            strokeAlign: BorderSide.strokeAlignInside,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => controller.pickMedia(),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: AppColor.bondiBlue.withValues(alpha: 0.4),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            color: AppColor.bondiBlue.withValues(alpha: 0.05),
           ),
-          borderRadius: BorderRadius.circular(16),
-          color: AppColor.surfaceCard.withValues(alpha: 0.3),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.cloud_upload_outlined,
-                size: 64,
-                color: AppColor.surfaceElevated.withValues(alpha: 0.7),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Seleccionar archivo',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: AppColor.surfaceElevated,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColor.bondiBlue.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.cloud_upload_outlined,
+                    size: 40,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Imágenes, videos, audio o documentos',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.5),
+                const SizedBox(height: 20),
+                const Text(
+                  'Arrastra tu archivo aqui o haz clic para seleccionar',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  'Imagenes, videos, audio o documentos',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColor.bondiBlue,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Seleccionar archivo',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

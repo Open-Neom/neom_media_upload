@@ -267,6 +267,21 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
     return '';
   }
 
+  @override
+  void addWebReleaseFileBytes(String fileName, Uint8List bytes) {
+    _releasePickedFiles.add(PlatformFile(
+      name: fileName,
+      size: bytes.length,
+      bytes: bytes,
+    ));
+  }
+
+  @override
+  void setMediaBytes(Uint8List bytes) {
+    _mediaBytes = bytes;
+    update();
+  }
+
   // ─── Internal helpers ───
 
   void _setFromPlatformFile(PlatformFile picked) {

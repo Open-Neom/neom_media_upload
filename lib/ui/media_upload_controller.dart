@@ -409,7 +409,7 @@ class MediaUploadController extends SintController implements MediaUploadService
           case AppFileFrom.camera:
             AppCameraService appCameraServiceImpl = Sint.find<AppCameraService>();
             if(appCameraServiceImpl.isInitialized()) {
-              if(context != null) Navigator.pop(context);
+              if(context != null) Sint.back();
 
               ///THERE IS NO SOLUTION YET TO FRONTAL PHOTO MIRRORED - OCTOBER 2023
               // imageFile.value = await cameraController!.takePicture();
@@ -420,7 +420,7 @@ class MediaUploadController extends SintController implements MediaUploadService
               break;
             } else {
               await appCameraServiceImpl.initializeCameraController();
-              if(context != null) Navigator.pop(context);
+              if(context != null) Sint.back();
             }
         }
       }
@@ -467,6 +467,11 @@ class MediaUploadController extends SintController implements MediaUploadService
   }
 
   @override
+  void setMediaBytes(Uint8List bytes) {
+    // No-op on mobile — uses File-based flow
+  }
+
+  @override
   bool mediaFileExists() {
     return mediaFile.value.path.isNotEmpty;
   }
@@ -507,6 +512,11 @@ class MediaUploadController extends SintController implements MediaUploadService
 
   @override
   Uint8List? get mediaBytes => null;
+
+  @override
+  void addWebReleaseFileBytes(String fileName, Uint8List bytes) {
+    // No-op on mobile — web uses MediaUploadWebController
+  }
 
   @override
   Uint8List? getReleaseFileBytes(int index) {
