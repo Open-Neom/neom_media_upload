@@ -191,7 +191,7 @@ class MediaUploadWebPicker extends StatelessWidget {
           icon: const Icon(Icons.arrow_forward, size: 18),
           label: const Text('Siguiente'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColor.bondiBlue,
+            backgroundColor: AppColor.getReleaseShelfColor(),
             foregroundColor: Colors.white,
           ),
         ),

@@ -29,6 +29,7 @@ import 'package:sint/sint.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 
+import '../utils/constants/media_upload_constants.dart';
 import '../utils/constants/media_upload_translation_constants.dart';
 import '../utils/mappers/file_type_mapper.dart';
 import '../utils/media_upload_utilities.dart';
@@ -151,25 +152,16 @@ class MediaUploadController extends SintController implements MediaUploadService
       if(mediaFile.value.path.isNotEmpty) {
         _mediaType = MediaType.image;
 
-        ///
-        // switch(mediaUploadDestination) {
-        //   case MediaUploadDestination.post:
-        //     takePhoto.value = false;
-        //     Sint.toNamed(AppRouteConstants.postUploadDescription);
-        //     break;
-        //   // TODO: Handle each case.
-        //   case MediaUploadDestination.thumbnail:
-        //   case MediaUploadDestination.event:
-        //   case MediaUploadDestination.profile:
-        //   case MediaUploadDestination.cover:
-        //   case MediaUploadDestination.comment:
-        //   case MediaUploadDestination.message:
-        //   case MediaUploadDestination.itemlist:
-        //   case MediaUploadDestination.releaseItem:
-        //   case MediaUploadDestination.sponsor:
-        //   case MediaUploadDestination.ad:
-        //     break;
-        // }
+        /// Always compress images before upload
+        File? compressedFile;
+        if (uploadDestination == MediaUploadDestination.profile || uploadDestination == MediaUploadDestination.cover) {
+          compressedFile = await MediaUploadUtilities.compressProfileImage(mediaFile.value);
+        } else if (uploadDestination == MediaUploadDestination.thumbnail) {
+          compressedFile = await MediaUploadUtilities.compressThumbnail(mediaFile.value);
+        } else {
+          compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
+        }
+        if (compressedFile != null) mediaFile.value = compressedFile;
       }
     }  catch (e, st) {
       NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'handleImage');
@@ -207,6 +199,24 @@ class MediaUploadController extends SintController implements MediaUploadService
       mediaFile.value = videoFile;
       if(mediaFile.value.path.isNotEmpty) {
         _mediaType = MediaType.video;
+
+        /// Always compress video to MediumQuality (720p) before upload
+        final originalSize = await mediaFile.value.length();
+        AppConfig.logger.d("Video original size: ${(originalSize / (1024 * 1024)).toStringAsFixed(1)} MB");
+
+        if (originalSize > MediaUploadConstants.videoCompressionThreshold) {
+          MediaInfo? mediaInfo = await VideoCompress.compressVideo(
+            mediaFile.value.path,
+            quality: VideoQuality.MediumQuality,
+            includeAudio: true,
+          );
+          if (mediaInfo?.file != null) {
+            final compressedSize = mediaInfo!.filesize ?? 0;
+            AppConfig.logger.d("Video compressed: ${(originalSize / (1024 * 1024)).toStringAsFixed(1)} MB -> ${(compressedSize / (1024 * 1024)).toStringAsFixed(1)} MB");
+            mediaFile.value = File(mediaInfo.file!.path);
+          }
+        }
+
         thumbnailFile = await MediaUploadUtilities.getVideoThumbnail(mediaFile.value);
       }
     } catch (e, st) {
@@ -229,11 +239,17 @@ class MediaUploadController extends SintController implements MediaUploadService
 
         switch(_mediaType) {
           case MediaType.image:
-            AppConfig.logger.w("ImageFile size is above maximum. Starting compression");
-            compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value) ?? File('');
+            AppConfig.logger.w("ImageFile size is above maximum. Starting aggressive compression");
+            compressedFile = await MediaUploadUtilities.compressImageFile(
+              mediaFile.value, quality: 60, maxWidth: 1280, maxHeight: 1280,
+            ) ?? File('');
           case MediaType.video:
             AppConfig.logger.w("VideoFile size is above maximum. Starting compression");
-            MediaInfo? mediaInfo = await VideoCompress.compressVideo(mediaFile.value.path, quality: VideoQuality.DefaultQuality);
+            MediaInfo? mediaInfo = await VideoCompress.compressVideo(
+              mediaFile.value.path,
+              quality: VideoQuality.MediumQuality,
+              includeAudio: true,
+            );
             if(mediaInfo != null) compressedFile = File(mediaInfo.file!.path);
           case MediaType.audio:
           case MediaType.document:
@@ -245,7 +261,7 @@ class MediaUploadController extends SintController implements MediaUploadService
         isValidSize = await MediaUploadUtilities.isValidFileSize(compressedFile, _mediaType);
 
         if(isValidSize) {
-          AppConfig.logger.w("Media File size  is now below limit");
+          AppConfig.logger.w("Media File size is now below limit");
           mediaFile.value = compressedFile;
         } else {
           AppConfig.logger.w("Media File size is still above limit");
@@ -314,7 +330,7 @@ class MediaUploadController extends SintController implements MediaUploadService
 
       switch(_mediaType) {
         case MediaType.image:
-          File? compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
+          final compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
           if(compressedFile != null) mediaFile.value = compressedFile;
           Sint.toNamed(AppRouteConstants.postUploadDescription);
         case MediaType.video:
@@ -351,7 +367,7 @@ class MediaUploadController extends SintController implements MediaUploadService
 
       switch(_mediaType) {
         case MediaType.image:
-          File? compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
+          final compressedFile = await MediaUploadUtilities.compressImageFile(mediaFile.value);
           if(compressedFile != null) mediaFile.value = compressedFile;
           Sint.toNamed(AppRouteConstants.postUploadDescription);
         case MediaType.video:

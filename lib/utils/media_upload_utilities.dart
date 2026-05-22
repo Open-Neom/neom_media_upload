@@ -12,15 +12,21 @@ import 'constants/media_upload_constants.dart';
 
 class MediaUploadUtilities {
 
-  static Future<File?> compressImageFile(File imageFile) async {
+  /// Compresses an image file with quality and resize.
+  /// [quality] — JPEG quality 0-100 (default: CoreConstants.imageQuality = 80).
+  /// [maxWidth] / [maxHeight] — resize to fit within these bounds (default: 1920).
+  static Future<File?> compressImageFile(File imageFile, {
+    int quality = CoreConstants.imageQuality,
+    int maxWidth = CoreConstants.imageMaxWidth,
+    int maxHeight = CoreConstants.imageMaxHeight,
+  }) async {
 
     File? compressedFile;
     CompressFormat compressFormat = CompressFormat.jpeg;
 
     try {
-      ///DEPRECATED final lastIndex = imageFile.path.lastIndexOf(RegExp(r'.jp'));
+      final originalSize = await imageFile.length();
       final lastIndex = imageFile.path.lastIndexOf(RegExp(r'\.jp|\.png'));
-
 
       if(lastIndex >= 0) {
         String subPath = imageFile.path.substring(0, (lastIndex));
@@ -31,13 +37,21 @@ class MediaUploadUtilities {
         }
 
         String outPath = "${subPath}_out$fileFormat";
-        File result = File((await FlutterImageCompress.compressAndGetFile(imageFile.path, outPath, format: compressFormat))?.path ?? '');
+        File result = File((await FlutterImageCompress.compressAndGetFile(
+          imageFile.path, outPath,
+          format: compressFormat,
+          quality: quality,
+          minWidth: maxWidth,
+          minHeight: maxHeight,
+        ))?.path ?? '');
 
-        if(result.path.isNotEmpty ) {
+        if(result.path.isNotEmpty) {
+          final compressedSize = await result.length();
+          final reduction = ((originalSize - compressedSize) / originalSize * 100).toStringAsFixed(1);
           compressedFile = result;
-          AppConfig.logger.d("Image compressed successfully");
+          AppConfig.logger.d("Image compressed: ${_formatBytes(originalSize)} -> ${_formatBytes(compressedSize)} ($reduction% reduction)");
         } else {
-          AppConfig.logger.w("Image was not compressed and return as before");
+          AppConfig.logger.w("Image was not compressed and returned as before");
         }
       }
     } catch(e, st) {
@@ -47,6 +61,26 @@ class MediaUploadUtilities {
     return compressedFile;
   }
 
+  /// Compresses a profile/avatar image with smaller dimensions.
+  static Future<File?> compressProfileImage(File imageFile) async {
+    return compressImageFile(
+      imageFile,
+      quality: CoreConstants.imageQuality,
+      maxWidth: CoreConstants.profileImageMaxWidth,
+      maxHeight: CoreConstants.profileImageMaxHeight,
+    );
+  }
+
+  /// Compresses a thumbnail image with lower quality.
+  static Future<File?> compressThumbnail(File imageFile) async {
+    return compressImageFile(
+      imageFile,
+      quality: CoreConstants.thumbnailQuality,
+      maxWidth: 480,
+      maxHeight: 480,
+    );
+  }
+
   static Future<File> getVideoThumbnail(File videoFile) async {
     AppConfig.logger.d("Getting Video Thumbnail for ${videoFile.path}");
 
@@ -54,7 +88,7 @@ class MediaUploadUtilities {
     try {
       final dartIoThumbnail = await VideoCompress.getFileThumbnail(
         videoFile.path,
-        quality: CoreConstants.videoQuality,
+        quality: CoreConstants.videoThumbnailQuality,
       );
       thumbnailFile = File(dartIoThumbnail.path);
     } catch (e, st) {
@@ -63,6 +97,13 @@ class MediaUploadUtilities {
 
     AppConfig.logger.d("Video Thumbnail created at ${thumbnailFile.path}");
     return thumbnailFile;
+  }
+
+  /// Format bytes to human-readable string (e.g., "2.5 MB").
+  static String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   static Future<bool> isValidFileSize(File mediaFile, MediaType mediaType) async {

@@ -4,6 +4,7 @@ import 'package:neom_core/utils/platform/core_io.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:neom_commons/utils/app_utilities.dart';
 import 'package:neom_core/app_config.dart';
 import 'package:neom_core/utils/neom_error_logger.dart';
@@ -123,7 +124,12 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
 
     if (_mediaBytes != null && _mediaBytes!.isNotEmpty) {
       _mediaType = MediaType.image;
-      // No crop on web (first version)
+
+      /// Compress image bytes on web
+      _mediaBytes = await _compressImageBytes(
+        _mediaBytes!,
+        uploadDestination: uploadDestination,
+      );
     }
   }
 
@@ -299,6 +305,46 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
     if (CoreConstants.audioExtensions.contains(ext)) return MediaType.audio;
     if (CoreConstants.documentExtensions.contains(ext)) return MediaType.document;
     return MediaType.unknown;
+  }
+
+  /// Compress image bytes using flutter_image_compress (works on Web).
+  Future<Uint8List?> _compressImageBytes(Uint8List bytes, {
+    MediaUploadDestination uploadDestination = MediaUploadDestination.post,
+  }) async {
+    try {
+      final int maxWidth;
+      final int maxHeight;
+      final int quality;
+
+      if (uploadDestination == MediaUploadDestination.profile || uploadDestination == MediaUploadDestination.cover) {
+        maxWidth = CoreConstants.profileImageMaxWidth;
+        maxHeight = CoreConstants.profileImageMaxHeight;
+        quality = CoreConstants.imageQuality;
+      } else if (uploadDestination == MediaUploadDestination.thumbnail) {
+        maxWidth = 480;
+        maxHeight = 480;
+        quality = CoreConstants.thumbnailQuality;
+      } else {
+        maxWidth = CoreConstants.imageMaxWidth;
+        maxHeight = CoreConstants.imageMaxHeight;
+        quality = CoreConstants.imageQuality;
+      }
+
+      final compressed = await FlutterImageCompress.compressWithList(
+        bytes,
+        quality: quality,
+        minWidth: maxWidth,
+        minHeight: maxHeight,
+        format: CompressFormat.jpeg,
+      );
+
+      final reduction = ((bytes.length - compressed.length) / bytes.length * 100).toStringAsFixed(1);
+      AppConfig.logger.d('Web image compressed: ${(bytes.length / 1024).toStringAsFixed(0)} KB -> ${(compressed.length / 1024).toStringAsFixed(0)} KB ($reduction% reduction)');
+      return compressed;
+    } catch (e, st) {
+      NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'compressImageBytes_web');
+      return bytes;
+    }
   }
 
   bool _isValidSize(int sizeInBytes, MediaType type) {
