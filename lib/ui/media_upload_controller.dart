@@ -280,6 +280,7 @@ class MediaUploadController extends SintController implements MediaUploadService
   @override
   Future<String> uploadFile(MediaUploadDestination uploadDestination) async {
     isUploading.value = true;
+    _mediaUrl = "";
 
     bool isValidSize = await validateMediaSize();
 
@@ -291,6 +292,8 @@ class MediaUploadController extends SintController implements MediaUploadService
     } catch (e, st) {
       NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'uploadFile');
       AppUtilities.showSnackBar(message: MediaUploadTranslationConstants.mediaUploadErrorMsg.tr);
+    } finally {
+      isUploading.value = false;
     }
 
     return mediaUrl;
