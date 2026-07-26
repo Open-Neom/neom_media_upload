@@ -57,7 +57,7 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
   Future<File> pickMedia({MediaType type = MediaType.media}) async {
     AppConfig.logger.t('pickMedia (web)');
 
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileTypeMapper.fromMediaType(type),
       withData: true,
       allowMultiple: false,
@@ -76,7 +76,7 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
   Future<File> pickMultipleMedia({MediaType type = MediaType.media}) async {
     AppConfig.logger.t('pickMultipleMedia (web)');
 
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'mp3'],
       withData: true,
