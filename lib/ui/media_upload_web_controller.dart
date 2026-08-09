@@ -183,6 +183,12 @@ class MediaUploadWebController extends SintController implements MediaUploadServ
         uploadDestination,
       );
 
+      if (_mediaUrl.isEmpty) {
+        // Never persist an empty URL as a dead track: the existing catch
+        // logs and shows the upload-error snackbar.
+        throw StateError('Media upload returned an empty URL');
+      }
+
       AppConfig.logger.d('File uploaded (web): $_mediaUrl');
     } catch (e, st) {
       NeomErrorLogger.recordError(e, st, module: 'neom_media_upload', operation: 'uploadFile');

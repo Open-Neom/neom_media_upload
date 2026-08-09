@@ -287,6 +287,11 @@ class MediaUploadController extends SintController implements MediaUploadService
     try {
       if(isValidSize) {
         _mediaUrl = await AppUploadFirestore().uploadMediaFile(mediaId, mediaFile.value, _mediaType, uploadDestination);
+        if (_mediaUrl.isEmpty) {
+          // An empty URL must never be persisted downstream as a dead track:
+          // surface it through the existing catch (logs + user snackbar).
+          throw StateError('Media upload returned an empty URL');
+        }
         AppConfig.logger.d("File ${_mediaType.name} uploaded to $mediaUrl");
       }
     } catch (e, st) {
