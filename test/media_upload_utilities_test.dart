@@ -1,7 +1,8 @@
-import 'dart:io';
+import 'dart:io' show Directory;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neom_core/utils/enums/media_type.dart';
+import 'package:neom_core/utils/platform/core_io.dart' show File;
 import 'package:neom_media_upload/utils/constants/media_upload_constants.dart';
 import 'package:neom_media_upload/utils/media_upload_utilities.dart';
 import 'package:neom_media_upload/utils/mappers/file_type_mapper.dart';
